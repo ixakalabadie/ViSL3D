@@ -419,28 +419,28 @@ class write_x3d:
         self.file_x3d.close()
 
 class write_html:
+    """
+    Create an HTML file with an embbeded X3D figure and buttons to interact with it
+
+    Parameters
+    ----------
+    filename : string
+        Name of the file to be created, should have ".html" extension.
+    tabtitle : string, optional
+        Title of the tab in the web browser. The default is 'new_html_x3d'.
+    pagetitle : string, optional
+        Title of the web page. The default is None.
+    description : string, optional
+        Description of the figure or any other text to be included in the web page.
+        Should follow HTML format. The default is None.
+
+    Returns
+    -------
+    None.
+
+    """
     
     def __init__(self, filename, tabtitle='new_html_x3d', pagetitle=None, description=None):
-        """
-        Create an HTML file with an embbeded X3D figure and buttons to interact with it
-
-        Parameters
-        ----------
-        filename : string
-            Name of the file to be created, should have ".html" extension.
-        tabtitle : string, optional
-            Title of the tab in the web browser. The default is 'new_html_x3d'.
-        pagetitle : string, optional
-            Title of the web page. The default is None.
-        description : string, optional
-            Description of the figure or any other text to be included in the web page.
-            Should follow HTML format. The default is None.
-
-        Returns
-        -------
-        None.
-
-        """
         #some attributes to use later
         self.grids = False
         self.gals = False
