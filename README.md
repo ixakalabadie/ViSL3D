@@ -3,3 +3,7 @@ The cube_x3d module can create X3D and HTML files to visualize data cubes from a
 For now, the module includes, besides the defaults from the x3d-pathway, option to change the coordinate labels, show/hide galaxies, 
 change colormap, change scale of V axis, include a 2D image, move the image along the V axis. Picking coordinates is also included but the coordinates 
 it gives are not correct; does not result in errors in the final result though.
+
+## Examples v1:
+Coordinate labels: show/hide, 2 formats. Galaxies: show/hide points or labels. 2D image: show/hide, move along V axis. Change colormap. Change scale of V axis. Picking disabled.
+
