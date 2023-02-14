@@ -1,0 +1,590 @@
+<html>
+	 <head>
+		 <title> HCG16_v1 </title>
+		 <script type='text/javascript' src='http://www.x3dom.org/download/1.8.0/x3dom.js'></script>
+
+		 <script type='text/javascript'  src='https://www.maths.nottingham.ac.uk/plp/pmadw/LaTeXMathML.js'></script>
+		 <link rel='stylesheet' type='text/css' href='http://www.x3dom.org/release/x3dom.css'></link>
+		 <script type='text/javascript' src='https://code.jquery.com/jquery-3.6.3.min.js'></script>
+
+	 	 <style>
+	 	   x3d
+	 	 	   {
+	 	 	 	   border:2px solid darkorange;
+	 	    }
+	 	    </style>
+	 </head>
+	 <body>
+	 <h1 align="middle"> HCG16 interactive HI datacube with X3D. Version 1 </h1>
+	 <hr/>
+	 <p style="width=1000px;"> <font size="3">
+	 Object: HCG16.<t> Telescope: MeerKAT. RestFreq = 1420.4058 MHz.<br>
+	 Center: (RA,Dec,V)=(32.4913 deg, -10.23695 deg, 3848.514 km/s) 
+	 <br/>
+	 </font> </p>
+
+	 <script>
+	 	 function setHIlayer0()
+	 	 {
+	 	 if(document.getElementById('cube__layer0').getAttribute('transparency') != '0.8') {
+		 document.getElementById('cube__layer0').setAttribute('transparency', '0.8');
+		 document.getElementById('cube__layer0_shape').setAttribute('ispickable', 'true');
+		 } else { 
+		 document.getElementById('cube__layer0').setAttribute('transparency', '1');
+		 document.getElementById('cube__layer0_shape').setAttribute('ispickable', 'false');
+		 } 
+		 }
+	 </script>
+	 <script>
+	 	 function setHIlayer1()
+	 	 {
+	 	 if(document.getElementById('cube__layer1').getAttribute('transparency') != '0.8') {
+		 document.getElementById('cube__layer1').setAttribute('transparency', '0.8');
+		 document.getElementById('cube__layer1_shape').setAttribute('ispickable', 'true');
+		 } else { 
+		 document.getElementById('cube__layer1').setAttribute('transparency', '1');
+		 document.getElementById('cube__layer1_shape').setAttribute('ispickable', 'false');
+		 } 
+		 }
+	 </script>
+	 <script>
+	 	 function setHIlayer2()
+	 	 {
+	 	 if(document.getElementById('cube__layer2').getAttribute('transparency') != '0.8') {
+		 document.getElementById('cube__layer2').setAttribute('transparency', '0.8');
+		 document.getElementById('cube__layer2_shape').setAttribute('ispickable', 'true');
+		 } else { 
+		 document.getElementById('cube__layer2').setAttribute('transparency', '1');
+		 document.getElementById('cube__layer2_shape').setAttribute('ispickable', 'false');
+		 } 
+		 }
+	 </script>
+	 <script>
+		 function setHIlayer3()
+	 	 {
+	 	 if(document.getElementById('cube__layer3').getAttribute('transparency') != '0.001') {
+		 document.getElementById('cube__layer3').setAttribute('transparency', '0.001');
+		 document.getElementById('cube__layer3_shape').setAttribute('ispickable', 'true');
+		 } else { 
+		 document.getElementById('cube__layer3').setAttribute('transparency', '1');
+		 document.getElementById('cube__layer3_shape').setAttribute('ispickable', 'false');
+		 } 
+		 }
+	 </script>
+	 	 <script>
+	 	 function setgals()
+	 	 {
+	 	 if(document.getElementById('cube__HCG16a_cross').getAttribute('transparency')!= '0'){
+	 	 document.getElementById('cube__HCG16a_cross').setAttribute('transparency', '0');
+	 	 document.getElementById('cube__HCG16a').setAttribute('transparency', '0');
+	 	 document.getElementById('cube__HCG16b_cross').setAttribute('transparency', '0');
+	 	 document.getElementById('cube__HCG16b').setAttribute('transparency', '0');
+	 	 document.getElementById('cube__HCG16c_cross').setAttribute('transparency', '0');
+	 	 document.getElementById('cube__HCG16c').setAttribute('transparency', '0');
+	 	 document.getElementById('cube__HCG16d_cross').setAttribute('transparency', '0');
+	 	 document.getElementById('cube__HCG16d').setAttribute('transparency', '0');
+	 	 document.getElementById('cube__NGC848_cross').setAttribute('transparency', '0');
+	 	 document.getElementById('cube__NGC848').setAttribute('transparency', '0');
+	 	 }
+	 	 else {
+	 	 document.getElementById('cube__HCG16a_cross').setAttribute('transparency', '1');
+	 	 document.getElementById('cube__HCG16a').setAttribute('transparency', '1');
+	 	 document.getElementById('cube__HCG16b_cross').setAttribute('transparency', '1');
+	 	 document.getElementById('cube__HCG16b').setAttribute('transparency', '1');
+	 	 document.getElementById('cube__HCG16c_cross').setAttribute('transparency', '1');
+	 	 document.getElementById('cube__HCG16c').setAttribute('transparency', '1');
+	 	 document.getElementById('cube__HCG16d_cross').setAttribute('transparency', '1');
+	 	 document.getElementById('cube__HCG16d').setAttribute('transparency', '1');
+	 	 document.getElementById('cube__NGC848_cross').setAttribute('transparency', '1');
+	 	 document.getElementById('cube__NGC848').setAttribute('transparency', '1');
+		 }
+		 }
+		 </script>
+		 <script>
+	 	 function setgallabels()
+	 	 {
+	 	 if(document.getElementById('cube__label_HCG16a').getAttribute('transparency')!= '0'){
+	 	 document.getElementById('cube__label_HCG16a').setAttribute('transparency', '0');
+	 	 document.getElementById('cube__label_HCG16b').setAttribute('transparency', '0');
+	 	 document.getElementById('cube__label_HCG16c').setAttribute('transparency', '0');
+	 	 document.getElementById('cube__label_HCG16d').setAttribute('transparency', '0');
+	 	 document.getElementById('cube__label_NGC848').setAttribute('transparency', '0');
+	 	 }
+	 	 else {
+	 	 document.getElementById('cube__label_HCG16a').setAttribute('transparency', '1');
+	 	 document.getElementById('cube__label_HCG16b').setAttribute('transparency', '1');
+	 	 document.getElementById('cube__label_HCG16c').setAttribute('transparency', '1');
+	 	 document.getElementById('cube__label_HCG16d').setAttribute('transparency', '1');
+	 	 document.getElementById('cube__label_NGC848').setAttribute('transparency', '1');
+		 }
+		 }
+		 </script>
+		<script>
+		function setgrids()
+		{
+			if(document.getElementById('cube__ticklines').getAttribute('transparency')!= '0')
+				document.getElementById('cube__ticklines').setAttribute('transparency', '0');
+			else 
+				document.getElementById('cube__ticklines').setAttribute('transparency', '1');
+		}
+		 </script>
+	 	 <script>
+		 function setaxes()
+	 	 {
+	 	 if(document.getElementById('cube__axlab_diff1').getAttribute('transparency') == '0') {
+		 document.getElementById('cube__axlab_diff0').setAttribute('transparency', '1');
+		 document.getElementById('cube__axlab_real0').setAttribute('transparency', '0');
+		 document.getElementById('cube__axlab_diff1').setAttribute('transparency', '1');
+		 document.getElementById('cube__axlab_real1').setAttribute('transparency', '0');
+		 document.getElementById('cube__axlab_diff2').setAttribute('transparency', '1');
+		 document.getElementById('cube__axlab_real2').setAttribute('transparency', '0');
+		 document.getElementById('cube__axlab_diff3').setAttribute('transparency', '1');
+		 document.getElementById('cube__axlab_real3').setAttribute('transparency', '0');
+		 document.getElementById('cube__axlab_diff4').setAttribute('transparency', '1');
+		 document.getElementById('cube__axlab_real4').setAttribute('transparency', '0');
+		 document.getElementById('cube__axlab_diff5').setAttribute('transparency', '1');
+		 document.getElementById('cube__axlab_real5').setAttribute('transparency', '0');
+		 document.getElementById('cube__axtick_diff0').setAttribute('transparency', '1');
+		 document.getElementById('cube__axtick_real0').setAttribute('transparency', '0');
+		 document.getElementById('cube__axtick_diff1').setAttribute('transparency', '1');
+		 document.getElementById('cube__axtick_real1').setAttribute('transparency', '0');
+		 document.getElementById('cube__axtick_diff2').setAttribute('transparency', '1');
+		 document.getElementById('cube__axtick_real2').setAttribute('transparency', '0');
+		 document.getElementById('cube__axtick_diff3').setAttribute('transparency', '1');
+		 document.getElementById('cube__axtick_real3').setAttribute('transparency', '0');
+		 document.getElementById('cube__axtick_diff4').setAttribute('transparency', '1');
+		 document.getElementById('cube__axtick_real4').setAttribute('transparency', '0');
+		 document.getElementById('cube__axtick_diff5').setAttribute('transparency', '1');
+		 document.getElementById('cube__axtick_real5').setAttribute('transparency', '0');
+		 document.getElementById('cube__axtick_diff6').setAttribute('transparency', '1');
+		 document.getElementById('cube__axtick_real6').setAttribute('transparency', '0');
+		 document.getElementById('cube__axtick_diff7').setAttribute('transparency', '1');
+		 document.getElementById('cube__axtick_real7').setAttribute('transparency', '0');
+		 document.getElementById('cube__axtick_diff8').setAttribute('transparency', '1');
+		 document.getElementById('cube__axtick_real8').setAttribute('transparency', '0');
+		 document.getElementById('cube__axtick_diff9').setAttribute('transparency', '1');
+		 document.getElementById('cube__axtick_real9').setAttribute('transparency', '0');
+		 document.getElementById('cube__axtick_diff10').setAttribute('transparency', '1');
+		 document.getElementById('cube__axtick_real10').setAttribute('transparency', '0');
+		 document.getElementById('cube__axtick_diff11').setAttribute('transparency', '1');
+		 document.getElementById('cube__axtick_real11').setAttribute('transparency', '0');
+	 	 }
+	 	 else if (document.getElementById('cube__axlab_real1').getAttribute('transparency') == '0') {
+		 document.getElementById('cube__axlab_real0').setAttribute('transparency', '1');
+		 document.getElementById('cube__axlab_real1').setAttribute('transparency', '1');
+		 document.getElementById('cube__axlab_real2').setAttribute('transparency', '1');
+		 document.getElementById('cube__axlab_real3').setAttribute('transparency', '1');
+		 document.getElementById('cube__axlab_real4').setAttribute('transparency', '1');
+		 document.getElementById('cube__axlab_real5').setAttribute('transparency', '1');
+		 document.getElementById('cube__axtick_real0').setAttribute('transparency', '1');
+		 document.getElementById('cube__axtick_real1').setAttribute('transparency', '1');
+		 document.getElementById('cube__axtick_real2').setAttribute('transparency', '1');
+		 document.getElementById('cube__axtick_real3').setAttribute('transparency', '1');
+		 document.getElementById('cube__axtick_real4').setAttribute('transparency', '1');
+		 document.getElementById('cube__axtick_real5').setAttribute('transparency', '1');
+		 document.getElementById('cube__axtick_real6').setAttribute('transparency', '1');
+		 document.getElementById('cube__axtick_real7').setAttribute('transparency', '1');
+		 document.getElementById('cube__axtick_real8').setAttribute('transparency', '1');
+		 document.getElementById('cube__axtick_real9').setAttribute('transparency', '1');
+		 document.getElementById('cube__axtick_real10').setAttribute('transparency', '1');
+		 document.getElementById('cube__axtick_real11').setAttribute('transparency', '1');
+		 }
+		 else {
+		 document.getElementById('cube__axlab_diff0').setAttribute('transparency', '0');
+		 document.getElementById('cube__axlab_diff1').setAttribute('transparency', '0');
+		 document.getElementById('cube__axlab_diff2').setAttribute('transparency', '0');
+		 document.getElementById('cube__axlab_diff3').setAttribute('transparency', '0');
+		 document.getElementById('cube__axlab_diff4').setAttribute('transparency', '0');
+		 document.getElementById('cube__axlab_diff5').setAttribute('transparency', '0');
+		 document.getElementById('cube__axtick_diff0').setAttribute('transparency', '0');
+		 document.getElementById('cube__axtick_diff1').setAttribute('transparency', '0');
+		 document.getElementById('cube__axtick_diff2').setAttribute('transparency', '0');
+		 document.getElementById('cube__axtick_diff3').setAttribute('transparency', '0');
+		 document.getElementById('cube__axtick_diff4').setAttribute('transparency', '0');
+		 document.getElementById('cube__axtick_diff5').setAttribute('transparency', '0');
+		 document.getElementById('cube__axtick_diff6').setAttribute('transparency', '0');
+		 document.getElementById('cube__axtick_diff7').setAttribute('transparency', '0');
+		 document.getElementById('cube__axtick_diff8').setAttribute('transparency', '0');
+		 document.getElementById('cube__axtick_diff9').setAttribute('transparency', '0');
+		 document.getElementById('cube__axtick_diff10').setAttribute('transparency', '0');
+		 document.getElementById('cube__axtick_diff11').setAttribute('transparency', '0');
+		 }
+		 }
+		 </script>
+	<center><x3d id='cubeFixed' width='100\%' height='500px'>
+		 <scene>
+			 <OrthoViewpoint id="front" bind='false' centerOfRotation='0,0,0' description='RA-Dec view' fieldOfView='[-920.0506379997265,-920.0506379997265,920.0506379997265,920.0506379997265]' isActive='false' metadata='X3DMetadataObject' orientation='0,1,0,3.14' position='0,0,-2628.7161085706475' zFar='10000' zNear='0.05' ></OrthoViewpoint>
+			 <OrthoViewpoint id="side" bind='false' centerOfRotation='0,0,0' description='V - Dec view' fieldOfView='[-919.8015327110537,-919.8015327110537,919.8015327110537,919.8015327110537]' isActive='false' metadata='X3DMetadataObject' orientation='0,-1,0,1.57' position='-2628.0043791744392,0,0' zFar='10000' zNear='0.05' ></OrthoViewpoint>
+			 <OrthoViewpoint id="side2" bind='false' centerOfRotation='0,0,0' description='V - RA view' fieldOfView='[-920.0506379997265,-920.0506379997265,920.0506379997265,920.0506379997265]' isActive='false' metadata='X3DMetadataObject' orientation='1,1,1,4.1888' position='0,2628.7161085706475,0' zFar='10000' zNear='0.05' ></OrthoViewpoint>
+			<inline url="HCG16_v1.x3d" nameSpaceName="cube" mapDEFToID="true" onclick=""/>
+		</scene>
+	</x3d></center>
+	<div style="width:90%">
+		<br/>
+		&nbsp <b>Viewpoints:</b>
+			<button onclick="document.getElementById('cubeFixed').runtime.resetView();">Reset View</button>
+			<button onclick="document.getElementById('front').setAttribute('set_bind','true');"> R.A. - Dec. </button>
+			<button onclick="document.getElementById('side').setAttribute('set_bind','true');"> V - Dec. </button>
+			<button onclick="document.getElementById('side2').setAttribute('set_bind','true');"> V - R.A. </button>
+
+		&nbsp <b>Labels:</b>
+			<button onclick="setgrids();" >Grids</button>
+			<button onclick="setgals();" >Galaxies</button>
+			<button onclick="setgallabels();" >Galaxy Labels</button>
+			<button onclick="setaxes();" >Axes labels</button>
+			<button onclick="setimage2d();" >2D image</button>
+		<br><br>
+		&nbsp <b>HI layers:</b>
+			<button onclick="setHIlayer0();" style="color:FireBrick">1.5 mJy/beam</button>
+			<button onclick="setHIlayer1();" style="color:FireBrick">4.5 mJy/beam</button>
+			<button onclick="setHIlayer2();" style="color:FireBrick">8.5 mJy/beam</button>
+			<button onclick="setHIlayer3();" style="color:FireBrick">13.0 mJy/beam</button>
+		&nbsp <label for="cmaps-choice"><b>Colormaps:</b> </label>
+		<select id="cmaps-choice">
+			<option value="magma">magma</option>
+			<option value="CMRmap">CMRmap</option>
+			<option value="inferno">inferno</option>
+			<option value="plasma">plasma</option>
+			<option value="viridis">viridis</option>
+			<option value="Greys">Greys</option>
+			<option value="Blues">Blues</option>
+			<option value="OrRd">OrRd</option>
+			<option value="PuRd">PuRd</option>
+			<option value="Reds">Reds</option>
+			<option value="Spectral">Spectral</option>
+			<option value="Wistia">Wistia</option>
+			<option value="YlGn">YlGn</option>
+			<option value="YlOrRd">YlOrRd</option>
+			<option value="afmhot">afmhot</option>
+			<option value="autumn">autumn</option>
+			<option value="cool">cool</option>
+			<option value="coolwarm">coolwarm</option>
+			<option value="copper">copper</option>
+			<option value="cubehelix">cubehelix</option>
+			<option value="flag">flag</option>
+			<option value="gist_earth">gist_earth</option>
+			<option value="gist_heat">gist_heat</option>
+			<option value="gist_ncar">gist_ncar</option>
+			<option value="gist_stern">gist_stern</option>
+			<option value="gnuplot">gnuplot</option>
+			<option value="gnuplot2">gnuplot2</option>
+			<option value="hot">hot</option>
+			<option value="nipy_spectral">nipy_spectral</option>
+			<option value="prism">prism</option>
+			<option value="winter">winter</option>
+			<option value="Paired">Paired</option>
+		</select>
+		&nbsp <label for="scalev"><b>V scale:</b> </label>
+		<input oninput="changescalev()" id="scalev" type="range" list="marker" min="0" max="5" step="0.001" value="1"/>
+		<datalist id="marker">
+			<option value="1"></option>
+		</datalist>
+		&nbsp <label for="move2dimg"><b>2D image:</b> </label>
+		<input oninput="move2d()" id="move2dimg" type="range" min="-1" max="1" step="0.0001"/>
+		<b>$\Delta V=$</b> <output id="showvalue"></output> km/s
+	</div>
+	<script>
+		 //Round a float value to x.xx format
+		 function roundTo(value, decimals)
+		{
+			 return (Math.round(value * 10**decimals)) / 10**decimals;
+		 }
+	</script>
+		<script>
+			const inpmovehide = document.querySelector('#move2dimg');
+			const inpscahide = document.querySelector('#scalev');
+		function setimage2d()
+		{
+			const sca = inpscahide.value;
+			const move = inpmovehide.value;
+		if(document.getElementById('cube__image2d').getAttribute('translation')!= '0 0 '+(sca*move-1)*363.88584204983994)
+			document.getElementById('cube__image2d').setAttribute('translation', '0 0 '+(sca*move-1)*363.88584204983994);
+		else 
+			document.getElementById('cube__image2d').setAttribute('translation', '9e9 9e9 9e9');
+		}
+		 </script>
+		 <!--MUST BE BELOW THE <select> ELEMENT-->
+		 <script>
+		 const select = document.querySelector('select');
+		 select.addEventListener('change', change_colormap);
+		 function change_colormap()
+		 {
+			  const cmap = select.value;
+			 if (cmap === 'magma') {
+			 document.getElementById('cube__layer0').setAttribute('diffuseColor','9.87053e-01 9.91438e-01 7.49504e-01')
+			 document.getElementById('cube__layer1').setAttribute('diffuseColor','9.83485e-01 5.13280e-01 3.74198e-01')
+			 document.getElementById('cube__layer2').setAttribute('diffuseColor','5.37755e-01 1.56894e-01 5.06551e-01')
+			 document.getElementById('cube__layer3').setAttribute('diffuseColor','1.46200e-03 4.66000e-04 1.38660e-02')
+			 }
+			 else if (cmap === 'CMRmap') {
+			 document.getElementById('cube__layer0').setAttribute('diffuseColor','1.00000e+00 1.00000e+00 1.00000e+00')
+			 document.getElementById('cube__layer1').setAttribute('diffuseColor','9.00000e-01 7.32353e-01 9.29412e-02')
+			 document.getElementById('cube__layer2').setAttribute('diffuseColor','6.54902e-01 2.06863e-01 4.51961e-01')
+			 document.getElementById('cube__layer3').setAttribute('diffuseColor','0.00000e+00 0.00000e+00 0.00000e+00')
+			 }
+			 else if (cmap === 'inferno') {
+			 document.getElementById('cube__layer0').setAttribute('diffuseColor','9.88362e-01 9.98364e-01 6.44924e-01')
+			 document.getElementById('cube__layer1').setAttribute('diffuseColor','9.74176e-01 5.36780e-01 4.83920e-02')
+			 document.getElementById('cube__layer2').setAttribute('diffuseColor','5.65854e-01 1.43567e-01 4.08258e-01')
+			 document.getElementById('cube__layer3').setAttribute('diffuseColor','1.46200e-03 4.66000e-04 1.38660e-02')
+			 }
+			 else if (cmap === 'plasma') {
+			 document.getElementById('cube__layer0').setAttribute('diffuseColor','9.40015e-01 9.75158e-01 1.31326e-01')
+			 document.getElementById('cube__layer1').setAttribute('diffuseColor','9.68526e-01 5.69700e-01 2.61721e-01')
+			 document.getElementById('cube__layer2').setAttribute('diffuseColor','6.83758e-01 1.56278e-01 5.71660e-01')
+			 document.getElementById('cube__layer3').setAttribute('diffuseColor','5.03830e-02 2.98030e-02 5.27975e-01')
+			 }
+			 else if (cmap === 'viridis') {
+			 document.getElementById('cube__layer0').setAttribute('diffuseColor','9.93248e-01 9.06157e-01 1.43936e-01')
+			 document.getElementById('cube__layer1').setAttribute('diffuseColor','3.44074e-01 7.80029e-01 3.97381e-01')
+			 document.getElementById('cube__layer2').setAttribute('diffuseColor','1.66617e-01 4.63708e-01 5.58119e-01')
+			 document.getElementById('cube__layer3').setAttribute('diffuseColor','2.67004e-01 4.87400e-03 3.29415e-01')
+			 }
+			 else if (cmap === 'Greys') {
+			 document.getElementById('cube__layer0').setAttribute('diffuseColor','1.00000e+00 1.00000e+00 1.00000e+00')
+			 document.getElementById('cube__layer1').setAttribute('diffuseColor','8.43230e-01 8.43230e-01 8.43230e-01')
+			 document.getElementById('cube__layer2').setAttribute('diffuseColor','4.69819e-01 4.69819e-01 4.69819e-01')
+			 document.getElementById('cube__layer3').setAttribute('diffuseColor','0.00000e+00 0.00000e+00 0.00000e+00')
+			 }
+			 else if (cmap === 'Blues') {
+			 document.getElementById('cube__layer0').setAttribute('diffuseColor','9.68627e-01 9.84314e-01 1.00000e+00')
+			 document.getElementById('cube__layer1').setAttribute('diffuseColor','7.65398e-01 8.54118e-01 9.33379e-01')
+			 document.getElementById('cube__layer2').setAttribute('diffuseColor','2.80892e-01 5.87620e-01 7.85083e-01')
+			 document.getElementById('cube__layer3').setAttribute('diffuseColor','3.13725e-02 1.88235e-01 4.19608e-01')
+			 }
+			 else if (cmap === 'OrRd') {
+			 document.getElementById('cube__layer0').setAttribute('diffuseColor','1.00000e+00 9.68627e-01 9.25490e-01')
+			 document.getElementById('cube__layer1').setAttribute('diffuseColor','9.92157e-01 8.24452e-01 6.12411e-01')
+			 document.getElementById('cube__layer2').setAttribute('diffuseColor','9.44252e-01 4.17609e-01 2.91503e-01')
+			 document.getElementById('cube__layer3').setAttribute('diffuseColor','4.98039e-01 0.00000e+00 0.00000e+00')
+			 }
+			 else if (cmap === 'PuRd') {
+			 document.getElementById('cube__layer0').setAttribute('diffuseColor','9.68627e-01 9.56863e-01 9.76471e-01')
+			 document.getElementById('cube__layer1').setAttribute('diffuseColor','8.28328e-01 7.15248e-01 8.49642e-01')
+			 document.getElementById('cube__layer2').setAttribute('diffuseColor','9.01576e-01 1.93080e-01 5.61630e-01')
+			 document.getElementById('cube__layer3').setAttribute('diffuseColor','4.03922e-01 0.00000e+00 1.21569e-01')
+			 }
+			 else if (cmap === 'Reds') {
+			 document.getElementById('cube__layer0').setAttribute('diffuseColor','1.00000e+00 9.60784e-01 9.41176e-01')
+			 document.getElementById('cube__layer1').setAttribute('diffuseColor','9.88235e-01 7.21984e-01 6.18362e-01')
+			 document.getElementById('cube__layer2').setAttribute('diffuseColor','9.43714e-01 2.56671e-01 1.88697e-01')
+			 document.getElementById('cube__layer3').setAttribute('diffuseColor','4.03922e-01 0.00000e+00 5.09804e-02')
+			 }
+			 else if (cmap === 'Spectral') {
+			 document.getElementById('cube__layer0').setAttribute('diffuseColor','3.68627e-01 3.09804e-01 6.35294e-01')
+			 document.getElementById('cube__layer1').setAttribute('diffuseColor','5.59170e-01 8.23068e-01 6.44752e-01')
+			 document.getElementById('cube__layer2').setAttribute('diffuseColor','9.95771e-01 8.63053e-01 5.32180e-01')
+			 document.getElementById('cube__layer3').setAttribute('diffuseColor','6.19608e-01 3.92157e-03 2.58824e-01')
+			 }
+			 else if (cmap === 'Wistia') {
+			 document.getElementById('cube__layer0').setAttribute('diffuseColor','8.94118e-01 1.00000e+00 4.78431e-01')
+			 document.getElementById('cube__layer1').setAttribute('diffuseColor','1.00000e+00 9.03852e-01 9.83622e-02')
+			 document.getElementById('cube__layer2').setAttribute('diffuseColor','1.00000e+00 6.92118e-01 0.00000e+00')
+			 document.getElementById('cube__layer3').setAttribute('diffuseColor','9.88235e-01 4.98039e-01 0.00000e+00')
+			 }
+			 else if (cmap === 'YlGn') {
+			 document.getElementById('cube__layer0').setAttribute('diffuseColor','1.00000e+00 1.00000e+00 8.98039e-01')
+			 document.getElementById('cube__layer1').setAttribute('diffuseColor','8.38800e-01 9.35917e-01 6.33403e-01')
+			 document.getElementById('cube__layer2').setAttribute('diffuseColor','2.84506e-01 6.85121e-01 3.79777e-01')
+			 document.getElementById('cube__layer3').setAttribute('diffuseColor','0.00000e+00 2.70588e-01 1.60784e-01')
+			 }
+			 else if (cmap === 'YlOrRd') {
+			 document.getElementById('cube__layer0').setAttribute('diffuseColor','1.00000e+00 1.00000e+00 8.00000e-01')
+			 document.getElementById('cube__layer1').setAttribute('diffuseColor','9.96078e-01 8.40185e-01 4.51119e-01')
+			 document.getElementById('cube__layer2').setAttribute('diffuseColor','9.88774e-01 3.39792e-01 1.74394e-01')
+			 document.getElementById('cube__layer3').setAttribute('diffuseColor','5.01961e-01 0.00000e+00 1.49020e-01')
+			 }
+			 else if (cmap === 'afmhot') {
+			 document.getElementById('cube__layer0').setAttribute('diffuseColor','1.00000e+00 1.00000e+00 1.00000e+00')
+			 document.getElementById('cube__layer1').setAttribute('diffuseColor','1.00000e+00 9.82353e-01 4.82353e-01')
+			 document.getElementById('cube__layer2').setAttribute('diffuseColor','7.84314e-01 2.84314e-01 0.00000e+00')
+			 document.getElementById('cube__layer3').setAttribute('diffuseColor','0.00000e+00 0.00000e+00 0.00000e+00')
+			 }
+			 else if (cmap === 'autumn') {
+			 document.getElementById('cube__layer0').setAttribute('diffuseColor','1.00000e+00 1.00000e+00 0.00000e+00')
+			 document.getElementById('cube__layer1').setAttribute('diffuseColor','1.00000e+00 7.41176e-01 0.00000e+00')
+			 document.getElementById('cube__layer2').setAttribute('diffuseColor','1.00000e+00 3.92157e-01 0.00000e+00')
+			 document.getElementById('cube__layer3').setAttribute('diffuseColor','1.00000e+00 0.00000e+00 0.00000e+00')
+			 }
+			 else if (cmap === 'cool') {
+			 document.getElementById('cube__layer0').setAttribute('diffuseColor','0.00000e+00 1.00000e+00 1.00000e+00')
+			 document.getElementById('cube__layer1').setAttribute('diffuseColor','2.58824e-01 7.41176e-01 1.00000e+00')
+			 document.getElementById('cube__layer2').setAttribute('diffuseColor','6.07843e-01 3.92157e-01 1.00000e+00')
+			 document.getElementById('cube__layer3').setAttribute('diffuseColor','1.00000e+00 0.00000e+00 1.00000e+00')
+			 }
+			 else if (cmap === 'coolwarm') {
+			 document.getElementById('cube__layer0').setAttribute('diffuseColor','2.29806e-01 2.98718e-01 7.53683e-01')
+			 document.getElementById('cube__layer1').setAttribute('diffuseColor','5.65182e-01 6.99438e-01 9.96635e-01')
+			 document.getElementById('cube__layer2').setAttribute('diffuseColor','9.50956e-01 7.86875e-01 7.04761e-01')
+			 document.getElementById('cube__layer3').setAttribute('diffuseColor','7.05673e-01 1.55562e-02 1.50233e-01')
+			 }
+			 else if (cmap === 'copper') {
+			 document.getElementById('cube__layer0').setAttribute('diffuseColor','1.00000e+00 7.81200e-01 4.97500e-01')
+			 document.getElementById('cube__layer1').setAttribute('diffuseColor','9.15571e-01 5.79007e-01 3.68735e-01')
+			 document.getElementById('cube__layer2').setAttribute('diffuseColor','4.84429e-01 3.06353e-01 1.95098e-01')
+			 document.getElementById('cube__layer3').setAttribute('diffuseColor','0.00000e+00 0.00000e+00 0.00000e+00')
+			 }
+			 else if (cmap === 'cubehelix') {
+			 document.getElementById('cube__layer0').setAttribute('diffuseColor','1.00000e+00 1.00000e+00 1.00000e+00')
+			 document.getElementById('cube__layer1').setAttribute('diffuseColor','7.85586e-01 6.85392e-01 9.19267e-01')
+			 document.getElementById('cube__layer2').setAttribute('diffuseColor','3.07239e-01 4.73959e-01 1.84992e-01')
+			 document.getElementById('cube__layer3').setAttribute('diffuseColor','0.00000e+00 0.00000e+00 0.00000e+00')
+			 }
+			 else if (cmap === 'flag') {
+			 document.getElementById('cube__layer0').setAttribute('diffuseColor','1.00000e+00 0.00000e+00 0.00000e+00')
+			 document.getElementById('cube__layer1').setAttribute('diffuseColor','1.00000e+00 4.62204e-01 2.74838e-01')
+			 document.getElementById('cube__layer2').setAttribute('diffuseColor','0.00000e+00 0.00000e+00 7.38344e-01')
+			 document.getElementById('cube__layer3').setAttribute('diffuseColor','0.00000e+00 0.00000e+00 0.00000e+00')
+			 }
+			 else if (cmap === 'gist_earth') {
+			 document.getElementById('cube__layer0').setAttribute('diffuseColor','9.92200e-01 9.84300e-01 9.84300e-01')
+			 document.getElementById('cube__layer1').setAttribute('diffuseColor','7.35646e-01 6.79811e-01 3.82471e-01')
+			 document.getElementById('cube__layer2').setAttribute('diffuseColor','2.39967e-01 5.65184e-01 3.66048e-01')
+			 document.getElementById('cube__layer3').setAttribute('diffuseColor','0.00000e+00 0.00000e+00 0.00000e+00')
+			 }
+			 else if (cmap === 'gist_heat') {
+			 document.getElementById('cube__layer0').setAttribute('diffuseColor','1.00000e+00 1.00000e+00 1.00000e+00')
+			 document.getElementById('cube__layer1').setAttribute('diffuseColor','1.00000e+00 4.82353e-01 0.00000e+00')
+			 document.getElementById('cube__layer2').setAttribute('diffuseColor','5.88235e-01 0.00000e+00 0.00000e+00')
+			 document.getElementById('cube__layer3').setAttribute('diffuseColor','0.00000e+00 0.00000e+00 0.00000e+00')
+			 }
+			 else if (cmap === 'gist_ncar') {
+			 document.getElementById('cube__layer0').setAttribute('diffuseColor','9.96100e-01 9.72500e-01 9.96100e-01')
+			 document.getElementById('cube__layer1').setAttribute('diffuseColor','1.00000e+00 1.86568e-02 6.87597e-02')
+			 document.getElementById('cube__layer2').setAttribute('diffuseColor','4.38228e-01 8.84850e-01 0.00000e+00')
+			 document.getElementById('cube__layer3').setAttribute('diffuseColor','0.00000e+00 0.00000e+00 5.02000e-01')
+			 }
+			 else if (cmap === 'gist_stern') {
+			 document.getElementById('cube__layer0').setAttribute('diffuseColor','1.00000e+00 1.00000e+00 1.00000e+00')
+			 document.getElementById('cube__layer1').setAttribute('diffuseColor','7.41176e-01 7.41176e-01 2.33074e-02')
+			 document.getElementById('cube__layer2').setAttribute('diffuseColor','3.92157e-01 3.92157e-01 7.84314e-01')
+			 document.getElementById('cube__layer3').setAttribute('diffuseColor','0.00000e+00 0.00000e+00 0.00000e+00')
+			 }
+			 else if (cmap === 'gnuplot') {
+			 document.getElementById('cube__layer0').setAttribute('diffuseColor','1.00000e+00 1.00000e+00 0.00000e+00')
+			 document.getElementById('cube__layer1').setAttribute('diffuseColor','8.60916e-01 4.07160e-01 0.00000e+00')
+			 document.getElementById('cube__layer2').setAttribute('diffuseColor','6.26224e-01 6.03086e-02 6.26924e-01')
+			 document.getElementById('cube__layer3').setAttribute('diffuseColor','0.00000e+00 0.00000e+00 0.00000e+00')
+			 }
+			 else if (cmap === 'gnuplot2') {
+			 document.getElementById('cube__layer0').setAttribute('diffuseColor','1.00000e+00 1.00000e+00 1.00000e+00')
+			 document.getElementById('cube__layer1').setAttribute('diffuseColor','1.00000e+00 6.42353e-01 3.57647e-01')
+			 document.getElementById('cube__layer2').setAttribute('diffuseColor','4.44240e-01 0.00000e+00 1.00000e+00')
+			 document.getElementById('cube__layer3').setAttribute('diffuseColor','0.00000e+00 0.00000e+00 0.00000e+00')
+			 }
+			 else if (cmap === 'hot') {
+			 document.getElementById('cube__layer0').setAttribute('diffuseColor','1.00000e+00 1.00000e+00 1.00000e+00')
+			 document.getElementById('cube__layer1').setAttribute('diffuseColor','1.00000e+00 9.87254e-01 0.00000e+00')
+			 document.getElementById('cube__layer2').setAttribute('diffuseColor','1.00000e+00 7.10793e-02 0.00000e+00')
+			 document.getElementById('cube__layer3').setAttribute('diffuseColor','4.16000e-02 0.00000e+00 0.00000e+00')
+			 }
+			 else if (cmap === 'nipy_spectral') {
+			 document.getElementById('cube__layer0').setAttribute('diffuseColor','8.00000e-01 8.00000e-01 8.00000e-01')
+			 document.getElementById('cube__layer1').setAttribute('diffuseColor','9.88229e-01 8.23524e-01 0.00000e+00')
+			 document.getElementById('cube__layer2').setAttribute('diffuseColor','0.00000e+00 6.66700e-01 5.54225e-01')
+			 document.getElementById('cube__layer3').setAttribute('diffuseColor','0.00000e+00 0.00000e+00 0.00000e+00')
+			 }
+			 else if (cmap === 'prism') {
+			 document.getElementById('cube__layer0').setAttribute('diffuseColor','3.29507e-01 9.98255e-01 0.00000e+00')
+			 document.getElementById('cube__layer1').setAttribute('diffuseColor','1.24223e-01 0.00000e+00 1.00000e+00')
+			 document.getElementById('cube__layer2').setAttribute('diffuseColor','1.00000e+00 2.03557e-01 0.00000e+00')
+			 document.getElementById('cube__layer3').setAttribute('diffuseColor','1.00000e+00 0.00000e+00 0.00000e+00')
+			 }
+			 else if (cmap === 'winter') {
+			 document.getElementById('cube__layer0').setAttribute('diffuseColor','0.00000e+00 1.00000e+00 5.00000e-01')
+			 document.getElementById('cube__layer1').setAttribute('diffuseColor','0.00000e+00 7.41176e-01 6.29412e-01')
+			 document.getElementById('cube__layer2').setAttribute('diffuseColor','0.00000e+00 3.92157e-01 8.03922e-01')
+			 document.getElementById('cube__layer3').setAttribute('diffuseColor','0.00000e+00 0.00000e+00 1.00000e+00')
+			 }
+			 else if (cmap === 'Paired') {
+			 document.getElementById('cube__layer0').setAttribute('diffuseColor','6.50980e-01 8.07843e-01 8.90196e-01')
+			 document.getElementById('cube__layer1').setAttribute('diffuseColor','6.94118e-01 3.49020e-01 1.56863e-01')
+			 document.getElementById('cube__layer2').setAttribute('diffuseColor','6.94118e-01 3.49020e-01 1.56863e-01')
+			 document.getElementById('cube__layer3').setAttribute('diffuseColor','6.94118e-01 3.49020e-01 1.56863e-01')
+			 }
+		 }
+		 </script>
+		<script>
+		const inpscasv = document.querySelector('#scalev');
+		const inpmovesv = document.querySelector('#move2dimg');
+		function changescalev()
+		 {
+			const sca = inpscasv.value;
+			const move = inpmovesv.value;
+			if(document.getElementById('cube__image2d').getAttribute('translation') != '9e9 9e9 9e9') {
+				document.getElementById('cube__image2d').setAttribute('translation', '0 0 '+(sca*move-1)*363.88584204983994); }
+			document.getElementById('cube__lt0').setAttribute('scale', '1 1 '+sca);
+			document.getElementById('cube__lt1').setAttribute('scale', '1 1 '+sca);
+			document.getElementById('cube__lt2').setAttribute('scale', '1 1 '+sca);
+			document.getElementById('cube__lt3').setAttribute('scale', '1 1 '+sca);
+			document.getElementById('cube__ot').setAttribute('scale', '1 1 '+sca);
+			document.getElementById('cube__gct0').setAttribute('translation', '0 0 '+(sca-1)*303.4859329717997);
+			document.getElementById('cube__gst0').setAttribute('translation', '-491.3557272309249 363.7150509558886 '+sca*303.4859329717997);
+			document.getElementById('cube__glt0').setAttribute('translation', '-491.3557272309249 363.7150509558886 '+sca*303.4859329717997);
+			document.getElementById('cube__gct1').setAttribute('translation', '0 0 '+(sca-1)*128.48593297179968);
+			document.getElementById('cube__gst1').setAttribute('translation', '-546.7836961783477 374.0196650718886 '+sca*128.48593297179968);
+			document.getElementById('cube__glt1').setAttribute('translation', '-546.7836961783477 374.0196650718886 '+sca*128.48593297179968);
+			document.getElementById('cube__gct2').setAttribute('translation', '0 0 '+(sca-1)*2.4859329717996843);
+			document.getElementById('cube__gst2').setAttribute('translation', '-285.4641759913187 326.90145095588434 '+sca*2.4859329717996843);
+			document.getElementById('cube__glt2').setAttribute('translation', '-285.4641759913187 326.90145095588434 '+sca*2.4859329717996843);
+			document.getElementById('cube__gct3').setAttribute('translation', '0 0 '+(sca-1)*-1.5140670282003157);
+			document.getElementById('cube__gst3').setAttribute('translation', '-223.96756930922723 191.3834109558877 '+sca*-1.5140670282003157);
+			document.getElementById('cube__glt3').setAttribute('translation', '-223.96756930922723 191.3834109558877 '+sca*-1.5140670282003157);
+			document.getElementById('cube__gct4').setAttribute('translation', '0 0 '+(sca-1)*152.48593297179968);
+			document.getElementById('cube__gst4').setAttribute('translation', '289.1170372141303 -302.4167450441148 '+sca*152.48593297179968);
+			document.getElementById('cube__glt4').setAttribute('translation', '289.1170372141303 -302.4167450441148 '+sca*152.48593297179968);
+			 document.getElementById('cube__tlt').setAttribute('scale', '1 1 '+sca);
+			document.getElementById('cube__alt_diff0').setAttribute('translation', '0.0 -722.7012042729638 '+sca*-363.88584204983994);
+			document.getElementById('cube__alt_real0').setAttribute('translation', '0.0 -722.7012042729638 '+sca*-363.88584204983994);
+			document.getElementById('cube__att_diff0').setAttribute('translation', '657.1790271426619 -722.7012042729638 '+sca*-363.88584204983994);
+			document.getElementById('cube__att_real0').setAttribute('translation', '657.1790271426619 -722.7012042729638 '+sca*-363.88584204983994);
+			document.getElementById('cube__alt_diff1').setAttribute('translation', '722.8969298569282 0.0 '+sca*-363.88584204983994);
+			document.getElementById('cube__alt_real1').setAttribute('translation', '722.8969298569282 0.0 '+sca*-363.88584204983994);
+			document.getElementById('cube__att_diff1').setAttribute('translation', '-657.1790271426619 -722.7012042729638 '+sca*-363.88584204983994);
+			document.getElementById('cube__att_real1').setAttribute('translation', '-657.1790271426619 -722.7012042729638 '+sca*-363.88584204983994);
+			document.getElementById('cube__alt_diff2').setAttribute('translation', '-657.1790271426619 -722.7012042729638 '+sca*0.0);
+			document.getElementById('cube__alt_real2').setAttribute('translation', '-657.1790271426619 -722.7012042729638 '+sca*0.0);
+			document.getElementById('cube__att_diff2').setAttribute('translation', '722.8969298569282 657.0010947936098 '+sca*-363.88584204983994);
+			document.getElementById('cube__att_real2').setAttribute('translation', '722.8969298569282 657.0010947936098 '+sca*-363.88584204983994);
+			document.getElementById('cube__alt_diff3').setAttribute('translation', '-657.1790271426619 0.0 '+sca*-400.27442625482394);
+			document.getElementById('cube__alt_real3').setAttribute('translation', '-657.1790271426619 0.0 '+sca*-400.27442625482394);
+			document.getElementById('cube__att_diff3').setAttribute('translation', '722.8969298569282 -657.0010947936033 '+sca*-363.88584204983994);
+			document.getElementById('cube__att_real3').setAttribute('translation', '722.8969298569282 -657.0010947936033 '+sca*-363.88584204983994);
+			document.getElementById('cube__alt_diff4').setAttribute('translation', '-722.8969298569282 657.0010947936098 '+sca*0.0);
+			document.getElementById('cube__alt_real4').setAttribute('translation', '-722.8969298569282 657.0010947936098 '+sca*0.0);
+			document.getElementById('cube__att_diff4').setAttribute('translation', '-657.1790271426619 -722.7012042729638 '+sca*-363.88584204983994);
+			document.getElementById('cube__att_real4').setAttribute('translation', '-657.1790271426619 -722.7012042729638 '+sca*-363.88584204983994);
+			document.getElementById('cube__alt_diff5').setAttribute('translation', '0.0 657.0010947936098 '+sca*-400.27442625482394);
+			document.getElementById('cube__alt_real5').setAttribute('translation', '0.0 657.0010947936098 '+sca*-400.27442625482394);
+			document.getElementById('cube__att_diff5').setAttribute('translation', '-657.1790271426619 -722.7012042729638 '+sca*363.88584204983994);
+			document.getElementById('cube__att_real5').setAttribute('translation', '-657.1790271426619 -722.7012042729638 '+sca*363.88584204983994);
+			document.getElementById('cube__att_diff6').setAttribute('translation', '-657.1790271426619 657.0010947936098 '+sca*-400.27442625482394);
+			document.getElementById('cube__att_real6').setAttribute('translation', '-657.1790271426619 657.0010947936098 '+sca*-400.27442625482394);
+			document.getElementById('cube__att_diff7').setAttribute('translation', '-657.1790271426619 -657.0010947936033 '+sca*-400.27442625482394);
+			document.getElementById('cube__att_real7').setAttribute('translation', '-657.1790271426619 -657.0010947936033 '+sca*-400.27442625482394);
+			document.getElementById('cube__att_diff8').setAttribute('translation', '-722.8969298569282 657.0010947936098 '+sca*-363.88584204983994);
+			document.getElementById('cube__att_real8').setAttribute('translation', '-722.8969298569282 657.0010947936098 '+sca*-363.88584204983994);
+			document.getElementById('cube__att_diff9').setAttribute('translation', '-722.8969298569282 657.0010947936098 '+sca*363.88584204983994);
+			document.getElementById('cube__att_real9').setAttribute('translation', '-722.8969298569282 657.0010947936098 '+sca*363.88584204983994);
+			document.getElementById('cube__att_diff10').setAttribute('translation', '657.1790271426619 657.0010947936098 '+sca*-400.27442625482394);
+			document.getElementById('cube__att_real10').setAttribute('translation', '657.1790271426619 657.0010947936098 '+sca*-400.27442625482394);
+			document.getElementById('cube__att_diff11').setAttribute('translation', '-657.1790271426619 657.0010947936098 '+sca*-400.27442625482394);
+			document.getElementById('cube__att_real11').setAttribute('translation', '-657.1790271426619 657.0010947936098 '+sca*-400.27442625482394);
+		}
+		</script>
+		<script>
+		const inpscam2 = document.querySelector('#scalev');
+		const inpmovem2 = document.querySelector('#move2dimg');
+		const showval = document.querySelector('#showvalue');
+		function move2d()
+		{
+			const sca = inpscam2.value;
+			const move = inpmovem2.value;
+			showval.textContent = roundTo(inpmovem2.value*400, 3);
+			if(document.getElementById('cube__image2d').getAttribute('translation') != '9e9 9e9 9e9') {
+				document.getElementById('cube__image2d').setAttribute('translation', '0 0 '+(sca*move-1)*363.88584204983994); }
+		}
+		</script>
+
+	 </body>
+</html>
