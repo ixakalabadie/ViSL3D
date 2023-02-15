@@ -20,6 +20,10 @@ import astropy.units as u
 from astropy.coordinates import Angle
 import matplotlib.pyplot as plt
 
+from spectral_cube import SpectralCube
+from astropy import wcs
+from astropy.coordinates import SkyCoord
+
 class write_x3d:
     """
     
@@ -41,9 +45,9 @@ class write_x3d:
 
     """
     
-    def __init__(self, filename, delta, coords, units=['deg','deg','m/s'], meta=None, picking=False):
+    def __init__(self, filename, delta, coords, units=['deg','deg','km/s'], meta=None, picking=False):
         self.delta = delta
-        self.units = units
+        #self.units = units
         self.real_coords, self.diff_coords = get_coords(coords[0], coords[1], coords[2])
         self.diff_coords[0] = self.diff_coords[0] * u.Unit(units[0]).to('arcsec')
         self.diff_coords[1] = self.diff_coords[1] * u.Unit(units[1]).to('arcsec')
@@ -316,8 +320,8 @@ class write_x3d:
         ramin1, ramean1, ramax1 = self.diff_coords[0]
         decmin1, decmean1, decmax1 = self.diff_coords[1]
         vmin1, vmean1, vmax1 = self.diff_coords[2]
-        ramin2, _, ramax2 = Angle(self.real_coords[0] * u.Unit(self.units[0])).to_string(u.hour, precision=0)
-        decmin2, _, decmax2 = Angle(self.real_coords[1] * u.Unit(self.units[1])).to_string(u.degree, precision=0)
+        ramin2, _, ramax2 = Angle(self.real_coords[0] * u.Unit('deg')).to_string(u.hour, precision=0)
+        decmin2, _, decmax2 = Angle(self.real_coords[1] * u.Unit('deg')).to_string(u.degree, precision=0)
         vmin2, _, vmax2 = self.real_coords[2]
         
         # scale of labels
@@ -610,7 +614,7 @@ class write_html:
 
         """
         self.hclick = True
-        self.file_html.write(roundTwoDec) #premade string with function to round to two decimals
+        self.file_html.write(roundTo) #premade string with function to round to two decimals
         self.file_html.write("\t <script>\n\t\t function handleClick(event) {\n")
         self.file_html.write("\t\t\t var coordinates = event.hitPnt;\n")
         self.file_html.write("\t\t\t $('#coordX').html(roundTo(coordinates[0], 2)+' arcsec');\n")
@@ -890,6 +894,8 @@ class write_html:
         None.
 
         """
+        if self.hclick == False:
+            self.file_html.write(roundTo) #premade string with function to round to two decimals
         self.file_html.write(tabs(2)+"<script>\n")
         if vmax != None:
             if scalev:
@@ -923,6 +929,164 @@ class write_html:
         """
         self.file_html.write('\n\t </body>\n</html>')
         self.file_html.close()
+    
+class make_all():
+    
+    def __init__(self, fits, isolevels, gals=None, image2d=None, lims=None, unit=None):
+        cube = SpectralCube.read(fits)
+        cubehead = cube.header
+        
+        self.obj = cubehead['OBJECT']
+        nz, ny, nx = cube.shape
+        cubeunits = [cubehead['BUNIT'], cubehead['CUNIT1'], cubehead['CUNIT2'], cubehead['CUNIT3']]
+        delta = np.array([cubehead['CDELT1']*u.Unit(cubeunits[1]).to('arcsec'),
+                      cubehead['CDELT2']*u.Unit(cubeunits[2]).to('arcsec'), 
+                      cubehead['CDELT3']*u.Unit(cubeunits[3]).to('km/s')])
+        
+        print(delta)
+        
+        if lims is None:
+            lims = np.array([[0,nx-1], [0,ny-1], [0, nz-1]])
+            
+        ralim = cube.spatial_coordinate_map[1][0,:][lims[0]][::int(np.sign(delta[0]))]
+        ramean = np.mean(ralim)
+        declim = cube.spatial_coordinate_map[0][:,0][lims[1]][::int(np.sign(delta[1]))]
+        decmean = np.mean(declim)
+        vlim = cube.spectral_axis[lims[2]][::int(np.sign(delta[2]))]
+        vmean = np.mean(vlim).to('km/s')
+        #set 'deg', 'deg', 'km/s' for write_x3d()
+        coords = np.array([ralim.to('deg'), declim.to('deg'), vlim.to('km/s')])
+        
+        cube = cube.unmasked_data[lims[2,0]:lims[2,1]+1,lims[1,0]:lims[1,1]+1,lims[0,0]:lims[0,1]+1]
+        
+        if unit != None:
+            cube = cube.to(unit)
+        else:
+            # for pixel values
+            if cube.unit == u.Unit('Jy / beam'):
+                i = 0
+            elif cube.unit == u.Unit('mJy / beam'):
+                i = 1
+            elif cube.unit == u.Unit('uJy / beam'):
+                i = 2
+            while np.max(cube).to_value() < 1:
+                if i == 0:
+                    cube = cube.to(u.mJy/u.beam)
+                elif i == 1:
+                    cube = cube.to(u.uJy/u.beam)
+                elif i == 2:
+                    cube = cube.to(u.nJy/u.beam)
+                i = i+1
+            
+        cube = transpose(cube, delta)
+        if gals != None:
+            for (k,gal) in enumerate(gals.keys()):
+                # get galaxy positions from Astropy SkyCoord query. Other options?
+                galcoords = SkyCoord.from_name(gal)
+                
+                galra = (galcoords.ra-ramean)*np.cos(declim[0].to('rad'))
+                galdec = (galcoords.dec-decmean)
+            
+                gals[gal]['coord'] = np.array([galra.to('arcsec').to_value(), galdec.to('arcsec').to_value(), gals[gal]['v']])
+            
+        self.color = create_colormap('CMRmap', isolevels)
+        
+        if image2d != None:
+            survey, pixels = image2d
+            verts = (coords[0,0], coords[0,1], coords[1,0], coords[1,1])
+            self.imcol, self.img_shape, _ = get_imcol(position=self.obj, survey=survey, verts=verts, unit='deg',
+                                    pixels=pixels, coordinates='J2000',grid=True, gridlabels=True)
+        
+        self.delta = np.abs(delta)
+        self.coords = coords
+        self.cube = cube.to_value()
+        self.isolevels = isolevels
+        self.gals = gals
+        self.cubehead = cubehead
+        self.ramean = ramean.to_value()
+        self.decmean = decmean.to_value()
+        self.vmean = vmean.to_value()
+
+        
+    def choose_buttons(self, layers=True, galaxies=True, gallab=True, grids=True, axes='both', 
+                       viewpoints=True, image2d=True, move2d=True, scalev=True, cmaps=None, picking=True):
+        """
+        Axes can be 'both', 'real', 'diff' or None
+        """
+        self.layers = layers
+        self.galaxies = galaxies
+        self.gallab = gallab
+        self.grids = grids
+        self.axes = axes
+        self.viewpoints = viewpoints
+        self.image2d = image2d
+        self.move2d = move2d
+        self.scalev = scalev
+        self.cmaps = cmaps
+        self.picking = picking
+        if cmaps is None:
+            self.cmaps = ['magma', 'CMRmap', 'inferno', 'plasma', 'viridis', 'Greys',
+           'Blues', 'OrRd', 'PuRd', 'Reds', 'Spectral', 'Wistia',
+          'YlGn', 'YlOrRd', 'afmhot', 'autumn', 'cool', 'coolwarm',
+          'copper', 'cubehelix', 'flag', 'gist_earth', 'gist_heat',
+          'gist_ncar', 'gist_stern', 'gnuplot', 'gnuplot2', 'hot',
+          'nipy_spectral', 'prism', 'winter', 'Paired']
+        else:
+            self.cmaps = cmaps
+    
+    def make(self, path=None, meta=None, tabtitle=None, pagetitle=None, desc=None):
+        """
+        
+
+        Parameters
+        ----------
+        path : string
+            Path to where the files will be saved, including the name of the files
+            but not the extension. e.g. '~/username/data/somecube'.
+
+        Returns
+        -------
+        None.
+
+        """
+        if path is None:
+            path = self.obj
+        file = write_x3d(path+'.x3d', self.delta,
+                    self.coords, meta, picking=self.picking)
+        file.make_layers(self.cube, self.isolevels, self.color)
+        file.make_outline()
+        file.make_galaxies(gals=self.gals, labels=self.gallab)
+        file.make_image2d(self.imcol, self.img_shape)
+        file.make_ticklines()
+        file.make_labels(gals=self.gals, axlab=self.axes) 
+        # html.func_scalev(axes) should be same as axlab, not func_axes() though.
+        file.close()
+        
+        if tabtitle == None: tabtitle = self.obj
+        if pagetitle == None: pagetitle = self.obj+' interactive datacube with X3D'
+        if desc == None:
+            desc = f"Object: {self.obj}.<t> Telescope: {self.cubehead['TELESCOP']}. RestFreq = {self.cubehead['RESTFREQ']/1e6:.4f} MHz.<br>\n\t Center: (RA,Dec,V)=({np.round(self.ramean,5)}, {np.round(self.decmean,5)}, {np.round(self.vmean,5)} km/s)"
+        html = write_html(path+'.html',
+                     tabtitle=tabtitle, pagetitle=pagetitle,
+                     description=desc)
+        
+        html.func_layers(len(self.isolevels))
+        html.func_galaxies(self.gals)
+        html.func_gallab()
+        html.func_grids()
+        html.func_axes(self.axes)
+        #html.func_pick() #for coordinate picking
+        html.start_x3d()
+        html.viewpoints(maxco=(file.diff_coords[0,2], file.diff_coords[1,2]),
+                        vrad=file.diff_coords[2])
+        html.close_x3d(path.split('/')[-1]+'.x3d')
+        html.buttons(self.isolevels, colormaps=self.cmaps, hide2d=True, scalev=True, move2d=True)
+        #func_move2dimage, func_colormaps and func_scalev must always go after buttons
+        html.func_image2d(vmax=file.diff_coords[2,2], scalev=True)
+        html.func_colormaps(self.isolevels)
+        html.func_scalev(len(self.isolevels), self.gals, axes=self.axes, coords=file.diff_coords, vmax=file.diff_coords[2,2])
+        html.func_move2dimage(vmax=file.diff_coords[2,2])
+        html.close_html()
         
 
 #Some miscellaneoues functions
@@ -1050,7 +1214,7 @@ def preview2d(cube, vmin1=None, vmax1=None, vmin2=None, vmax2=None, norm='asinh'
     ax[1,1].grid(which='major')
     
     
-def get_imcol(position, survey, verts, unit='deg', **kwargs):
+def get_imcol(position, survey, verts, unit='deg', cmap='Greys', **kwargs):
     """
     verts = file.real_coords[0,0], file.real_coords[0,2], file.real_coords[1,0], file.real_coords[1,2]
 
@@ -1072,7 +1236,6 @@ def get_imcol(position, survey, verts, unit='deg', **kwargs):
 
     """
     from astroquery.skyview import SkyView
-    from astropy import wcs
     from astropy.coordinates import SkyCoord
     import matplotlib.colors as colors
     
@@ -1098,7 +1261,7 @@ def get_imcol(position, survey, verts, unit='deg', **kwargs):
     img = img-np.min(img)
     img = (img)/np.max(img)
     
-    colimg = cm.get_cmap('viridis')(img)[:,:,0:3]
+    colimg = cm.get_cmap(cmap)(img)[:,:,0:3]
     colimg = colimg.reshape((-1,3),order='F')
     
     imcol = [colors.rgb2hex(c).replace('#','0x') for c in colimg]
@@ -1106,10 +1269,14 @@ def get_imcol(position, survey, verts, unit='deg', **kwargs):
         imcol = np.array(imcol).reshape(int(len(imcol)/8),8)
     
     return imcol, shape, img
+
+def transpose(array, delta):
+    dra, ddec, dv = delta
+    return np.transpose(array, (2,1,0))[::int(np.sign(dra)), ::int(np.sign(ddec)),::int(np.sign(dv))]
     
 # Some attributes for the classes and functions
 
-roundTwoDec = "\t<script>\n\t\t //Round a float value to x.xx format\n\t\t function roundTo(value, decimals)\n\t\t{\n\t\t\t return (Math.round(value * 10**decimals)) / 10**decimals;\n\t\t }\n\t</script>\n"
+roundTo = "\t<script>\n\t\t //Round a float value to x.xx format\n\t\t function roundTo(value, decimals)\n\t\t{\n\t\t\t return (Math.round(value * 10**decimals)) / 10**decimals;\n\t\t }\n\t</script>\n"
     
     
 ticklineindex = np.array([[0, 1, -1],
