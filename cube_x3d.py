@@ -932,7 +932,7 @@ class write_html:
     
 class make_all():
     
-    def __init__(self, fits, isolevels, gals=None, image2d=None, lims=None, unit=None):
+    def __init__(self, fits, isolevels=None, gals=None, image2d=None, lims=None, unit=None):
         cube = SpectralCube.read(fits)
         cubehead = cube.header
         
@@ -942,8 +942,6 @@ class make_all():
         delta = np.array([cubehead['CDELT1']*u.Unit(cubeunits[1]).to('arcsec'),
                       cubehead['CDELT2']*u.Unit(cubeunits[2]).to('arcsec'), 
                       cubehead['CDELT3']*u.Unit(cubeunits[3]).to('km/s')])
-        
-        print(delta)
         
         if lims is None:
             lims = np.array([[0,nx-1], [0,ny-1], [0, nz-1]])
@@ -979,16 +977,34 @@ class make_all():
                 i = i+1
             
         cube = transpose(cube, delta)
-        if gals != None:
+        
+        
+        if gals == 'query':
+            #all galaxies in v=0 until finding a way to query velocity
+            from astroquery.simbad import Simbad
+            crit = f"ra < {coords[0,0]} & ra > {coords[0,1]} & dec < {coords[1,0]} & dec > {coords[1,1]} & maintype = G"
+            print(crit)
+            result_table = Simbad.query_object(crit)
+            for gal in result_table:
+                galcoords = SkyCoord(ra=gal['RA'], dec=result_table[2]['DEC'], unit="hour,degree")
+                galra = (galcoords.ra-ramean)*np.cos(declim[0].to('rad'))
+                galdec = (galcoords.dec-decmean)
+                gals[gal['MAIN_ID']]['coord']= np.array([galra.to('arcsec').to_value(), galdec.to('arcsec').to_value(), 0])
+            
+        elif gals != None:
             for (k,gal) in enumerate(gals.keys()):
                 # get galaxy positions from Astropy SkyCoord query. Other options?
                 galcoords = SkyCoord.from_name(gal)
-                
                 galra = (galcoords.ra-ramean)*np.cos(declim[0].to('rad'))
                 galdec = (galcoords.dec-decmean)
-            
                 gals[gal]['coord'] = np.array([galra.to('arcsec').to_value(), galdec.to('arcsec').to_value(), gals[gal]['v']])
-            
+        
+        if isolevels is None:
+            if np.min(cube) < 0:
+                isolevels = np.linspace(0,np.max(cube),25)[[2,6,9,13]]
+            else:
+                isolevels = np.linspace(np.min(cube), np.max(cube), 20)[[1,5,8,12]]
+                
         self.color = create_colormap('CMRmap', isolevels)
         
         if image2d != None:
