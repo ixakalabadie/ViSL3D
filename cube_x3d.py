@@ -776,7 +776,7 @@ class write_html:
             self.file_html.write(tabs(2)+"function move2d()\n\t\t{\n")
             self.file_html.write(tabs(3)+"const sca = inpscam2.value;\n")
             self.file_html.write(tabs(3)+"const move = inpmovem2.value;\n")
-            self.file_html.write(tabs(3)+"showval.textContent = roundTo(inpmovem2.value*400, 3);\n")
+            self.file_html.write(tabs(3)+"showval.textContent = roundTo(inpmovem2.value*%s, 3);\n"%vmax)
             self.file_html.write(tabs(3)+"if(document.getElementById('cube__image2d').getAttribute('translation') != '9e9 9e9 9e9') {\n")
             self.file_html.write(tabs(4)+"document.getElementById('cube__image2d').setAttribute('translation', '0 0 '+(sca*move-1)*%s); }\n"%vmax)
             self.file_html.write(tabs(2)+"}\n")
@@ -787,7 +787,7 @@ class write_html:
             self.file_html.write(tabs(2)+"const showval = document.querySelector('#showvalue');\n")
             self.file_html.write(tabs(2)+"function move2d()\n\t\t {\n")
             self.file_html.write(tabs(3)+"const move = inpmovem2.value;\n")
-            self.file_html.write(tabs(3)+"showval.textContent = roundTo(inpmovem2.value*400, 3);\n")
+            self.file_html.write(tabs(3)+"showval.textContent = roundTo(inpmovem2.value*%s, 3);\n"%vmax)
             self.file_html.write(tabs(3)+"if(document.getElementById('cube__image2d').getAttribute('translation') != '9e9 9e9 9e9') {\n")
             self.file_html.write(tabs(4)+"document.getElementById('cube__image2d').setAttribute('translation', '0 0 '+(move-1)*%s); }\n"%vmax)
             self.file_html.write(tabs(2)+"}\n")
@@ -932,7 +932,7 @@ class write_html:
     
 class make_all():
     
-    def __init__(self, fits, isolevels, gals=None, image2d=None, lims=None, unit=None):
+    def __init__(self, fits, isolevels=None, gals=None, image2d=None, lims=None, unit=None):
         cube = SpectralCube.read(fits)
         cubehead = cube.header
         
@@ -943,7 +943,7 @@ class make_all():
                       cubehead['CDELT2']*u.Unit(cubeunits[2]).to('arcsec'), 
                       cubehead['CDELT3']*u.Unit(cubeunits[3]).to('km/s')])
         
-        print(delta)
+        print("Cube deltas = %s in arcsec,arcsec and km/s"%delta)
         
         if lims is None:
             lims = np.array([[0,nx-1], [0,ny-1], [0, nz-1]])
@@ -958,6 +958,7 @@ class make_all():
         coords = np.array([ralim.to('deg'), declim.to('deg'), vlim.to('km/s')])
         
         cube = cube.unmasked_data[lims[2,0]:lims[2,1]+1,lims[1,0]:lims[1,1]+1,lims[0,0]:lims[0,1]+1]
+        cubmax = np.max(cube)
         
         if unit != None:
             cube = cube.to(unit)
@@ -979,6 +980,14 @@ class make_all():
                 i = i+1
             
         cube = transpose(cube, delta)
+        
+        if isolevels != None:
+            if np.min(cube) < 0:    
+                isolevels = [cubmax/10., cubmax/5., cubmax/3., cubmax/1.5]
+            elif np.min(cube) < cubmax/5.:
+                isolevels = [np.min(cube), cubmax/5., cubmax/3., cubmax/1.5]
+            print("Automatic isolevels = "+str(isolevels))
+        
         if gals != None:
             for (k,gal) in enumerate(gals.keys()):
                 # get galaxy positions from Astropy SkyCoord query. Other options?
@@ -1254,8 +1263,9 @@ def get_imcol(position, survey, verts, unit='deg', cmap='Greys', **kwargs):
     _,ul_dec = imw.world_to_pixel(SkyCoord(verts[0],verts[3]))
     if ll_ra < 0 or ll_dec < 0 or lr_ra < 0 or ul_dec < 0:
         print('ERROR: The image is smaller than the cube. Increase parameter "pixels"')
+        print("Pixel indices for [ra1, dec1, ra2, dec2] = "+list(ll_ra, ll_dec, lr_ra, ul_dec)+". Set 'pixels' parameter higher than the difference between 1 and 2.")
     img = img[int(ll_dec):int(ul_dec), int(lr_ra):int(ll_ra)] #dec first, ra second!!
-    print(ll_ra, ll_dec, lr_ra, ul_dec)
+    
     shape = img.shape
     
     img = img-np.min(img)
