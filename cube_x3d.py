@@ -45,7 +45,7 @@ class write_x3d:
 
     """
     
-    def __init__(self, filename, delta, coords, units=['deg','deg','km/s'], meta=None, picking=False):
+    def __init__(self, filename, delta, coords, units=['deg','deg','km s-1'], meta=None, picking=False):
         self.delta = delta
         #self.units = units
         self.real_coords, self.diff_coords = get_coords(coords[0], coords[1], coords[2])
@@ -1025,7 +1025,7 @@ class make_all():
         self.delta = np.abs(delta)
         self.coords = coords
         self.cube = cube.to_value()
-        self.isolevels = isolevels
+        self.isolevels = isolevels.to_value()
         self.gals = gals
         self.cubehead = cubehead
         self.ramean = ramean.to_value()
@@ -1076,8 +1076,8 @@ class make_all():
         """
         if path is None:
             path = self.obj
-        file = write_x3d(path+'.x3d', self.delta,
-                    self.coords, meta, picking=self.picking)
+        file = write_x3d(path+'.x3d', delta=self.delta,
+                    coords=self.coords, meta=meta, picking=self.picking)
         file.make_layers(self.cube, self.isolevels, self.color)
         file.make_outline()
         file.make_galaxies(gals=self.gals, labels=self.gallab)
