@@ -1,0 +1,525 @@
+<html>
+	 <head>
+		 <title> HCG91 </title>
+		 <script type='text/javascript' src='http://www.x3dom.org/download/1.8.0/x3dom.js'></script>
+
+		 <script type='text/javascript'  src='https://www.maths.nottingham.ac.uk/plp/pmadw/LaTeXMathML.js'></script>
+		 <link rel='stylesheet' type='text/css' href='http://www.x3dom.org/release/x3dom.css'></link>
+		 <script type='text/javascript' src='https://code.jquery.com/jquery-3.6.3.min.js'></script>
+
+	 	 <style>
+	 	   x3d
+	 	 	   {
+	 	 	 	   border:2px solid darkorange;
+	 	    }
+	 	    </style>
+	 </head>
+	 <body>
+	 <h1 align="middle"> HCG91 interactive datacube with X3D </h1>
+	 <hr/>
+	 <p style="width=1000px;"> <font size="3">
+	 Object: HCG91.<t> Telescope: VLA. RestFreq = 1420.4057 MHz.<br>
+	 Center: (RA,Dec,V)=(332.29176, -27.79665, 7136.38323 km/s) 
+	 <br/>
+	 </font> </p>
+
+	 <script>
+	 	 function setHIlayer0()
+	 	 {
+	 	 if(document.getElementById('cube__layer0').getAttribute('transparency') != '0.8') {
+		 document.getElementById('cube__layer0').setAttribute('transparency', '0.8');
+		 document.getElementById('cube__layer0_shape').setAttribute('ispickable', 'true');
+		 } else { 
+		 document.getElementById('cube__layer0').setAttribute('transparency', '1');
+		 document.getElementById('cube__layer0_shape').setAttribute('ispickable', 'false');
+		 } 
+		 }
+	 </script>
+	 <script>
+	 	 function setHIlayer1()
+	 	 {
+	 	 if(document.getElementById('cube__layer1').getAttribute('transparency') != '0.8') {
+		 document.getElementById('cube__layer1').setAttribute('transparency', '0.8');
+		 document.getElementById('cube__layer1_shape').setAttribute('ispickable', 'true');
+		 } else { 
+		 document.getElementById('cube__layer1').setAttribute('transparency', '1');
+		 document.getElementById('cube__layer1_shape').setAttribute('ispickable', 'false');
+		 } 
+		 }
+	 </script>
+	 <script>
+	 	 function setHIlayer2()
+	 	 {
+	 	 if(document.getElementById('cube__layer2').getAttribute('transparency') != '0.8') {
+		 document.getElementById('cube__layer2').setAttribute('transparency', '0.8');
+		 document.getElementById('cube__layer2_shape').setAttribute('ispickable', 'true');
+		 } else { 
+		 document.getElementById('cube__layer2').setAttribute('transparency', '1');
+		 document.getElementById('cube__layer2_shape').setAttribute('ispickable', 'false');
+		 } 
+		 }
+	 </script>
+	 <script>
+		 function setHIlayer3()
+	 	 {
+	 	 if(document.getElementById('cube__layer3').getAttribute('transparency') != '0.001') {
+		 document.getElementById('cube__layer3').setAttribute('transparency', '0.001');
+		 document.getElementById('cube__layer3_shape').setAttribute('ispickable', 'true');
+		 } else { 
+		 document.getElementById('cube__layer3').setAttribute('transparency', '1');
+		 document.getElementById('cube__layer3_shape').setAttribute('ispickable', 'false');
+		 } 
+		 }
+	 </script>
+		<script>
+		function setgrids()
+		{
+			if(document.getElementById('cube__ticklines').getAttribute('transparency')!= '0')
+				document.getElementById('cube__ticklines').setAttribute('transparency', '0');
+			else 
+				document.getElementById('cube__ticklines').setAttribute('transparency', '1');
+		}
+		 </script>
+	 	 <script>
+		 function setaxes()
+	 	 {
+	 	 if(document.getElementById('cube__axlab_diff1').getAttribute('transparency') == '0') {
+		 document.getElementById('cube__axlab_diff0').setAttribute('transparency', '1');
+		 document.getElementById('cube__axlab_real0').setAttribute('transparency', '0');
+		 document.getElementById('cube__axlab_diff1').setAttribute('transparency', '1');
+		 document.getElementById('cube__axlab_real1').setAttribute('transparency', '0');
+		 document.getElementById('cube__axlab_diff2').setAttribute('transparency', '1');
+		 document.getElementById('cube__axlab_real2').setAttribute('transparency', '0');
+		 document.getElementById('cube__axlab_diff3').setAttribute('transparency', '1');
+		 document.getElementById('cube__axlab_real3').setAttribute('transparency', '0');
+		 document.getElementById('cube__axlab_diff4').setAttribute('transparency', '1');
+		 document.getElementById('cube__axlab_real4').setAttribute('transparency', '0');
+		 document.getElementById('cube__axlab_diff5').setAttribute('transparency', '1');
+		 document.getElementById('cube__axlab_real5').setAttribute('transparency', '0');
+		 document.getElementById('cube__axtick_diff0').setAttribute('transparency', '1');
+		 document.getElementById('cube__axtick_real0').setAttribute('transparency', '0');
+		 document.getElementById('cube__axtick_diff1').setAttribute('transparency', '1');
+		 document.getElementById('cube__axtick_real1').setAttribute('transparency', '0');
+		 document.getElementById('cube__axtick_diff2').setAttribute('transparency', '1');
+		 document.getElementById('cube__axtick_real2').setAttribute('transparency', '0');
+		 document.getElementById('cube__axtick_diff3').setAttribute('transparency', '1');
+		 document.getElementById('cube__axtick_real3').setAttribute('transparency', '0');
+		 document.getElementById('cube__axtick_diff4').setAttribute('transparency', '1');
+		 document.getElementById('cube__axtick_real4').setAttribute('transparency', '0');
+		 document.getElementById('cube__axtick_diff5').setAttribute('transparency', '1');
+		 document.getElementById('cube__axtick_real5').setAttribute('transparency', '0');
+		 document.getElementById('cube__axtick_diff6').setAttribute('transparency', '1');
+		 document.getElementById('cube__axtick_real6').setAttribute('transparency', '0');
+		 document.getElementById('cube__axtick_diff7').setAttribute('transparency', '1');
+		 document.getElementById('cube__axtick_real7').setAttribute('transparency', '0');
+		 document.getElementById('cube__axtick_diff8').setAttribute('transparency', '1');
+		 document.getElementById('cube__axtick_real8').setAttribute('transparency', '0');
+		 document.getElementById('cube__axtick_diff9').setAttribute('transparency', '1');
+		 document.getElementById('cube__axtick_real9').setAttribute('transparency', '0');
+		 document.getElementById('cube__axtick_diff10').setAttribute('transparency', '1');
+		 document.getElementById('cube__axtick_real10').setAttribute('transparency', '0');
+		 document.getElementById('cube__axtick_diff11').setAttribute('transparency', '1');
+		 document.getElementById('cube__axtick_real11').setAttribute('transparency', '0');
+	 	 }
+	 	 else if (document.getElementById('cube__axlab_real1').getAttribute('transparency') == '0') {
+		 document.getElementById('cube__axlab_real0').setAttribute('transparency', '1');
+		 document.getElementById('cube__axlab_real1').setAttribute('transparency', '1');
+		 document.getElementById('cube__axlab_real2').setAttribute('transparency', '1');
+		 document.getElementById('cube__axlab_real3').setAttribute('transparency', '1');
+		 document.getElementById('cube__axlab_real4').setAttribute('transparency', '1');
+		 document.getElementById('cube__axlab_real5').setAttribute('transparency', '1');
+		 document.getElementById('cube__axtick_real0').setAttribute('transparency', '1');
+		 document.getElementById('cube__axtick_real1').setAttribute('transparency', '1');
+		 document.getElementById('cube__axtick_real2').setAttribute('transparency', '1');
+		 document.getElementById('cube__axtick_real3').setAttribute('transparency', '1');
+		 document.getElementById('cube__axtick_real4').setAttribute('transparency', '1');
+		 document.getElementById('cube__axtick_real5').setAttribute('transparency', '1');
+		 document.getElementById('cube__axtick_real6').setAttribute('transparency', '1');
+		 document.getElementById('cube__axtick_real7').setAttribute('transparency', '1');
+		 document.getElementById('cube__axtick_real8').setAttribute('transparency', '1');
+		 document.getElementById('cube__axtick_real9').setAttribute('transparency', '1');
+		 document.getElementById('cube__axtick_real10').setAttribute('transparency', '1');
+		 document.getElementById('cube__axtick_real11').setAttribute('transparency', '1');
+		 }
+		 else {
+		 document.getElementById('cube__axlab_diff0').setAttribute('transparency', '0');
+		 document.getElementById('cube__axlab_diff1').setAttribute('transparency', '0');
+		 document.getElementById('cube__axlab_diff2').setAttribute('transparency', '0');
+		 document.getElementById('cube__axlab_diff3').setAttribute('transparency', '0');
+		 document.getElementById('cube__axlab_diff4').setAttribute('transparency', '0');
+		 document.getElementById('cube__axlab_diff5').setAttribute('transparency', '0');
+		 document.getElementById('cube__axtick_diff0').setAttribute('transparency', '0');
+		 document.getElementById('cube__axtick_diff1').setAttribute('transparency', '0');
+		 document.getElementById('cube__axtick_diff2').setAttribute('transparency', '0');
+		 document.getElementById('cube__axtick_diff3').setAttribute('transparency', '0');
+		 document.getElementById('cube__axtick_diff4').setAttribute('transparency', '0');
+		 document.getElementById('cube__axtick_diff5').setAttribute('transparency', '0');
+		 document.getElementById('cube__axtick_diff6').setAttribute('transparency', '0');
+		 document.getElementById('cube__axtick_diff7').setAttribute('transparency', '0');
+		 document.getElementById('cube__axtick_diff8').setAttribute('transparency', '0');
+		 document.getElementById('cube__axtick_diff9').setAttribute('transparency', '0');
+		 document.getElementById('cube__axtick_diff10').setAttribute('transparency', '0');
+		 document.getElementById('cube__axtick_diff11').setAttribute('transparency', '0');
+		 }
+		 }
+		 </script>
+	<center><x3d id='cubeFixed' width='100\%' height='500px'>
+		 <scene>
+			 <OrthoViewpoint id="front" bind='false' centerOfRotation='0,0,0' description='RA-Dec view' fieldOfView='[-1785.014590200463,-1785.014590200463,1785.014590200463,1785.014590200463]' isActive='false' metadata='X3DMetadataObject' orientation='0,1,0,3.14' position='0,0,-5100.041686287038' zFar='10000' zNear='0.05' ></OrthoViewpoint>
+			 <OrthoViewpoint id="side" bind='false' centerOfRotation='0,0,0' description='V - Dec view' fieldOfView='[-1785.0020073450162,-1785.0020073450162,1785.0020073450162,1785.0020073450162]' isActive='false' metadata='X3DMetadataObject' orientation='0,-1,0,1.57' position='-5100.005735271475,0,0' zFar='10000' zNear='0.05' ></OrthoViewpoint>
+			 <OrthoViewpoint id="side2" bind='false' centerOfRotation='0,0,0' description='V - RA view' fieldOfView='[-1785.014590200463,-1785.014590200463,1785.014590200463,1785.014590200463]' isActive='false' metadata='X3DMetadataObject' orientation='1,1,1,4.1888' position='0,5100.041686287038,0' zFar='10000' zNear='0.05' ></OrthoViewpoint>
+			<inline url="HCG91_default.x3d" nameSpaceName="cube" mapDEFToID="true" onclick=""/>
+		</scene>
+	</x3d></center>
+	<div style="width:90%">
+		<br/>
+		&nbsp <b>Viewpoints:</b>
+			<button onclick="document.getElementById('cubeFixed').runtime.resetView();">Reset View</button>
+			<button onclick="document.getElementById('front').setAttribute('set_bind','true');"> R.A. - Dec. </button>
+			<button onclick="document.getElementById('side').setAttribute('set_bind','true');"> V - Dec. </button>
+			<button onclick="document.getElementById('side2').setAttribute('set_bind','true');"> V - R.A. </button>
+
+		&nbsp <b>Labels:</b>
+			<button onclick="setgrids();" >Grids</button>
+			<button onclick="setaxes();" >Axes labels</button>
+			<button onclick="setimage2d();" >2D image</button>
+		<br><br>
+		&nbsp <b>HI layers:</b>
+			<button onclick="setHIlayer0();" style="color:FireBrick">1.3 mJy/beam</button>
+			<button onclick="setHIlayer1();" style="color:FireBrick">2.6 mJy/beam</button>
+			<button onclick="setHIlayer2();" style="color:FireBrick">4.3 mJy/beam</button>
+			<button onclick="setHIlayer3();" style="color:FireBrick">8.6 mJy/beam</button>
+		&nbsp <label for="cmaps-choice"><b>Colormaps:</b> </label>
+		<select id="cmaps-choice">
+			<option value="magma">magma</option>
+			<option value="CMRmap">CMRmap</option>
+			<option value="inferno">inferno</option>
+			<option value="plasma">plasma</option>
+			<option value="viridis">viridis</option>
+			<option value="Greys">Greys</option>
+			<option value="Blues">Blues</option>
+			<option value="OrRd">OrRd</option>
+			<option value="PuRd">PuRd</option>
+			<option value="Reds">Reds</option>
+			<option value="Spectral">Spectral</option>
+			<option value="Wistia">Wistia</option>
+			<option value="YlGn">YlGn</option>
+			<option value="YlOrRd">YlOrRd</option>
+			<option value="afmhot">afmhot</option>
+			<option value="autumn">autumn</option>
+			<option value="cool">cool</option>
+			<option value="coolwarm">coolwarm</option>
+			<option value="copper">copper</option>
+			<option value="cubehelix">cubehelix</option>
+			<option value="flag">flag</option>
+			<option value="gist_earth">gist_earth</option>
+			<option value="gist_heat">gist_heat</option>
+			<option value="gist_ncar">gist_ncar</option>
+			<option value="gist_stern">gist_stern</option>
+			<option value="gnuplot">gnuplot</option>
+			<option value="gnuplot2">gnuplot2</option>
+			<option value="hot">hot</option>
+			<option value="nipy_spectral">nipy_spectral</option>
+			<option value="prism">prism</option>
+			<option value="winter">winter</option>
+			<option value="Paired">Paired</option>
+		</select>
+		&nbsp <label for="scalev"><b>V scale:</b> </label>
+		<input oninput="changescalev()" id="scalev" type="range" list="marker" min="0" max="5" step="0.001" value="1"/>
+		<datalist id="marker">
+			<option value="1"></option>
+		</datalist>
+		&nbsp <label for="move2dimg"><b>2D image:</b> </label>
+		<input oninput="move2d()" id="move2dimg" type="range" min="-1" max="1" step="0.0001"/>
+		<b>$\Delta V=$</b> <output id="showvalue"></output> km/s
+	</div>
+	<script>
+		 //Round a float value to x.xx format
+		 function roundTo(value, decimals)
+		{
+			 return (Math.round(value * 10**decimals)) / 10**decimals;
+		 }
+	</script>
+		<script>
+			const inpmovehide = document.querySelector('#move2dimg');
+			const inpscahide = document.querySelector('#scalev');
+		function setimage2d()
+		{
+			const sca = inpscahide.value;
+			const move = inpmovehide.value;
+		if(document.getElementById('cube__image2d').getAttribute('translation')!= '0 0 '+(sca*move-1)*615.7771095776261)
+			document.getElementById('cube__image2d').setAttribute('translation', '0 0 '+(sca*move-1)*615.7771095776261);
+		else 
+			document.getElementById('cube__image2d').setAttribute('translation', '9e9 9e9 9e9');
+		}
+		 </script>
+		 <!--MUST BE BELOW THE <select> ELEMENT-->
+		 <script>
+		 const select = document.querySelector('select');
+		 select.addEventListener('change', change_colormap);
+		 function change_colormap()
+		 {
+			  const cmap = select.value;
+			 if (cmap === 'magma') {
+			 document.getElementById('cube__layer0').setAttribute('diffuseColor','9.87053e-01 9.91438e-01 7.49504e-01')
+			 document.getElementById('cube__layer1').setAttribute('diffuseColor','9.96580e-01 6.68256e-01 4.56192e-01')
+			 document.getElementById('cube__layer2').setAttribute('diffuseColor','8.52126e-01 2.76106e-01 4.18573e-01')
+			 document.getElementById('cube__layer3').setAttribute('diffuseColor','1.46200e-03 4.66000e-04 1.38660e-02')
+			 }
+			 else if (cmap === 'CMRmap') {
+			 document.getElementById('cube__layer0').setAttribute('diffuseColor','1.00000e+00 1.00000e+00 1.00000e+00')
+			 document.getElementById('cube__layer1').setAttribute('diffuseColor','9.00000e-01 8.38235e-01 3.35294e-01')
+			 document.getElementById('cube__layer2').setAttribute('diffuseColor','9.29412e-01 4.26471e-01 4.41176e-02')
+			 document.getElementById('cube__layer3').setAttribute('diffuseColor','0.00000e+00 0.00000e+00 0.00000e+00')
+			 }
+			 else if (cmap === 'inferno') {
+			 document.getElementById('cube__layer0').setAttribute('diffuseColor','9.88362e-01 9.98364e-01 6.44924e-01')
+			 document.getElementById('cube__layer1').setAttribute('diffuseColor','9.87464e-01 6.90366e-01 7.99900e-02')
+			 document.getElementById('cube__layer2').setAttribute('diffuseColor','8.51384e-01 3.02260e-01 2.39636e-01')
+			 document.getElementById('cube__layer3').setAttribute('diffuseColor','1.46200e-03 4.66000e-04 1.38660e-02')
+			 }
+			 else if (cmap === 'plasma') {
+			 document.getElementById('cube__layer0').setAttribute('diffuseColor','9.40015e-01 9.75158e-01 1.31326e-01')
+			 document.getElementById('cube__layer1').setAttribute('diffuseColor','9.92541e-01 6.87030e-01 1.92170e-01')
+			 document.getElementById('cube__layer2').setAttribute('diffuseColor','8.72303e-01 3.78774e-01 3.93355e-01')
+			 document.getElementById('cube__layer3').setAttribute('diffuseColor','5.03830e-02 2.98030e-02 5.27975e-01')
+			 }
+			 else if (cmap === 'viridis') {
+			 document.getElementById('cube__layer0').setAttribute('diffuseColor','9.93248e-01 9.06157e-01 1.43936e-01')
+			 document.getElementById('cube__layer1').setAttribute('diffuseColor','5.35621e-01 8.35785e-01 2.81908e-01')
+			 document.getElementById('cube__layer2').setAttribute('diffuseColor','1.28087e-01 6.47749e-01 5.23491e-01')
+			 document.getElementById('cube__layer3').setAttribute('diffuseColor','2.67004e-01 4.87400e-03 3.29415e-01')
+			 }
+			 else if (cmap === 'Greys') {
+			 document.getElementById('cube__layer0').setAttribute('diffuseColor','1.00000e+00 1.00000e+00 1.00000e+00')
+			 document.getElementById('cube__layer1').setAttribute('diffuseColor','9.04037e-01 9.04037e-01 9.04037e-01')
+			 document.getElementById('cube__layer2').setAttribute('diffuseColor','6.96194e-01 6.96194e-01 6.96194e-01')
+			 document.getElementById('cube__layer3').setAttribute('diffuseColor','0.00000e+00 0.00000e+00 0.00000e+00')
+			 }
+			 else if (cmap === 'Blues') {
+			 document.getElementById('cube__layer0').setAttribute('diffuseColor','9.68627e-01 9.84314e-01 1.00000e+00')
+			 document.getElementById('cube__layer1').setAttribute('diffuseColor','8.31834e-01 8.95732e-01 9.55709e-01')
+			 document.getElementById('cube__layer2').setAttribute('diffuseColor','5.60784e-01 7.59862e-01 8.69666e-01')
+			 document.getElementById('cube__layer3').setAttribute('diffuseColor','3.13725e-02 1.88235e-01 4.19608e-01')
+			 }
+			 else if (cmap === 'OrRd') {
+			 document.getElementById('cube__layer0').setAttribute('diffuseColor','1.00000e+00 9.68627e-01 9.25490e-01')
+			 document.getElementById('cube__layer1').setAttribute('diffuseColor','9.94464e-01 8.77509e-01 7.16494e-01')
+			 document.getElementById('cube__layer2').setAttribute('diffuseColor','9.91003e-01 6.80277e-01 4.68051e-01')
+			 document.getElementById('cube__layer3').setAttribute('diffuseColor','4.98039e-01 0.00000e+00 0.00000e+00')
+			 }
+			 else if (cmap === 'PuRd') {
+			 document.getElementById('cube__layer0').setAttribute('diffuseColor','9.68627e-01 9.56863e-01 9.76471e-01')
+			 document.getElementById('cube__layer1').setAttribute('diffuseColor','8.75202e-01 8.17762e-01 9.03345e-01')
+			 document.getElementById('cube__layer2').setAttribute('diffuseColor','8.13610e-01 5.26182e-01 7.53864e-01')
+			 document.getElementById('cube__layer3').setAttribute('diffuseColor','4.03922e-01 0.00000e+00 1.21569e-01')
+			 }
+			 else if (cmap === 'Reds') {
+			 document.getElementById('cube__layer0').setAttribute('diffuseColor','1.00000e+00 9.60784e-01 9.41176e-01')
+			 document.getElementById('cube__layer1').setAttribute('diffuseColor','9.92849e-01 8.18685e-01 7.44406e-01')
+			 document.getElementById('cube__layer2').setAttribute('diffuseColor','9.87082e-01 5.26413e-01 4.00923e-01')
+			 document.getElementById('cube__layer3').setAttribute('diffuseColor','4.03922e-01 0.00000e+00 5.09804e-02')
+			 }
+			 else if (cmap === 'Spectral') {
+			 document.getElementById('cube__layer0').setAttribute('diffuseColor','3.68627e-01 3.09804e-01 6.35294e-01')
+			 document.getElementById('cube__layer1').setAttribute('diffuseColor','3.52018e-01 7.07266e-01 6.69204e-01')
+			 document.getElementById('cube__layer2').setAttribute('diffuseColor','9.13495e-01 9.65398e-01 6.14072e-01')
+			 document.getElementById('cube__layer3').setAttribute('diffuseColor','6.19608e-01 3.92157e-03 2.58824e-01')
+			 }
+			 else if (cmap === 'Wistia') {
+			 document.getElementById('cube__layer0').setAttribute('diffuseColor','8.94118e-01 1.00000e+00 4.78431e-01')
+			 document.getElementById('cube__layer1').setAttribute('diffuseColor','9.68858e-01 9.36332e-01 2.12687e-01')
+			 document.getElementById('cube__layer2').setAttribute('diffuseColor','1.00000e+00 8.00692e-01 3.59862e-02')
+			 document.getElementById('cube__layer3').setAttribute('diffuseColor','9.88235e-01 4.98039e-01 0.00000e+00')
+			 }
+			 else if (cmap === 'YlGn') {
+			 document.getElementById('cube__layer0').setAttribute('diffuseColor','1.00000e+00 1.00000e+00 8.98039e-01')
+			 document.getElementById('cube__layer1').setAttribute('diffuseColor','9.20185e-01 9.68858e-01 6.89965e-01')
+			 document.getElementById('cube__layer2').setAttribute('diffuseColor','6.17301e-01 8.40138e-01 5.32641e-01')
+			 document.getElementById('cube__layer3').setAttribute('diffuseColor','0.00000e+00 2.70588e-01 1.60784e-01')
+			 }
+			 else if (cmap === 'YlOrRd') {
+			 document.getElementById('cube__layer0').setAttribute('diffuseColor','1.00000e+00 1.00000e+00 8.00000e-01')
+			 document.getElementById('cube__layer1').setAttribute('diffuseColor','9.98385e-01 8.97116e-01 5.59631e-01')
+			 document.getElementById('cube__layer2').setAttribute('diffuseColor','9.94925e-01 6.55363e-01 2.79585e-01')
+			 document.getElementById('cube__layer3').setAttribute('diffuseColor','5.01961e-01 0.00000e+00 1.49020e-01')
+			 }
+			 else if (cmap === 'afmhot') {
+			 document.getElementById('cube__layer0').setAttribute('diffuseColor','1.00000e+00 1.00000e+00 1.00000e+00')
+			 document.getElementById('cube__layer1').setAttribute('diffuseColor','1.00000e+00 1.00000e+00 6.47059e-01')
+			 document.getElementById('cube__layer2').setAttribute('diffuseColor','1.00000e+00 6.76471e-01 1.76471e-01')
+			 document.getElementById('cube__layer3').setAttribute('diffuseColor','0.00000e+00 0.00000e+00 0.00000e+00')
+			 }
+			 else if (cmap === 'autumn') {
+			 document.getElementById('cube__layer0').setAttribute('diffuseColor','1.00000e+00 1.00000e+00 0.00000e+00')
+			 document.getElementById('cube__layer1').setAttribute('diffuseColor','1.00000e+00 8.23529e-01 0.00000e+00')
+			 document.getElementById('cube__layer2').setAttribute('diffuseColor','1.00000e+00 5.88235e-01 0.00000e+00')
+			 document.getElementById('cube__layer3').setAttribute('diffuseColor','1.00000e+00 0.00000e+00 0.00000e+00')
+			 }
+			 else if (cmap === 'cool') {
+			 document.getElementById('cube__layer0').setAttribute('diffuseColor','0.00000e+00 1.00000e+00 1.00000e+00')
+			 document.getElementById('cube__layer1').setAttribute('diffuseColor','1.76471e-01 8.23529e-01 1.00000e+00')
+			 document.getElementById('cube__layer2').setAttribute('diffuseColor','4.11765e-01 5.88235e-01 1.00000e+00')
+			 document.getElementById('cube__layer3').setAttribute('diffuseColor','1.00000e+00 0.00000e+00 1.00000e+00')
+			 }
+			 else if (cmap === 'coolwarm') {
+			 document.getElementById('cube__layer0').setAttribute('diffuseColor','2.29806e-01 2.98718e-01 7.53683e-01')
+			 document.getElementById('cube__layer1').setAttribute('diffuseColor','4.51739e-01 5.88181e-01 9.60201e-01')
+			 document.getElementById('cube__layer2').setAttribute('diffuseColor','7.68034e-01 8.37035e-01 9.52488e-01')
+			 document.getElementById('cube__layer3').setAttribute('diffuseColor','7.05673e-01 1.55562e-02 1.50233e-01')
+			 }
+			 else if (cmap === 'copper') {
+			 document.getElementById('cube__layer0').setAttribute('diffuseColor','1.00000e+00 7.81200e-01 4.97500e-01')
+			 document.getElementById('cube__layer1').setAttribute('diffuseColor','1.00000e+00 6.43341e-01 4.09706e-01')
+			 document.getElementById('cube__layer2').setAttribute('diffuseColor','7.26643e-01 4.59529e-01 2.92647e-01')
+			 document.getElementById('cube__layer3').setAttribute('diffuseColor','0.00000e+00 0.00000e+00 0.00000e+00')
+			 }
+			 else if (cmap === 'cubehelix') {
+			 document.getElementById('cube__layer0').setAttribute('diffuseColor','1.00000e+00 1.00000e+00 1.00000e+00')
+			 document.getElementById('cube__layer1').setAttribute('diffuseColor','7.59575e-01 8.31767e-01 9.53769e-01')
+			 document.getElementById('cube__layer2').setAttribute('diffuseColor','8.02993e-01 4.88567e-01 5.37119e-01')
+			 document.getElementById('cube__layer3').setAttribute('diffuseColor','0.00000e+00 0.00000e+00 0.00000e+00')
+			 }
+			 else if (cmap === 'flag') {
+			 document.getElementById('cube__layer0').setAttribute('diffuseColor','1.00000e+00 0.00000e+00 0.00000e+00')
+			 document.getElementById('cube__layer1').setAttribute('diffuseColor','7.61477e-02 0.00000e+00 0.00000e+00')
+			 document.getElementById('cube__layer2').setAttribute('diffuseColor','2.08649e-02 9.22684e-02 1.00000e+00')
+			 document.getElementById('cube__layer3').setAttribute('diffuseColor','0.00000e+00 0.00000e+00 0.00000e+00')
+			 }
+			 else if (cmap === 'gist_earth') {
+			 document.getElementById('cube__layer0').setAttribute('diffuseColor','9.92200e-01 9.84300e-01 9.84300e-01')
+			 document.getElementById('cube__layer1').setAttribute('diffuseColor','7.94816e-01 6.61685e-01 4.92208e-01')
+			 document.getElementById('cube__layer2').setAttribute('diffuseColor','5.36599e-01 6.68938e-01 3.34133e-01')
+			 document.getElementById('cube__layer3').setAttribute('diffuseColor','0.00000e+00 0.00000e+00 0.00000e+00')
+			 }
+			 else if (cmap === 'gist_heat') {
+			 document.getElementById('cube__layer0').setAttribute('diffuseColor','1.00000e+00 1.00000e+00 1.00000e+00')
+			 document.getElementById('cube__layer1').setAttribute('diffuseColor','1.00000e+00 6.47059e-01 2.94118e-01')
+			 document.getElementById('cube__layer2').setAttribute('diffuseColor','8.82353e-01 1.76471e-01 0.00000e+00')
+			 document.getElementById('cube__layer3').setAttribute('diffuseColor','0.00000e+00 0.00000e+00 0.00000e+00')
+			 }
+			 else if (cmap === 'gist_ncar') {
+			 document.getElementById('cube__layer0').setAttribute('diffuseColor','9.96100e-01 9.72500e-01 9.96100e-01')
+			 document.getElementById('cube__layer1').setAttribute('diffuseColor','7.84175e-01 1.07899e-01 1.00000e+00')
+			 document.getElementById('cube__layer2').setAttribute('diffuseColor','1.00000e+00 8.35657e-01 8.43446e-03')
+			 document.getElementById('cube__layer3').setAttribute('diffuseColor','0.00000e+00 0.00000e+00 5.02000e-01')
+			 }
+			 else if (cmap === 'gist_stern') {
+			 document.getElementById('cube__layer0').setAttribute('diffuseColor','1.00000e+00 1.00000e+00 1.00000e+00')
+			 document.getElementById('cube__layer1').setAttribute('diffuseColor','8.23529e-01 8.23529e-01 3.34073e-01')
+			 document.getElementById('cube__layer2').setAttribute('diffuseColor','5.88235e-01 5.88235e-01 6.24531e-01')
+			 document.getElementById('cube__layer3').setAttribute('diffuseColor','0.00000e+00 0.00000e+00 0.00000e+00')
+			 }
+			 else if (cmap === 'gnuplot') {
+			 document.getElementById('cube__layer0').setAttribute('diffuseColor','1.00000e+00 1.00000e+00 0.00000e+00')
+			 document.getElementById('cube__layer1').setAttribute('diffuseColor','9.07485e-01 5.58518e-01 0.00000e+00')
+			 document.getElementById('cube__layer2').setAttribute('diffuseColor','7.66965e-01 2.03542e-01 0.00000e+00')
+			 document.getElementById('cube__layer3').setAttribute('diffuseColor','0.00000e+00 0.00000e+00 0.00000e+00')
+			 }
+			 else if (cmap === 'gnuplot2') {
+			 document.getElementById('cube__layer0').setAttribute('diffuseColor','1.00000e+00 1.00000e+00 1.00000e+00')
+			 document.getElementById('cube__layer1').setAttribute('diffuseColor','1.00000e+00 8.07059e-01 1.92941e-01')
+			 document.getElementById('cube__layer2').setAttribute('diffuseColor','1.00000e+00 3.36471e-01 6.63529e-01')
+			 document.getElementById('cube__layer3').setAttribute('diffuseColor','0.00000e+00 0.00000e+00 0.00000e+00')
+			 }
+			 else if (cmap === 'hot') {
+			 document.getElementById('cube__layer0').setAttribute('diffuseColor','1.00000e+00 1.00000e+00 1.00000e+00')
+			 document.getElementById('cube__layer1').setAttribute('diffuseColor','1.00000e+00 1.00000e+00 3.05146e-01')
+			 document.getElementById('cube__layer2').setAttribute('diffuseColor','1.00000e+00 5.85784e-01 0.00000e+00')
+			 document.getElementById('cube__layer3').setAttribute('diffuseColor','4.16000e-02 0.00000e+00 0.00000e+00')
+			 }
+			 else if (cmap === 'nipy_spectral') {
+			 document.getElementById('cube__layer0').setAttribute('diffuseColor','8.00000e-01 8.00000e-01 8.00000e-01')
+			 document.getElementById('cube__layer1').setAttribute('diffuseColor','1.00000e+00 3.17647e-01 0.00000e+00')
+			 document.getElementById('cube__layer2').setAttribute('diffuseColor','0.00000e+00 9.68635e-01 0.00000e+00')
+			 document.getElementById('cube__layer3').setAttribute('diffuseColor','0.00000e+00 0.00000e+00 0.00000e+00')
+			 }
+			 else if (cmap === 'prism') {
+			 document.getElementById('cube__layer0').setAttribute('diffuseColor','3.29507e-01 9.98255e-01 0.00000e+00')
+			 document.getElementById('cube__layer1').setAttribute('diffuseColor','0.00000e+00 4.19873e-01 6.79006e-01')
+			 document.getElementById('cube__layer2').setAttribute('diffuseColor','1.00000e+00 4.33617e-01 0.00000e+00')
+			 document.getElementById('cube__layer3').setAttribute('diffuseColor','1.00000e+00 0.00000e+00 0.00000e+00')
+			 }
+			 else if (cmap === 'winter') {
+			 document.getElementById('cube__layer0').setAttribute('diffuseColor','0.00000e+00 1.00000e+00 5.00000e-01')
+			 document.getElementById('cube__layer1').setAttribute('diffuseColor','0.00000e+00 8.23529e-01 5.88235e-01')
+			 document.getElementById('cube__layer2').setAttribute('diffuseColor','0.00000e+00 5.88235e-01 7.05882e-01')
+			 document.getElementById('cube__layer3').setAttribute('diffuseColor','0.00000e+00 0.00000e+00 1.00000e+00')
+			 }
+			 else if (cmap === 'Paired') {
+			 document.getElementById('cube__layer0').setAttribute('diffuseColor','6.50980e-01 8.07843e-01 8.90196e-01')
+			 document.getElementById('cube__layer1').setAttribute('diffuseColor','6.94118e-01 3.49020e-01 1.56863e-01')
+			 document.getElementById('cube__layer2').setAttribute('diffuseColor','6.94118e-01 3.49020e-01 1.56863e-01')
+			 document.getElementById('cube__layer3').setAttribute('diffuseColor','6.94118e-01 3.49020e-01 1.56863e-01')
+			 }
+		 }
+		 </script>
+		<script>
+		const inpscasv = document.querySelector('#scalev');
+		const inpmovesv = document.querySelector('#move2dimg');
+		function changescalev()
+		 {
+			const sca = inpscasv.value;
+			const move = inpmovesv.value;
+			if(document.getElementById('cube__image2d').getAttribute('translation') != '9e9 9e9 9e9') {
+				document.getElementById('cube__image2d').setAttribute('translation', '0 0 '+(sca*move-1)*615.7771095776261); }
+			document.getElementById('cube__lt0').setAttribute('scale', '1 1 '+sca);
+			document.getElementById('cube__lt1').setAttribute('scale', '1 1 '+sca);
+			document.getElementById('cube__lt2').setAttribute('scale', '1 1 '+sca);
+			document.getElementById('cube__lt3').setAttribute('scale', '1 1 '+sca);
+			document.getElementById('cube__ot').setAttribute('scale', '1 1 '+sca);
+			 document.getElementById('cube__tlt').setAttribute('scale', '1 1 '+sca);
+			document.getElementById('cube__alt_diff0').setAttribute('translation', '0.0 -1402.5015771996557 '+sca*-615.7771095776252);
+			document.getElementById('cube__alt_real0').setAttribute('translation', '0.0 -1402.5015771996557 '+sca*-615.7771095776252);
+			document.getElementById('cube__att_diff0').setAttribute('translation', '1275.0104215717595 -1402.5015771996557 '+sca*-615.7771095776252);
+			document.getElementById('cube__att_real0').setAttribute('translation', '1275.0104215717595 -1402.5015771996557 '+sca*-615.7771095776252);
+			document.getElementById('cube__alt_diff1').setAttribute('translation', '1402.5114637289355 0.0 '+sca*-615.7771095776252);
+			document.getElementById('cube__alt_real1').setAttribute('translation', '1402.5114637289355 0.0 '+sca*-615.7771095776252);
+			document.getElementById('cube__att_diff1').setAttribute('translation', '-1275.0104215719398 -1402.5015771996557 '+sca*-615.7771095776252);
+			document.getElementById('cube__att_real1').setAttribute('translation', '-1275.0104215719398 -1402.5015771996557 '+sca*-615.7771095776252);
+			document.getElementById('cube__alt_diff2').setAttribute('translation', '-1275.0104215719398 -1402.5015771996557 '+sca*0.0);
+			document.getElementById('cube__alt_real2').setAttribute('translation', '-1275.0104215719398 -1402.5015771996557 '+sca*0.0);
+			document.getElementById('cube__att_diff2').setAttribute('translation', '1402.5114637289355 1275.0014338178687 '+sca*-615.7771095776252);
+			document.getElementById('cube__att_real2').setAttribute('translation', '1402.5114637289355 1275.0014338178687 '+sca*-615.7771095776252);
+			document.getElementById('cube__alt_diff3').setAttribute('translation', '-1275.0104215719398 0.0 '+sca*-677.3548205353877);
+			document.getElementById('cube__alt_real3').setAttribute('translation', '-1275.0104215719398 0.0 '+sca*-677.3548205353877);
+			document.getElementById('cube__att_diff3').setAttribute('translation', '1402.5114637289355 -1275.0014338178687 '+sca*-615.7771095776252);
+			document.getElementById('cube__att_real3').setAttribute('translation', '1402.5114637289355 -1275.0014338178687 '+sca*-615.7771095776252);
+			document.getElementById('cube__alt_diff4').setAttribute('translation', '-1402.5114637291338 1275.0014338178687 '+sca*0.0);
+			document.getElementById('cube__alt_real4').setAttribute('translation', '-1402.5114637291338 1275.0014338178687 '+sca*0.0);
+			document.getElementById('cube__att_diff4').setAttribute('translation', '-1275.0104215719398 -1402.5015771996557 '+sca*-615.7771095776252);
+			document.getElementById('cube__att_real4').setAttribute('translation', '-1275.0104215719398 -1402.5015771996557 '+sca*-615.7771095776252);
+			document.getElementById('cube__alt_diff5').setAttribute('translation', '0.0 1275.0014338178687 '+sca*-677.3548205353877);
+			document.getElementById('cube__alt_real5').setAttribute('translation', '0.0 1275.0014338178687 '+sca*-677.3548205353877);
+			document.getElementById('cube__att_diff5').setAttribute('translation', '-1275.0104215719398 -1402.5015771996557 '+sca*615.7771095776261);
+			document.getElementById('cube__att_real5').setAttribute('translation', '-1275.0104215719398 -1402.5015771996557 '+sca*615.7771095776261);
+			document.getElementById('cube__att_diff6').setAttribute('translation', '-1275.0104215719398 1275.0014338178687 '+sca*-677.3548205353877);
+			document.getElementById('cube__att_real6').setAttribute('translation', '-1275.0104215719398 1275.0014338178687 '+sca*-677.3548205353877);
+			document.getElementById('cube__att_diff7').setAttribute('translation', '-1275.0104215719398 -1275.0014338178687 '+sca*-677.3548205353877);
+			document.getElementById('cube__att_real7').setAttribute('translation', '-1275.0104215719398 -1275.0014338178687 '+sca*-677.3548205353877);
+			document.getElementById('cube__att_diff8').setAttribute('translation', '-1402.5114637291338 1275.0014338178687 '+sca*-615.7771095776252);
+			document.getElementById('cube__att_real8').setAttribute('translation', '-1402.5114637291338 1275.0014338178687 '+sca*-615.7771095776252);
+			document.getElementById('cube__att_diff9').setAttribute('translation', '-1402.5114637291338 1275.0014338178687 '+sca*615.7771095776261);
+			document.getElementById('cube__att_real9').setAttribute('translation', '-1402.5114637291338 1275.0014338178687 '+sca*615.7771095776261);
+			document.getElementById('cube__att_diff10').setAttribute('translation', '1275.0104215717595 1275.0014338178687 '+sca*-677.3548205353877);
+			document.getElementById('cube__att_real10').setAttribute('translation', '1275.0104215717595 1275.0014338178687 '+sca*-677.3548205353877);
+			document.getElementById('cube__att_diff11').setAttribute('translation', '-1275.0104215719398 1275.0014338178687 '+sca*-677.3548205353877);
+			document.getElementById('cube__att_real11').setAttribute('translation', '-1275.0104215719398 1275.0014338178687 '+sca*-677.3548205353877);
+		}
+		</script>
+		<script>
+		const inpscam2 = document.querySelector('#scalev');
+		const inpmovem2 = document.querySelector('#move2dimg');
+		const showval = document.querySelector('#showvalue');
+		function move2d()
+		{
+			const sca = inpscam2.value;
+			const move = inpmovem2.value;
+			showval.textContent = roundTo(inpmovem2.value*615.7771095776261, 3);
+			if(document.getElementById('cube__image2d').getAttribute('translation') != '9e9 9e9 9e9') {
+				document.getElementById('cube__image2d').setAttribute('translation', '0 0 '+(sca*move-1)*615.7771095776261); }
+		}
+		</script>
+
+	 </body>
+</html>
