@@ -606,7 +606,7 @@ class write_html:
     def func_pick(self):
         """
         Allows picking the coordinates by clicking in the figure.
-        NOT WORKING CORRECTLY.
+        WORKS WITH VIEWPOINT NOT WITH ORTHOVIEWPOINT
 
         Returns
         -------
@@ -615,12 +615,15 @@ class write_html:
         """
         self.hclick = True
         self.file_html.write(roundTo) #premade string with function to round to two decimals
-        self.file_html.write("\t <script>\n\t\t function handleClick(event) {\n")
-        self.file_html.write("\t\t\t var coordinates = event.hitPnt;\n")
-        self.file_html.write("\t\t\t $('#coordX').html(roundTo(coordinates[0], 2)+' arcsec');\n")
-        self.file_html.write("\t\t\t $('#coordY').html(roundTo(coordinates[1], 2)+' arcsec');\n")
-        self.file_html.write("\t\t\t $('#coordZ').html(roundTo(coordinates[2], 2)+' km/s');\n")
-        self.file_html.write("\t\t }\n\t </script>\n")
+        self.file_html.write(tabs(1)+"<script>\n")
+        self.file_html.write(tabs(3)+"const picksca = document.querySelector('#scalev');\n")
+        self.file_html.write(tabs(2)+"function handleClick(event) {\n")
+        self.file_html.write(tabs(3)+"const sca = picksca.value;\n")
+        self.file_html.write(tabs(3)+"var coordinates = event.hitPnt;\n")
+        self.file_html.write(tabs(3)+"$('#coordX').html(roundTo(coordinates[0], 2)+' arcsec');\n")
+        self.file_html.write(tabs(3)+"$('#coordY').html(roundTo(coordinates[1], 2)+' arcsec');\n")
+        self.file_html.write(tabs(3)+"$('#coordZ').html(roundTo(coordinates[2], 2)/sca+' km/s');\n")
+        self.file_html.write(tabs(2)+"}\n\t </script>\n")
         
     def start_x3d(self):
         """
@@ -927,12 +930,37 @@ class write_html:
         in an error.
 
         """
-        self.file_html.write('\n\t </body>\n</html>')
+        self.file_html.write(tablehtml)
+        self.file_html.write('\n\t</body>\n</html>')
         self.file_html.close()
     
 class make_all():
     
     def __init__(self, fits, isolevels=None, gals=None, image2d=None, lims=None, unit=None):
+        """
+        
+
+        Parameters
+        ----------
+        fits : string
+            Path to FITS file containing the data cube to be visualized.
+        isolevels : list or array-like, optional
+            The values of the datacube from which to create isosurfaces, no maximum length. Must be in the same units as unit,
+            but the array itself dimensionless. If None, four layers will be created automatically. The default is None.
+        gals : dictionary, optional
+            DESCRIPTION. The default is None.
+        image2d : tuple, optional
+            A two-element list . The default is None.
+        lims : TYPE, optional
+            DESCRIPTION. The default is None.
+        unit : TYPE, optional
+            DESCRIPTION. The default is None.
+
+        Returns
+        -------
+        None.
+
+        """
         cube = SpectralCube.read(fits)
         cubehead = cube.header
         
@@ -958,7 +986,6 @@ class make_all():
         coords = np.array([ralim.to('deg'), declim.to('deg'), vlim.to('km/s')])
         
         cube = cube.unmasked_data[lims[2,0]:lims[2,1]+1,lims[1,0]:lims[1,1]+1,lims[0,0]:lims[0,1]+1]
-        cubmax = np.max(cube)
         
         if unit != None:
             cube = cube.to(unit)
@@ -978,14 +1005,16 @@ class make_all():
                 elif i == 2:
                     cube = cube.to(u.nJy/u.beam)
                 i = i+1
-            
-        cube = transpose(cube, delta)
         
-        if isolevels != None:
+        print("Data in %s"%cube.unit)
+        cube = transpose(cube, delta)
+        cube = cube.to_value()
+        
+        if isolevels is None:
             if np.min(cube) < 0:    
-                isolevels = [cubmax/10., cubmax/5., cubmax/3., cubmax/1.5]
-            elif np.min(cube) < cubmax/5.:
-                isolevels = [np.min(cube), cubmax/5., cubmax/3., cubmax/1.5]
+                isolevels = [np.max(cube)/10., np.max(cube)/5., np.max(cube)/3., np.max(cube)/1.5]
+            elif np.min(cube) < np.max(cube)/5.:
+                isolevels = [np.min(cube), np.max(cube)/5., np.max(cube)/3., np.max(cube)/1.5]
             print("Automatic isolevels = "+str(isolevels))
         
         if gals == 'query':
@@ -1000,7 +1029,7 @@ class make_all():
                 galdec = (galcoords.dec-decmean)
                 gals[gal['MAIN_ID']]['coord']= np.array([galra.to('arcsec').to_value(), galdec.to('arcsec').to_value(), 0])
             
-        elif gals != None:
+        elif gals is not None:
             for (k,gal) in enumerate(gals.keys()):
                 # get galaxy positions from Astropy SkyCoord query. Other options?
                 galcoords = SkyCoord.from_name(gal)
@@ -1008,25 +1037,31 @@ class make_all():
                 galdec = (galcoords.dec-decmean)
                 gals[gal]['coord'] = np.array([galra.to('arcsec').to_value(), galdec.to('arcsec').to_value(), gals[gal]['v']])
         
-        if isolevels is None:
-            if np.min(cube) < 0:
-                isolevels = np.linspace(0,np.max(cube),25)[[2,6,9,13]]
-            else:
-                isolevels = np.linspace(np.min(cube), np.max(cube), 20)[[1,5,8,12]]
+        # if isolevels is None:
+        #     if np.min(cube) < 0:
+        #         isolevels = np.linspace(0,np.max(cube),25)[[2,6,9,13]]
+        #     else:
+        #         isolevels = np.linspace(np.min(cube), np.max(cube), 20)[[1,5,8,12]]
                 
         self.color = create_colormap('CMRmap', isolevels)
         
-        if image2d != None:
+        if image2d is not None:
             survey, pixels = image2d
             verts = (coords[0,0], coords[0,1], coords[1,0], coords[1,1])
+            print("Downloading image...")
             self.imcol, self.img_shape, _ = get_imcol(position=self.obj, survey=survey, verts=verts, unit='deg',
                                     pixels=pixels, coordinates='J2000',grid=True, gridlabels=True)
+            print("Done.")
         
         self.delta = np.abs(delta)
         self.coords = coords
-        self.cube = cube.to_value()
-        self.isolevels = isolevels.to_value()
+        self.cube = cube
+        self.isolevels = isolevels
         self.gals = gals
+        if image2d is not None:
+            self.x3dim2d = True
+        else:
+            self.x3dim2d = False
         self.cubehead = cubehead
         self.ramean = ramean.to_value()
         self.decmean = decmean.to_value()
@@ -1080,12 +1115,15 @@ class make_all():
                     coords=self.coords, meta=meta, picking=self.picking)
         file.make_layers(self.cube, self.isolevels, self.color)
         file.make_outline()
-        file.make_galaxies(gals=self.gals, labels=self.gallab)
-        file.make_image2d(self.imcol, self.img_shape)
+        if self.gals is not None:
+            file.make_galaxies(gals=self.gals, labels=self.gallab)
+        if self.x3dim2d:
+            file.make_image2d(self.imcol, self.img_shape)
         file.make_ticklines()
         file.make_labels(gals=self.gals, axlab=self.axes) 
         # html.func_scalev(axes) should be same as axlab, not func_axes() though.
         file.close()
+        
         
         if tabtitle == None: tabtitle = self.obj
         if pagetitle == None: pagetitle = self.obj+' interactive datacube with X3D'
@@ -1094,23 +1132,35 @@ class make_all():
         html = write_html(path+'.html',
                      tabtitle=tabtitle, pagetitle=pagetitle,
                      description=desc)
-        
-        html.func_layers(len(self.isolevels))
-        html.func_galaxies(self.gals)
-        html.func_gallab()
-        html.func_grids()
-        html.func_axes(self.axes)
-        #html.func_pick() #for coordinate picking
+        if self.layers:
+            html.func_layers(len(self.isolevels))
+        if self.galaxies:
+            html.func_galaxies(self.gals)
+        if self.gallab:
+            html.func_gallab()
+        if self.grids:
+            html.func_grids()
+        if self.axes is not None:
+            html.func_axes(self.axes)
+            
         html.start_x3d()
-        html.viewpoints(maxco=(file.diff_coords[0,2], file.diff_coords[1,2]),
-                        vrad=file.diff_coords[2])
+        if self.viewpoints:
+            html.viewpoints(maxco=(file.diff_coords[0,2], file.diff_coords[1,2]),
+                            vrad=file.diff_coords[2])
         html.close_x3d(path.split('/')[-1]+'.x3d')
-        html.buttons(self.isolevels, colormaps=self.cmaps, hide2d=True, scalev=True, move2d=True)
-        #func_move2dimage, func_colormaps and func_scalev must always go after buttons
-        html.func_image2d(vmax=file.diff_coords[2,2], scalev=True)
-        html.func_colormaps(self.isolevels)
-        html.func_scalev(len(self.isolevels), self.gals, axes=self.axes, coords=file.diff_coords, vmax=file.diff_coords[2,2])
-        html.func_move2dimage(vmax=file.diff_coords[2,2])
+        if self.layers or self.galaxies or self.gallab or self.grids or self.axes is not None or self.picking or self.viewpoints or self.image2d or self.cmaps is not None or self.image2d or self.scalev:
+            html.buttons(self.isolevels, colormaps=self.cmaps, hide2d=self.image2d, scalev=self.scalev, move2d=self.move2d)
+        #func_move2dimage, func_colormaps, func_picking and func_scalev must always go after buttons
+        if self.image2d:
+            html.func_image2d(vmax=file.diff_coords[2,2], scalev=True)
+        if self.picking:
+            html.func_pick()
+        if self.cmaps is not None:
+            html.func_colormaps(self.isolevels)
+        if self.scalev:
+            html.func_scalev(len(self.isolevels), self.gals, axes=self.axes, coords=file.diff_coords, vmax=file.diff_coords[2,2])
+        if self.move2d:
+            html.func_move2dimage(vmax=file.diff_coords[2,2])
         html.close_html()
         
 
@@ -1323,6 +1373,9 @@ outlineindex = np.array([[0, 1, -1],
                          [1, 5, -1],
                          [2, 6, -1],
                          [3, 7, -1]])
+
+tablehtml = '\n<!--A table with navigation info for X3DOM-->\n<br/>\n<hr>\n<h3><b>Navigation:</b></h3>\n<table style="border-collapse: collapse; border: 2px solid rgb(0,0,0);">\n<tbody><tr style="background-color: rgb(220,220,220); border: 1px solid rgb(0,0,0);">\n<th width="250px">Function</th>\n<th>Mouse Button</th>\n</tr>\n</tbody><tbody>\n<tr style="background-color: rgb(240,240,240);"><td>Rotate</td>\n<td>Left / Left + Shift</td>\n</tr>\n<tr><td>Pan</td>\n<td>Mid / Left + Ctrl</td>\n</tr>\n<tr style="background-color: rgb(240,240,240);"><td>Zoom</td>\n<td>Right / Wheel / Left + Alt</td>\n</tr>\n<tr><td>Set center of rotation</td>\n<td>Double-click left</td>\n</tr>\n</tbody>\n</table>'
+
 #name of ax labels for difference from center
 axlabname1 = np.array(['R.A. [arcsec]', 'Dec. [arcsec]', 'V [km/s]',
                 'Dec. [arcsec]', 'V [km/s]', 'R.A. [arcsec]'])
