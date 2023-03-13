@@ -177,10 +177,10 @@ class write_x3d:
         ramin1, _, ramax1 = self.diff_coords[0]
         decmin1, _, decmax1 = self.diff_coords[1]
         vmin1, _, vmax1 = self.diff_coords[2]
-        m = np.min([ramax1-ramin1, decmax1-decmin1, vmax1-vmin1])
+        self.mar = np.min([ramax1-ramin1, decmax1-decmin1, vmax1-vmin1])
         
-        sphereradius = m/45 #min(self.delta)*8
-        crosslen = m/20 #min(self.delta)*20
+        sphereradius = self.mar/45 #min(self.delta)*8
+        crosslen = self.mar/20 #min(self.delta)*20
         #create galaxy crosses and spheres
         for i, gal in enumerate(gals.keys()):
             #galaxy crosses
@@ -290,6 +290,75 @@ class write_x3d:
         self.file_x3d.write('"/>')
         self.file_x3d.write('\n\t\t\t\t\t</IndexedLineSet>\n\t\t\t\t</Shape>\n\t\t\t</Transform>')
         self.file_x3d.write('\n\t\t</Transform>')
+        
+    def make_tubes(self, points, radius=None, col='1 0 1'):
+        """
+        
+
+        Parameters
+        ----------
+        points : TYPE
+            points = np.array([[1,2,1],[2,2,1],[],...]). Shape = (n,3)
+        radius : TYPE, optional
+            DESCRIPTION. The default is 10.
+
+        Returns
+        -------
+        None.
+
+        """
+        if radius is None:
+            radius = self.mar/100.
+        # get mean point between consecutive points
+        trans = np.array([str(np.mean((points[i],points[i+1]), axis=0))[1:-1] for i in range(len(points)-1)])
+        # get distance between consecutive points
+        diff = np.diff(points, axis=0)
+        heights = np.linalg.norm(diff,axis=1)
+        #get rotation for each tube
+        angles = np.arccos(diff[:,1]/np.linalg.norm(diff, axis=1))
+        
+        for i in range(len(points)-1):
+            self.file_x3d.write("\n"+tabs(3)+'<Transform DEF="tubtra%s" translation="%s" rotation="%.4f 0 %.4f %.4f" scale="1 1 1">\n'%(i,trans[i],diff[i,2],-diff[i,0],angles[i]))
+            self.file_x3d.write(tabs(4)+'<Shape ispickable="false">\n')
+            self.file_x3d.write(tabs(5)+'<Cylinder height="%s" radius="%s" solid="false"/>\n'%(heights[i]*1.1, 5.0))
+            self.file_x3d.write(tabs(5)+'<Appearance>\n')
+            self.file_x3d.write(tabs(6)+'<Material DEF="tube%s" ambientIntensity="0" emissiveColor="0 0 0" diffuseColor="%s" specularColor="0 0 0" shininess="0.0078" transparency="0"/>\n'%(i, col))
+            self.file_x3d.write(tabs(5)+'</Appearance>\n')
+            self.file_x3d.write(tabs(4)+'</Shape>\n')
+            self.file_x3d.write(tabs(3)+'</Transform>\n')
+            
+    def make_markers(self, centre, radius=None, box=True, col='0 1 0', labels=None):
+        if radius is None:
+            radius = self.mar/50.
+        if box:
+            lab = 'box'                
+        else:
+            lab = 'sph'
+            
+        for i in range(len(centre)):
+            self.file_x3d.write("\n"+tabs(3)+'<Transform DEF="%s_tra%s" translation="%s" scale="1 1 1">\n'%(lab,i,str(centre[i])[1:-1]))
+            self.file_x3d.write(tabs(4)+'<Shape ispickable="false">\n')
+            
+            if box:
+                if hasattr(radius, "shape") and radius.shape == centre.shape:
+                    size = str(radius[i])[1:-1]
+                else:
+                    size = '%s %s %s'%(radius*2, radius*2, radius*2)
+                self.file_x3d.write(tabs(5)+'<Box size="%s" solid="false"/>\n'%size)
+            else:
+                if hasattr(radius, "__len__") and len(radius) == len(centre):
+                    self.file_x3d.write(tabs(5)+'<Sphere radius="%s" solid="false"/>\n'%radius[i])
+                else:
+                    self.file_x3d.write(tabs(5)+'<Sphere radius="%s" solid="false"/>\n'%radius)
+                
+            self.file_x3d.write(tabs(5)+'<Appearance>\n')
+            self.file_x3d.write(tabs(6)+'<Material DEF="%s%s" ambientIntensity="0" emissiveColor="0 0 0" diffuseColor="%s" specularColor="0 0 0" shininess="0.0078" transparency="0"/>\n'%(lab, i, col))
+            self.file_x3d.write(tabs(5)+'</Appearance>\n')
+            self.file_x3d.write(tabs(4)+'</Shape>\n')
+            self.file_x3d.write(tabs(3)+'</Transform>\n')
+            
+            #if labels is not None:
+                
         
     def make_labels(self, gals=None, axlab=None):
         """
@@ -755,7 +824,7 @@ class write_html:
         if move2d:
             #self.file_html.write('\t\t <br><br>\n')
             self.file_html.write(tabs(2)+'&nbsp <label for="move2dimg"><b>2D image:</b> </label>\n')
-            self.file_html.write(tabs(2)+'<input oninput="move2d()" id="move2dimg" type="range" min="-1" max="1" step="0.0001"/>\n')
+            self.file_html.write(tabs(2)+'<input oninput="move2d()" id="move2dimg" type="range" min="-1" max="1" step="0.0001" value="1"/>\n')
             self.file_html.write(tabs(2)+'<b>$\Delta V=$</b> <output id="showvalue"></output> km/s\n')
             # display chosen velocity of bar too
 
@@ -834,7 +903,32 @@ class write_html:
         self.file_html.write("\t\t }\n\t\t </script>\n")
       
         
-    def func_scalev(self, nlayers, gals=None, axes='both', coords=None, vmax=None):
+    def func_scalev(self, nlayers, gals=None, axes='both', coords=None, vmax=None, points=None, box_c=None, sph_c=None):
+        """
+        
+
+        Parameters
+        ----------
+        nlayers : TYPE
+            DESCRIPTION.
+        gals : TYPE, optional
+            DESCRIPTION. The default is None.
+        axes : TYPE, optional
+            DESCRIPTION. The default is 'both'.
+        coords : TYPE, optional
+            DESCRIPTION. The default is None.
+        vmax : TYPE, optional
+            DESCRIPTION. The default is None.
+        tubes : TYPE, optional
+            DESCRIPTION. The default is None.
+        markers : dict, optional
+            markers = {'box':3 , 'sph':4}. The default is None.
+
+        Returns
+        -------
+        None.
+
+        """
         self.file_html.write(tabs(2)+"<script>\n")
         self.file_html.write(tabs(2)+"const inpscasv = document.querySelector('#scalev');\n")
         if vmax != None:
@@ -863,6 +957,20 @@ class write_html:
         #scale grids
         self.file_html.write("\t\t\t document.getElementById('cube__tlt').setAttribute('scale', '1 1 '+sca);\n")
         
+        # #scale tubes and markers                
+        # if points is not None:
+        #     for i in range(len(points)-1):
+        #         trans = np.mean((points[i],points[i+1]), axis=0)
+        #         self.file_html.write(tabs(3)+"document.getElementById('cube__tubtra%s').setAttribute('scale', '1 1 '+sca);\n"%i)
+        #         self.file_html.write(tabs(3)+"document.getElementById('cube__tubtra%s').setAttribute('translation', '%s %s '+sca*%s);\n"%(i,a,b,v))
+        #         self.file_html.write(tabs(3)+"document.getElementById('cube__tubtra%s').setAttribute('rotation', '%s %s '+sca*%s);\n"%(i,a,b,v))
+                
+        # if markers is not None:
+        #     for (i,key) in enumerate(markers.keys()):
+        #         #how to make markers box and sphere?
+        #         for j in range(markers[key]):
+        #             self.file_html.write(tabs(3)+"document.getElementById('cube__%stra%s').setAttribute('scale', '1 1 '+sca);\n"%(key,j))
+                
         ax, axtick = labpos(coords)
         
         for i in range(12):
