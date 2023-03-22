@@ -193,7 +193,6 @@ class write_x3d:
             self.file_x3d.write(tabs(5)+'<IndexedLineSet colorPerVertex="true" coordIndex="\n\t\t\t\t\t\t0 1 -1\n\t\t\t\t\t\t2 3 -1\n\t\t\t\t\t\t4 5 -1\n\t\t\t\t\t\t">\n')
             self.file_x3d.write(tabs(5)+'<Coordinate DEF="CrossCoords%s" point="\n\t\t\t\t\t\t'%i)
             vec = gals[gal]['coord']
-            vec[2] = vec[2]-self.real_coords[2][1]
             crosscoords = np.array([[vec[0]-crosslen,vec[1],vec[2]],
                               [vec[0]+crosslen,vec[1],vec[2]],
                               [vec[0],vec[1]-crosslen, vec[2]],
@@ -1035,7 +1034,7 @@ class make_all():
                 galcoords = SkyCoord.from_name(gal)
                 galra = (galcoords.ra-ramean)*np.cos(declim[0].to('rad'))
                 galdec = (galcoords.dec-decmean)
-                gals[gal]['coord'] = np.array([galra.to('arcsec').to_value(), galdec.to('arcsec').to_value(), gals[gal]['v']])
+                gals[gal]['coord'] = np.array([galra.to('arcsec').to_value(), galdec.to('arcsec').to_value(), gals[gal]['v']-vmean.to_value()])
         
         # if isolevels is None:
         #     if np.min(cube) < 0:
