@@ -466,7 +466,7 @@ class write_html:
             self.file_html.write('\t <h1 align="middle"> %s </h1>\n'%pagetitle)
             self.file_html.write('\t <hr/>\n')
         if description != None:
-            self.file_html.write('\t <p style="width=1000px;"> <font size="3">\n\t %s \n'%description)
+            self.file_html.write('\t <p style="width:1000px;"> <font size="3">\n\t %s \n'%description)
         
         self.file_html.write('\t <br/>\n\t </font> </p>\n\n')
         
@@ -937,23 +937,30 @@ class make_all():
     
     def __init__(self, fits, isolevels=None, gals=None, image2d=None, lims=None, unit=None):
         """
+        Create the X3D and HTML files all at once.
         
-
         Parameters
         ----------
         fits : string
             Path to FITS file containing the data cube to be visualized.
-        isolevels : list or array-like, optional
-            The values of the datacube from which to create isosurfaces, no maximum length. Must be in the same units as unit,
-            but the array itself dimensionless. If None, four layers will be created automatically. The default is None.
-        gals : dictionary, optional
-            DESCRIPTION. The default is None.
+        isolevels : array-like, optional
+            The values of the datacube from which to create isosurfaces, no maximum length (not tested big numbers). Must be in the 
+            same units as unit, but the array itself dimensionless. If None, four layers will be created automatically. The default is None.
+        gals : string, dict or array-like, optional
+            Specify what galaxies to plot. There are three options:
+                - 'query': plots all galaxies inside the cube with a query in NED (it can get very crowded).
+                - An array of names of galaxies to plot. The coordinates will be obtained through NED.
+                - A dictionary with the form {'Galaxy Name 1': {'coord': np.array([ra,dec,v]), 'col':'r g b'}}.
+                  The coordinates must be quantities (<Quantity>) of angles and velocity.
+            The default is None.
         image2d : tuple, optional
-            A two-element list . The default is None.
-        lims : TYPE, optional
-            DESCRIPTION. The default is None.
-        unit : TYPE, optional
-            DESCRIPTION. The default is None.
+            A two-element tuple. The first element is a string with the name of a survey and the second is the dimenson
+            of the image in pixels. For example: ('DSS2 Blue', '2000x2000'). The default is None.
+        lims : 2D array, optional
+            The minimum and maximum of each dimension, to make a cutout, as the number of pixels. The default is None.
+        unit : astropy unit, optional
+            The unit for the values in the data cube, does not have to be the same the FITS file has.
+            Also works in string form. The default is None.
 
         Returns
         -------
@@ -980,14 +987,17 @@ class make_all():
         declim = cube.spatial_coordinate_map[0][:,0][lims[1]][::int(np.sign(delta[1]))]
         decmean = np.mean(declim)
         vlim = cube.spectral_axis[lims[2]][::int(np.sign(delta[2]))]
-        vmean = np.mean(vlim).to('km/s')
+        vmean = np.mean(vlim).to('km/s').to_value()
         #set 'deg', 'deg', 'km/s' for write_x3d()
         coords = np.array([ralim.to('deg'), declim.to('deg'), vlim.to('km/s')])
         
         cube = cube.unmasked_data[lims[2,0]:lims[2,1]+1,lims[1,0]:lims[1,1]+1,lims[0,0]:lims[0,1]+1]
         
         if unit != None:
-            cube = cube.to(unit)
+            try:
+                cube = cube.to(unit)
+            except AttributeError:
+                cube = cube * u.Unit(unit)
         else:
             # for pixel values
             if cube.unit == u.Unit('Jy / beam'):
@@ -1017,31 +1027,39 @@ class make_all():
             print("Automatic isolevels = "+str(isolevels))
         
         if gals == 'query':
-            #all galaxies in v=0 until finding a way to query velocity
-            from astroquery.simbad import Simbad
-            crit = f"ra < {coords[0,0]} & ra > {coords[0,1]} & dec < {coords[1,0]} & dec > {coords[1,1]} & maintype = G"
-            print(crit)
-            result_table = Simbad.query_object(crit)
-            for gal in result_table:
-                galcoords = SkyCoord(ra=gal['RA'], dec=result_table[2]['DEC'], unit="hour,degree")
+            #query a region from NED -> gives velocity
+            from astroquery.ipac.ned import Ned
+            sc = SkyCoord(ralim[0],declim[0])
+            sepa = SkyCoord(ramean,decmean).separation(sc)
+            result = Ned.query_region(self.obj, radius=sepa)['Object Name', 'Type', 'RA', 'DEC', 'Velocity']
+            result = objquery(result, coords, otype='G')
+            galdict = {}
+            for gal in result:
+                galcoords = SkyCoord(ra=gal['RA']*u.deg, dec=gal['DEC']*u.deg)
                 galra = (galcoords.ra-ramean)*np.cos(declim[0].to('rad'))
                 galdec = (galcoords.dec-decmean)
-                gals[gal['MAIN_ID']]['coord']= np.array([galra.to('arcsec').to_value(), galdec.to('arcsec').to_value(), 0])
-            
+                galdict[gal['Object Name']] = {'coord':np.array([galra.to('arcsec').to_value(), galdec.to('arcsec').to_value(), gal['Velocity']-vmean]), 'col': '0 0 1'}
+
+        elif type(gals) == 'dict':
+            galdict = {}
+            for gal in gals:
+                galcoords = SkyCoord(ra=gal['coord'][0], dec=gal['coord'][1])
+                galra = (galcoords.ra-ramean)*np.cos(gal['coord'][1].to('rad'))
+                galdec = (galcoords.dec-decmean)
+                galv = gal['coord'].to(u.km/u.s).to_value-vmean
+                galdict[gal] = {'coord':np.array([galra.to('arcsec').to_value(), galdec.to('arcsec').to_value(), galv]), 'col': gal['col']}
+
         elif gals is not None:
-            for (k,gal) in enumerate(gals.keys()):
-                # get galaxy positions from Astropy SkyCoord query. Other options?
-                galcoords = SkyCoord.from_name(gal)
+            # make so that you can introduce dictionary with just name and color?
+            from astroquery.ipac.ned import Ned
+            galdict = {}
+            for gal in gals:
+                result = Ned.query_object(gal)
+                galcoords = SkyCoord(ra=result['RA']*u.deg, dec=result['DEC']*u.deg)
                 galra = (galcoords.ra-ramean)*np.cos(declim[0].to('rad'))
                 galdec = (galcoords.dec-decmean)
-                gals[gal]['coord'] = np.array([galra.to('arcsec').to_value(), galdec.to('arcsec').to_value(), gals[gal]['v']-vmean.to_value()])
-        
-        # if isolevels is None:
-        #     if np.min(cube) < 0:
-        #         isolevels = np.linspace(0,np.max(cube),25)[[2,6,9,13]]
-        #     else:
-        #         isolevels = np.linspace(np.min(cube), np.max(cube), 20)[[1,5,8,12]]
-                
+                galdict[gal] = {'coord':np.array([galra.to('arcsec').to_value(), galdec.to('arcsec').to_value(), gal['Velocity']-vmean]), 'col': '0 0 1'}
+
         self.color = create_colormap('CMRmap', isolevels)
         
         if image2d is not None:
@@ -1050,13 +1068,14 @@ class make_all():
             print("Downloading image...")
             self.imcol, self.img_shape, _ = get_imcol(position=self.obj, survey=survey, verts=verts, unit='deg',
                                     pixels=pixels, coordinates='J2000',grid=True, gridlabels=True)
+            #Allow using kwargs in get_imcol
             print("Done.")
         
         self.delta = np.abs(delta)
         self.coords = coords
         self.cube = cube
         self.isolevels = isolevels
-        self.gals = gals
+        self.gals = galdict
         if image2d is not None:
             self.x3dim2d = True
         else:
@@ -1064,7 +1083,7 @@ class make_all():
         self.cubehead = cubehead
         self.ramean = ramean.to_value()
         self.decmean = decmean.to_value()
-        self.vmean = vmean.to_value()
+        self.vmean = vmean
 
         
     def choose_buttons(self, layers=True, galaxies=True, gallab=True, grids=True, axes='both', 
@@ -1105,7 +1124,7 @@ class make_all():
 
         Returns
         -------
-        None.
+        Creates an X3D file and an HTML file in path.
 
         """
         if path is None:
@@ -1215,6 +1234,19 @@ def get_coords(ra, dec, v):
 
 def tabs(n):
     return '\t'*n
+
+def objquery(result, coords, otype):
+    """
+    Constrain query table to certain coordinates and object type
+    """
+    result = result[result['Type'] == otype]
+    result = result[result['Velocity'] >= coords[2,0]]
+    result = result[result['Velocity'] <= coords[2,1]]
+    result = result[result['RA'] >= coords[0,0]]
+    result = result[result['RA'] <= coords[0,1]]
+    result = result[result['DEC'] >= coords[1,0]]
+    result = result[result['DEC'] <= coords[1,1]]
+    return result
 
 def labpos(coords):
     ramin1, ramean1, ramax1 = coords[0]
