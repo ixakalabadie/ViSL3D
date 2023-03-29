@@ -24,6 +24,230 @@ from spectral_cube import SpectralCube
 from astropy import wcs
 from astropy.coordinates import SkyCoord
 
+
+class main:
+    
+    def __init__(self, path, isolevels=None, units=None, lims=None, gals=None, image2d=None):
+        """
+        if want to leave some units as default set to -1, e.g. (-1, 'deg', -1, 'Angs')
+
+        """
+        
+        cube = SpectralCube.read(path)
+        cubehead = cube.header
+        self.obj = cubehead['OBJECT']
+        nz, ny, nx = cube.shape
+        cubeunits = [cubehead['BUNIT'], cubehead['CUNIT1'], cubehead['CUNIT2'], cubehead['CUNIT3']]
+        
+        if units is not None:
+            for i in range(len(units)):
+                if units[i] == -1:
+                    units[i] = cubeunits[i]
+            delta = np.array([cubehead['CDELT1']*u.Unit(cubeunits[1]).to(units[1]),
+                          cubehead['CDELT2']*u.Unit(cubeunits[2]).to(units[2]), 
+                          cubehead['CDELT3']*u.Unit(cubeunits[3]).to(units[3])])
+        else:
+            units = cubeunits
+            delta = np.array([cubehead['CDELT1'], cubehead['CDELT2'], cubehead['CDELT3']])
+        
+        if lims is None:
+            lims = np.array([[0,nx-1], [0,ny-1], [0, nz-1]])
+            
+        ralim = cube.spatial_coordinate_map[1][0,:][lims[0]][::int(np.sign(delta[0]))]
+        ramean = np.mean(ralim)
+        declim = cube.spatial_coordinate_map[0][:,0][lims[1]][::int(np.sign(delta[1]))]
+        decmean = np.mean(declim)
+        vlim = cube.spectral_axis[lims[2]][::int(np.sign(delta[2]))]
+        vmean = np.mean(vlim)
+        
+        coords = np.array([ralim, declim, vlim])
+        print(coords)
+        
+        cube = cube.unmasked_data[lims[2,0]:lims[2,1]+1,lims[1,0]:lims[1,1]+1,lims[0,0]:lims[0,1]+1]
+        
+        i = 0
+        while np.max(cube).to_value() < 1:
+            i = i+1
+            cube = cube*10
+        if i <10:
+            units[0] = "e0%s %s"%(i, units[0])
+        elif i > 0:
+            units[0] = "e%s %s"%(i, units[0])
+            
+        cube = transpose(cube, delta)
+        cube = cube.to_value()
+        
+        if isolevels is None:
+            if np.min(cube) < 0:    
+                isolevels = [np.max(cube)/10., np.max(cube)/5., np.max(cube)/3., np.max(cube)/1.5]
+            elif np.min(cube) < np.max(cube)/5.:
+                isolevels = [np.min(cube), np.max(cube)/5., np.max(cube)/3., np.max(cube)/1.5]
+            print("Automatic isolevels = "+str(isolevels))
+        
+        if gals == 'query':
+            #query a region from NED -> gives velocity
+            from astroquery.ipac.ned import Ned
+            sc = SkyCoord(ralim[0],declim[0])
+            sepa = SkyCoord(ramean,decmean).separation(sc)
+            result = Ned.query_region(self.obj, radius=sepa)['Object Name', 'Type', 'RA', 'DEC', 'Velocity']
+            result = objquery(result, coords, otype='G')
+            galdict = {}
+            for gal in result:
+                galcoords = SkyCoord(ra=gal['RA']*u.deg, dec=gal['DEC']*u.deg)
+                galra = (galcoords.ra-ramean)*np.cos(declim[0].to('rad'))
+                galdec = (galcoords.dec-decmean)
+                galdict[gal['Object Name']] = {'coord':np.array([galra.to('arcsec').to_value(), galdec.to('arcsec').to_value(), gal['Velocity']-vmean]), 'col': '0 0 1'}
+
+        elif type(gals) == 'dict':
+            galdict = {}
+            for gal in gals:
+                galcoords = SkyCoord(ra=gal['coord'][0], dec=gal['coord'][1])
+                galra = (galcoords.ra-ramean)*np.cos(gal['coord'][1].to('rad'))
+                galdec = (galcoords.dec-decmean)
+                galv = gal['coord'].to(u.km/u.s).to_value-vmean
+                galdict[gal] = {'coord':np.array([galra.to('arcsec').to_value(), galdec.to('arcsec').to_value(), galv]), 'col': gal['col']}
+
+        elif gals is not None:
+            # make so that you can introduce dictionary with just name and color?
+            from astroquery.ipac.ned import Ned
+            galdict = {}
+            for gal in gals:
+                result = Ned.query_object(gal)
+                galcoords = SkyCoord(ra=result['RA']*u.deg, dec=result['DEC']*u.deg)
+                galra = (galcoords.ra-ramean)*np.cos(declim[0].to('rad'))
+                galdec = (galcoords.dec-decmean)
+                galdict[gal] = {'coord':np.array([galra.to('arcsec').to_value(), galdec.to('arcsec').to_value(), gal['Velocity']-vmean]), 'col': '0 0 1'}
+
+        self.color = create_colormap('CMRmap', isolevels)
+        
+        if image2d == -1:
+            #CREATE INDEXEDSURFACE FOR A PLANE, JUST NEED FOUR POINTS
+            pass
+        elif image2d is not None:
+            survey, pixels = image2d
+            verts = (coords[0,0], coords[0,1], coords[1,0], coords[1,1])
+            print("Downloading image...")
+            self.imcol, self.img_shape, _ = get_imcol(position=self.obj, survey=survey, verts=verts, unit='deg',
+                                    pixels=pixels, coordinates='J2000',grid=True, gridlabels=True)
+            #Allow using kwargs in get_imcol
+            print("Done.")
+        
+        self.delta = np.abs(delta)
+        self.coords = coords
+        self.cube = cube
+        self.isolevels = isolevels
+        self.hdr = cubehead
+        if gals is not None:
+            self.gals = galdict
+        else:
+            self.gals = None
+        if image2d is not None:
+            self.x3dim2d = True
+        else:
+            self.x3dim2d = False
+        self.cubehead = cubehead
+        self.cubeunits = cubeunits
+        self.units = units
+        
+    def choose_buttons(self, layers=True, galaxies=True, gallab=True, grids=True, axes='both', 
+                       viewpoints=True, image2d=True, move2d=True, scalev=True, cmaps=None, picking=True):
+        """
+        Axes can be 'both', 'real', 'diff' or None
+        """
+        self.layers = layers
+        self.galaxies = galaxies
+        self.gallab = gallab
+        self.grids = grids
+        self.axes = axes
+        self.viewpoints = viewpoints
+        self.image2d = image2d
+        self.move2d = move2d
+        self.scalev = scalev
+        self.cmaps = cmaps
+        self.picking = picking
+        if cmaps is None:
+            self.cmaps = ['magma', 'CMRmap', 'inferno', 'plasma', 'viridis', 'Greys',
+           'Blues', 'OrRd', 'PuRd', 'Reds', 'Spectral', 'Wistia',
+          'YlGn', 'YlOrRd', 'afmhot', 'autumn', 'cool', 'coolwarm',
+          'copper', 'cubehelix', 'flag', 'gist_earth', 'gist_heat',
+          'gist_ncar', 'gist_stern', 'gnuplot', 'gnuplot2', 'hot',
+          'nipy_spectral', 'prism', 'winter', 'Paired']
+        else:
+            self.cmaps = cmaps
+            
+    def make(self, path=None, meta=None, tabtitle=None, pagetitle=None, desc=None):
+        """
+        
+
+        Parameters
+        ----------
+        path : string
+            Path to where the files will be saved, including the name of the files
+            but not the extension. e.g. '~/username/data/somecube'.
+
+        Returns
+        -------
+        Creates an X3D file and an HTML file in path.
+
+        """
+        if path is None:
+            path = self.obj
+        file = write_x3d(path+'.x3d', delta=self.delta, header=self.hdr, units=self.units,
+                    coords=self.coords, meta=meta, picking=self.picking)
+        file.make_layers(self.cube, self.isolevels, self.color)
+        file.make_outline()
+        if self.gals is not None:
+            file.make_galaxies(gals=self.gals, labels=self.gallab)
+        if self.x3dim2d:
+            file.make_image2d(self.imcol, self.img_shape)
+        file.make_ticklines()
+        file.make_labels(gals=self.gals, axlab=self.axes) 
+        # html.func_scalev(axes) should be same as axlab, not func_axes() though.
+        file.close()
+        
+        
+        if tabtitle == None: tabtitle = self.obj
+        if pagetitle == None: pagetitle = self.obj+' interactive datacube with X3D'
+        if desc == None:
+            try:
+                desc = f"Object: {self.obj}.<t> Telescope: {self.cubehead['TELESCOP']}. RestFreq = {self.cubehead['RESTFREQ']/1e6:.4f} MHz.<br>\n\t Center: (RA,Dec,V)=({np.round(self.ramean,5)}, {np.round(self.decmean,5)}, {np.round(self.vmean,5)} km/s)"
+            except:
+                pass
+        html = write_html(path+'.html', units=self.units,
+                     tabtitle=tabtitle, pagetitle=pagetitle,
+                     description=desc)
+        if self.layers:
+            html.func_layers(len(self.isolevels))
+        if self.galaxies:
+            html.func_galaxies(self.gals)
+        if self.gallab:
+            html.func_gallab()
+        if self.grids:
+            html.func_grids()
+        if self.axes is not None:
+            html.func_axes(self.axes)
+            
+        html.start_x3d()
+        if self.viewpoints:
+            html.viewpoints(maxco=(file.diff_coords[0,2], file.diff_coords[1,2]),
+                            vrad=file.diff_coords[2])
+        html.close_x3d(path.split('/')[-1]+'.x3d')
+        if self.layers or self.galaxies or self.gallab or self.grids or self.axes is not None or self.picking or self.viewpoints or self.image2d or self.cmaps is not None or self.image2d or self.scalev:
+            html.buttons(self.isolevels, colormaps=self.cmaps, hide2d=self.image2d, scalev=self.scalev, move2d=self.move2d)
+        #func_move2dimage, func_colormaps, func_picking and func_scalev must always go after buttons
+        if self.image2d:
+            html.func_image2d(vmax=file.diff_coords[2,2], scalev=True)
+        if self.picking:
+            html.func_pick()
+        if self.cmaps is not None:
+            html.func_colormaps(self.isolevels)
+        if self.scalev:
+            html.func_scalev(len(self.isolevels), self.gals, axes=self.axes, coords=file.diff_coords, vmax=file.diff_coords[2,2])
+        if self.move2d:
+            html.func_move2dimage(vmax=file.diff_coords[2,2])
+        html.close_html()
+        
+
 class write_x3d:
     """
     
@@ -45,14 +269,16 @@ class write_x3d:
 
     """
     
-    def __init__(self, filename, delta, coords, units=['deg','deg','km s-1'], meta=None, picking=False):
+    def __init__(self, filename, delta, coords, header, units, meta=None, picking=False):
         self.delta = delta
-        #self.units = units
+        self.hdr = header
+        self.units = units
         self.real_coords, self.diff_coords = get_coords(coords[0], coords[1], coords[2])
-        self.diff_coords[0] = self.diff_coords[0] * u.Unit(units[0]).to('arcsec')
-        self.diff_coords[1] = self.diff_coords[1] * u.Unit(units[1]).to('arcsec')
-        self.real_coords[2] = self.real_coords[2] * u.Unit(units[2]).to('km/s')
-        self.diff_coords[2] = self.diff_coords[2] * u.Unit(units[2]).to('km/s')
+        self.diff_coords[0] = self.diff_coords[0] * u.Unit(header["CUNIT1"]).to(units[1])
+        self.diff_coords[1] = self.diff_coords[1] * u.Unit(header["CUNIT2"]).to(units[2])
+        self.real_coords[2] = self.real_coords[2] * u.Unit(header["CUNIT3"]).to(units[3])
+        self.diff_coords[2] = self.diff_coords[2] * u.Unit(header["CUNIT3"]).to(units[3])
+        print(self.diff_coords)
         if picking:
             picking = 'true'
         else:
@@ -66,17 +292,6 @@ class write_x3d:
             for met in meta.keys():
                 self.file_x3d.write('\n\t<meta name="%s" content="%s"/>'%(met,meta[met]))
         self.file_x3d.write('\n </head>\n\t<Scene doPickPass="%s">\n\t\t<Background skyColor="0.9 0.9 0.9"/>'%picking)
-        
-        #make viewpoints
-        # ramax, decmax = self.diff_coords[0][2], self.diff_coords[1][2]
-        # vmin, vmean, vmax = self.diff_coords[2]
-        # ma = np.max([ramax,decmax])
-        # self.file_html.write("\t\t <OrthoViewpoint DEF='front' bind='false' centerOfRotation='0,0,%s' description='RA-Dec view' fieldOfView='[-%s,-%s,%s,%s]' isActive='false' metadata='X3DMetadataObject' orientation='0,1,0,3.14' position='0,0,%s' zFar='10000' zNear='0.05' ></OrthoViewpoint>\n"%(vmean,ma*1.4,ma*1.4,ma*1.4,ma*1.4,1000))
-        # ma = np.max([decmax,(vmax-vmin)/2])
-        # self.file_html.write("\t\t <OrthoViewpoint DEF='side' bind='false' centerOfRotation='0,0,%s' description='V - Dec view' fieldOfView='[-%s,-%s,%s,%s]' isActive='false' metadata='X3DMetadataObject' orientation='0,-1,0,1.57' position='-%s,0,%s' zFar='10000' zNear='0.05' ></OrthoViewpoint>\n"%(vmean,ma*1.4,ma*1.4,ma*1.4,ma*1.4,ma*1.4,vmean))
-        # ma = np.max([ramax,(vmax-vmin)/2])
-        # self.file_html.write("\t\t <OrthoViewpoint DEF='side2' bind='false' centerOfRotation='0,0,%s' description='V - RA view' fieldOfView='[-%s,-%s,%s,%s]' isActive='false' metadata='X3DMetadataObject' orientation='1,1,1,4.1888' position='0,%s,%s' zFar='10000' zNear='0.05' ></OrthoViewpoint>\n"%(vmean,ma*1.4,ma*1.4,ma*1.4,ma*1.4,ma*1.4*4,vmean))
-        
         self.file_x3d.write('\n\t\t<NavigationInfo type=\'"EXAMINE" "ANY"\' speed="4" headlight="true"/>')
         self.file_x3d.write('\n\t\t<DirectionalLight ambientIntensity="1" intensity="0" color="1 1 1"/>')
         self.file_x3d.write('\n\t\t<Transform DEF="ROOT" translation="0 0 0">')
@@ -190,7 +405,7 @@ class write_x3d:
             self.file_x3d.write(tabs(6)+'<Material DEF="%s" ambientIntensity="0" emissiveColor="0 0 0" diffuseColor="0 0 0" specularColor="0 0 0" shininess="0.0078" transparency="0"/>\n'%(gal+'_cross'))
             self.file_x3d.write(tabs(5)+'</Appearance>\n')
             #cross indices
-            self.file_x3d.write(tabs(5)+'<IndexedLineSet colorPerVertex="true" coordIndex="\n\t\t\t\t\t\t0 1 -1\n\t\t\t\t\t\t2 3 -1\n\t\t\t\t\t\t4 5 -1\n\t\t\t\t\t\t">\n')
+            self.file_x3d.write(tabs(5)+'<IndexedLineSet colorPerVertex="true" coordIndex="\n'+tabs(6)+'0 1 -1\n'+tabs(6)+'2 3 -1\n'+tabs(6)+'4 5 -1\n'+tabs(6)+'">\n')
             self.file_x3d.write(tabs(5)+'<Coordinate DEF="CrossCoords%s" point="\n\t\t\t\t\t\t'%i)
             vec = gals[gal]['coord']
             crosscoords = np.array([[vec[0]-crosslen,vec[1],vec[2]],
@@ -250,7 +465,7 @@ class write_x3d:
         # write coordinates
         np.savetxt(self.file_x3d, coords2d, fmt='%.3f', newline='\n\t\t\t\t\t\t')
         self.file_x3d.write('"/>\n')
-        self.file_x3d.write(tabs(6)+'<TextureCoordinate DEF="imgTexCoords" point="\n\t\t\t\t\t\t 0 0, 1 0, 0 1, 1 1"/>\n')
+        self.file_x3d.write(tabs(6)+'<TextureCoordinate DEF="imgTexCoords" point="\n'+tabs(6)+' 0 0, 1 0, 0 1, 1 1"/>\n')
         self.file_x3d.write(tabs(5)+'</IndexedFaceSet>\n')
         self.file_x3d.write(tabs(4)+'</Shape>\n')
         self.file_x3d.write(tabs(3)+'</Transform>\n')
@@ -352,6 +567,7 @@ class write_x3d:
                 self.file_x3d.write('\n\t\t\t\t\t\t\t<FontStyle family=\'"SANS"\' topToBottom="false" justify=\'"BEGIN" "BEGIN"\' size="10"/>')
                 self.file_x3d.write('\n\t\t\t\t\t\t</Text> \n\t\t\t\t\t\t</Shape>\n\t\t\t\t\t</Billboard>\n\t\t\t\t</Transform>')
         
+        axlabnames = get_axlabnames(head=self.hdr, units=self.units)
         
         #CHANGE this, all in same for
         if axlab == 'diff' or axlab == 'both':
@@ -361,7 +577,7 @@ class write_x3d:
                 self.file_x3d.write('\n\t\t\t\t\t<Shape ispickable="false">\n\t\t\t\t\t\t<Appearance>')
                 self.file_x3d.write('\n\t\t\t\t\t\t\t<Material DEF="axlab_diff%s" diffuseColor="0 0 0" emissiveColor="0 0 0"/>'%i)
                 self.file_x3d.write('\n\t\t\t\t\t\t</Appearance>')
-                self.file_x3d.write("\n\t\t\t\t\t\t<Text string='%s'>"%axlabname1[i])
+                self.file_x3d.write("\n\t\t\t\t\t\t<Text string='%s'>"%axlabnames[i])
                 self.file_x3d.write('\n\t\t\t\t\t\t\t<FontStyle family=\'"SANS"\' topToBottom="false" justify=\'%s\' size="14"/>'%axlabeljustify[i])
                 self.file_x3d.write('\n\t\t\t\t\t\t</Text>\n\t\t\t\t\t</Shape>\n\t\t\t\t</Transform>')
             #ax tick labels
@@ -386,7 +602,7 @@ class write_x3d:
                 self.file_x3d.write('\n\t\t\t\t\t<Shape ispickable="false">\n\t\t\t\t\t\t<Appearance>')
                 self.file_x3d.write('\n\t\t\t\t\t\t\t<Material DEF="axlab_real%s" diffuseColor="0 0 0" emissiveColor="0 0 0" transparency="%s"/>'%(i,trans))
                 self.file_x3d.write('\n\t\t\t\t\t\t</Appearance>')
-                self.file_x3d.write("\n\t\t\t\t\t\t<Text string='%s'>"%axlabname2[i])
+                self.file_x3d.write("\n\t\t\t\t\t\t<Text string='%s'>"%axlabnames[i])
                 self.file_x3d.write('\n\t\t\t\t\t\t\t<FontStyle family=\'"SANS"\' topToBottom="false" justify=\'%s\' size="14"/>'%axlabeljustify[i])
                 self.file_x3d.write('\n\t\t\t\t\t\t</Text>\n\t\t\t\t\t</Shape>\n\t\t\t\t</Transform>')
             #ax tick labels
@@ -443,7 +659,7 @@ class write_html:
 
     """
     
-    def __init__(self, filename, tabtitle='new_html_x3d', pagetitle=None, description=None):
+    def __init__(self, filename, units, tabtitle='new_html_x3d', pagetitle=None, description=None):
         #some attributes to use later
         self.grids = False
         self.gals = False
@@ -451,6 +667,7 @@ class write_html:
         self.axes = False
         self.hclick = False
         self.viewp = False
+        self.units = units
             
         self.file_html = open(filename, 'w')
         self.file_html.write('<html>\n\t <head>\n')
@@ -723,7 +940,7 @@ class write_html:
             self.file_html.write(tabs(2)+'<br><br>\n')
             self.file_html.write(tabs(2)+'&nbsp <b>HI layers:</b>\n')
             for i in range(len(isolevels)):
-                self.file_html.write(tabs(3)+'<button onclick="setHIlayer%s();" style="color:FireBrick">%s mJy/beam</button>\n'%(i,np.round(isolevels[i],1)))
+                self.file_html.write(tabs(3)+'<button onclick="setHIlayer%s();" style="color:FireBrick">%s %s</button>\n'%(i,np.round(isolevels[i],1), self.units[0]))
         elif isolevels is None and self.nlayers:
             self.file_html.write(tabs(2)+'<br><br>\n')
             self.file_html.write(tabs(2)+' &nbsp <b>HI layers:</b>\n')
@@ -834,18 +1051,14 @@ class write_html:
       
         
     def func_scalev(self, nlayers, gals=None, axes='both', coords=None, vmax=None):
-        """
-        vmax : float, optional
-            Maximum velocity (or magnitude in spectral axis), needed only if a 2D image is present in the model. default is None.
-        """
         self.file_html.write(tabs(2)+"<script>\n")
         self.file_html.write(tabs(2)+"const inpscasv = document.querySelector('#scalev');\n")
-        if vmax is not None:
+        if vmax != None:
             self.file_html.write(tabs(2)+"const inpmovesv = document.querySelector('#move2dimg');\n")
         #self.file_html.write(tabs(2)+"inpscasv.addEventListener('change', changescalev);\n")
         self.file_html.write(tabs(2)+"function changescalev()\n\t\t {\n")
         self.file_html.write(tabs(3)+"const sca = inpscasv.value;\n")
-        if vmax is not None:
+        if vmax != None:
             self.file_html.write(tabs(3)+"const move = inpmovesv.value;\n")
             self.file_html.write(tabs(3)+"if(document.getElementById('cube__image2d').getAttribute('translation') != '9e9 9e9 9e9') {\n")
             self.file_html.write(tabs(4)+"document.getElementById('cube__image2d').setAttribute('translation', '0 0 '+(sca*move-1)*%s); }\n"%vmax)
@@ -1079,8 +1292,7 @@ class make_all():
         self.coords = coords
         self.cube = cube
         self.isolevels = isolevels
-        if galdict:
-            self.gals = galdict
+        self.gals = galdict
         if image2d is not None:
             self.x3dim2d = True
         else:
@@ -1201,9 +1413,6 @@ def marching_cubes(cube, level, delta, mins):
                      verts[:,2]+vmin]).T, faces
 
 def calc_scale(shape):
-    """
-    shape = np.min([ramax1-ramin1, decmax1-decmin1, vmax1-vmin1])
-    """
     #scale = 0.71096782*np.sqrt(np.max(shape))-3.84296963 #sqrt
     #scale = 0.02985932*np.max(shape)-0.16425599 #linear
     scale = 3.72083418*np.log(shape)-19.84129672 #logarithmic
@@ -1418,6 +1627,15 @@ tablehtml = '\n<!--A table with navigation info for X3DOM-->\n<br/>\n<hr>\n<h3><
 #name of ax labels for difference from center
 axlabname1 = np.array(['R.A. [arcsec]', 'Dec. [arcsec]', 'V [km/s]',
                 'Dec. [arcsec]', 'V [km/s]', 'R.A. [arcsec]'])
+
+def get_axlabnames(head, units):
+    return np.array([head['CTYPE1'].split('-')[0]+' ('+units[1]+')',
+                     head['CTYPE2'].split('-')[0]+' ('+units[2]+')',
+                     head['CTYPE3'].split('-')[0]+' ('+units[3]+')',
+                     head['CTYPE2'].split('-')[0]+' ('+units[2]+')',
+                     head['CTYPE3'].split('-')[0]+' ('+units[3]+')',
+                     head['CTYPE1'].split('-')[0]+' ('+units[1]+')'])
+    
 #name of ax labels
 axlabname2 = np.array(['R.A.', 'Dec.', 'V [km/s]',
                 'Dec.', 'V [km/s]', 'R.A.'])
