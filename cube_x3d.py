@@ -1204,11 +1204,12 @@ def calc_scale(shape):
     """
     shape = np.min([ramax1-ramin1, decmax1-decmin1, vmax1-vmin1])
     """
-    #scale = 0.71096782*np.sqrt(np.max(shape))-3.84296963 #sqrt
-    #scale = 0.02985932*np.max(shape)-0.16425599 #linear
-    scale = 3.72083418*np.log(shape)-19.84129672 #logarithmic
-    if scale < 1:
-        scale = 1
+    #scale = 0.71096782*np.sqrt(shape)-3.84296963 #sqrt
+    #scale = 0.02985932*shape-0.16425599 #linear
+    #scale = 3.72083418*np.log(shape)-19.84129672 #logarithmic
+    scale = shape*0.01 #linear, seems best
+    #if scale < 1:
+    #    scale = 1
     return scale
 
 def create_colormap(colormap, isolevels):
