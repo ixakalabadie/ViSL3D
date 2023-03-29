@@ -834,14 +834,18 @@ class write_html:
       
         
     def func_scalev(self, nlayers, gals=None, axes='both', coords=None, vmax=None):
+        """
+        vmax : float, optional
+            Maximum velocity (or magnitude in spectral axis), needed only if a 2D image is present in the model. default is None.
+        """
         self.file_html.write(tabs(2)+"<script>\n")
         self.file_html.write(tabs(2)+"const inpscasv = document.querySelector('#scalev');\n")
-        if vmax != None:
+        if vmax is not None:
             self.file_html.write(tabs(2)+"const inpmovesv = document.querySelector('#move2dimg');\n")
         #self.file_html.write(tabs(2)+"inpscasv.addEventListener('change', changescalev);\n")
         self.file_html.write(tabs(2)+"function changescalev()\n\t\t {\n")
         self.file_html.write(tabs(3)+"const sca = inpscasv.value;\n")
-        if vmax != None:
+        if vmax is not None:
             self.file_html.write(tabs(3)+"const move = inpmovesv.value;\n")
             self.file_html.write(tabs(3)+"if(document.getElementById('cube__image2d').getAttribute('translation') != '9e9 9e9 9e9') {\n")
             self.file_html.write(tabs(4)+"document.getElementById('cube__image2d').setAttribute('translation', '0 0 '+(sca*move-1)*%s); }\n"%vmax)
@@ -1055,7 +1059,7 @@ class make_all():
             galdict = {}
             for gal in gals:
                 result = Ned.query_object(gal)
-                galcoords = SkyCoord(ra=result['RA']*u.deg, dec=result['DEC']*u.deg)
+                galcoords = SkyCoord(ra=result['RA'][0]*u.deg, dec=result['DEC'][0]*u.deg)
                 galra = (galcoords.ra-ramean)*np.cos(declim[0].to('rad'))
                 galdec = (galcoords.dec-decmean)
                 galdict[gal] = {'coord':np.array([galra.to('arcsec').to_value(), galdec.to('arcsec').to_value(), gal['Velocity']-vmean]), 'col': '0 0 1'}
@@ -1075,7 +1079,8 @@ class make_all():
         self.coords = coords
         self.cube = cube
         self.isolevels = isolevels
-        self.gals = galdict
+        if galdict:
+            self.gals = galdict
         if image2d is not None:
             self.x3dim2d = True
         else:
@@ -1196,6 +1201,9 @@ def marching_cubes(cube, level, delta, mins):
                      verts[:,2]+vmin]).T, faces
 
 def calc_scale(shape):
+    """
+    shape = np.min([ramax1-ramin1, decmax1-decmin1, vmax1-vmin1])
+    """
     #scale = 0.71096782*np.sqrt(np.max(shape))-3.84296963 #sqrt
     #scale = 0.02985932*np.max(shape)-0.16425599 #linear
     scale = 3.72083418*np.log(shape)-19.84129672 #logarithmic
