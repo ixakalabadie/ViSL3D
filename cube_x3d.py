@@ -30,7 +30,34 @@ class main:
     def __init__(self, path, isolevels=None, units=None, lims=None, gals=None, image2d=None):
         """
         if want to leave some units as default set to -1, e.g. (-1, 'deg', -1, 'Angs')
+        Create the X3D and HTML files all at once.
+        
+        Parameters
+        ----------
+        path : string
+            Path to FITS file containing the data cube to be visualized.
+        isolevels : array-like, optional
+            The values of the datacube from which to create isosurfaces, no maximum length (not tested big numbers). Must be in the 
+            same units given by the "units" parameter, but the array itself dimensionless. If None, four layers will be created automatically. The default is None.
+        gals : string, dict or array-like, optional
+            Specify what galaxies to plot. There are three options:
+                - 'query': plots all galaxies inside the cube with a query in NED (it can get very crowded).
+                - An array of names of galaxies to plot. The coordinates will be obtained through NED.
+                - A dictionary with the form {'Galaxy Name 1': {'coord': np.array([ra,dec,v]), 'col':'r g b'}}.
+                  The coordinates must be quantities (<Quantity>) of angles and velocity.
+            The default is None.
+        image2d : tuple, optional
+            A two-element tuple. The first element is a string with the name of a survey and the second is the dimenson
+            of the image in pixels. For example: ('DSS2 Blue', '2000x2000'). The default is None.
+        lims : 2D array, optional
+            The minimum and maximum of each dimension, to make a cutout, as the number of pixels. The default is None.
+        unit : astropy unit, optional
+            The unit for the values in the data cube, does not have to be the same the FITS file has.
+            Also works in string form. The default is None.
 
+        Returns
+        -------
+        None.
         """
         
         cube = SpectralCube.read(path)
@@ -153,7 +180,34 @@ class main:
     def choose_buttons(self, layers=True, galaxies=True, gallab=True, grids=True, axes='both', 
                        viewpoints=True, image2d=True, move2d=True, scalev=True, cmaps=None, picking=True):
         """
-        Axes can be 'both', 'real', 'diff' or None
+        Choose the buttons to be included in the HTML.
+
+        Parameters
+        ----------
+        layers : bool
+            Hide/show different isosurfaces. Default is True.
+        galaxies : bool
+            Hide/show galaxy positions. Default is True.
+        gallab : bool
+            Hide/show galaxy labels. Default is True.
+        grids : bool
+            Hide/Show grids. Default is True.
+        axes : string
+            Hide/show axes labels. 'real' for only the actual values, 'diff for only the difference to 
+            the center of the cube, 'both' for both, or None for none. Default is 'both'.
+        viewpoints : bool
+            Show different viewpoints (ra-dec, dec-z, ra-z). Default is True. FALSE GIVES ERROR. 
+        image2d : bool
+            Hide/show the 2D image in the background. Default is True.
+        move2d : bool
+            Move 2D image along the Z axis and show the value it is at. Default is True.
+        scalev : bool
+            Change the scale of the Z axis. Default is True.
+        cmaps : list
+            List of colormaps to give as an option, must be from matplotlib.colormaps. If None a default set of colormaps is given.
+            Default is None. MUST CHANGE TO GIVE OPTION NOT TO CHANGE COLORMAP.
+        picking : bool
+            Show coordinates by clicking in the isosurfaces. Default is True.
         """
         self.layers = layers
         self.galaxies = galaxies
@@ -167,7 +221,7 @@ class main:
         self.cmaps = cmaps
         self.picking = picking
         if cmaps is None:
-            self.cmaps = ['magma', 'CMRmap', 'inferno', 'plasma', 'viridis', 'Greys',
+            self.cmaps = ['CMRmap', 'magma', 'inferno', 'plasma', 'viridis', 'Greys',
            'Blues', 'OrRd', 'PuRd', 'Reds', 'Spectral', 'Wistia',
           'YlGn', 'YlOrRd', 'afmhot', 'autumn', 'cool', 'coolwarm',
           'copper', 'cubehelix', 'flag', 'gist_earth', 'gist_heat',
@@ -178,13 +232,22 @@ class main:
             
     def make(self, path=None, meta=None, tabtitle=None, pagetitle=None, desc=None):
         """
-        
+        Create the X3D and HTML files.
 
         Parameters
         ----------
         path : string
-            Path to where the files will be saved, including the name of the files
-            but not the extension. e.g. '~/username/data/somecube'.
+            Path to where the files will be saved, including the name of the files but not the extension,
+            e.g. '~/username/data/somecube'. If None, it will create the files in the working directory.
+        meta : string
+            Something. Default is None.
+        tabtitle : string
+            Title of the tab. If None, it is made from the header.
+        pagetitle : string
+            Title of the web page. If None, it is made from the header.
+        desc : string
+            Some text to include at the beggining of the HTML. If None, a default describtion will be created from
+            the cube header. Default is None.
 
         Returns
         -------
@@ -336,7 +399,7 @@ class write_x3d:
                 self.file_x3d.write('\n\t\t\t\t\t<Appearance sortKey="%s">'%(len(isolevels)-1-i))
                 #set color and transparency of layer
                 if i == len(isolevels)-1:
-                    op = 0.001
+                    op = 0.4
                 else:
                     op = 0.8
                 self.file_x3d.write('\n'+tabs(6)+'<Material DEF="%slayer%s" ambientIntensity="0" emissiveColor="0 0 0" diffuseColor="%s" specularColor="0 0 0" shininess="0.0078" transparency="%s"/>'%(nc,i,colors[nc][i],op))
@@ -591,7 +654,7 @@ class write_x3d:
                 self.file_x3d.write('\n\t\t\t\t\t\t\t<Material DEF="axlab_diff%s" diffuseColor="0 0 0" emissiveColor="0 0 0"/>'%i)
                 self.file_x3d.write('\n\t\t\t\t\t\t</Appearance>')
                 self.file_x3d.write("\n\t\t\t\t\t\t<Text string='%s'>"%axlabnames[i])
-                self.file_x3d.write('\n\t\t\t\t\t\t\t<FontStyle family=\'"SANS"\' topToBottom="false" justify=\'%s\' size="14"/>'%axlabeljustify[i])
+                self.file_x3d.write('\n\t\t\t\t\t\t\t<FontStyle family=\'"SANS"\' topToBottom="false" justify=\'%s\' size="10"/>'%axlabeljustify[i])
                 self.file_x3d.write('\n\t\t\t\t\t\t</Text>\n\t\t\t\t\t</Shape>\n\t\t\t\t</Transform>')
             #ax tick labels
             for i in range(12):
@@ -603,7 +666,7 @@ class write_x3d:
                 self.file_x3d.write('\n\t\t\t\t\t\t\t<Material DEF="axtick_diff%s" diffuseColor="0 0 0" emissiveColor="0 0 0"/>'%i)
                 self.file_x3d.write('\n\t\t\t\t\t\t</Appearance>')
                 self.file_x3d.write('\n\t\t\t\t\t\t<Text string="%s">'%axticknames1[i])
-                self.file_x3d.write('\n\t\t\t\t\t\t\t<FontStyle family=\'"SANS"\' topToBottom="false" justify=\'%s\' size="12"/>'%axticklabjus[i])
+                self.file_x3d.write('\n\t\t\t\t\t\t\t<FontStyle family=\'"SANS"\' topToBottom="false" justify=\'%s\' size="8"/>'%axticklabjus[i])
                 self.file_x3d.write('\n\t\t\t\t\t\t</Text>\n\t\t\t\t\t</Shape>\n\t\t\t\t</Transform>')
         
         if axlab == 'real' or axlab == 'both':
@@ -616,7 +679,7 @@ class write_x3d:
                 self.file_x3d.write('\n\t\t\t\t\t\t\t<Material DEF="axlab_real%s" diffuseColor="0 0 0" emissiveColor="0 0 0" transparency="%s"/>'%(i,trans))
                 self.file_x3d.write('\n\t\t\t\t\t\t</Appearance>')
                 self.file_x3d.write("\n\t\t\t\t\t\t<Text string='%s'>"%axlabnames[i])
-                self.file_x3d.write('\n\t\t\t\t\t\t\t<FontStyle family=\'"SANS"\' topToBottom="false" justify=\'%s\' size="14"/>'%axlabeljustify[i])
+                self.file_x3d.write('\n\t\t\t\t\t\t\t<FontStyle family=\'"SANS"\' topToBottom="false" justify=\'%s\' size="10"/>'%axlabeljustify[i])
                 self.file_x3d.write('\n\t\t\t\t\t\t</Text>\n\t\t\t\t\t</Shape>\n\t\t\t\t</Transform>')
             #ax tick labels
             for i in range(12):
@@ -628,7 +691,7 @@ class write_x3d:
                 self.file_x3d.write('\n\t\t\t\t\t\t\t<Material DEF="axtick_real%s" diffuseColor="0 0 0" emissiveColor="0 0 0" transparency="%s"/>'%(i, trans))
                 self.file_x3d.write('\n\t\t\t\t\t\t</Appearance>')
                 self.file_x3d.write('\n\t\t\t\t\t\t<Text string="%s">'%axticknames2[i])
-                self.file_x3d.write('\n\t\t\t\t\t\t\t<FontStyle family=\'"SANS"\' topToBottom="false" justify=\'%s\' size="12"/>'%axticklabjus[i])
+                self.file_x3d.write('\n\t\t\t\t\t\t\t<FontStyle family=\'"SANS"\' topToBottom="false" justify=\'%s\' size="8"/>'%axticklabjus[i])
                 self.file_x3d.write('\n\t\t\t\t\t\t</Text>\n\t\t\t\t\t</Shape>\n\t\t\t\t</Transform>')
                 
     def close(self):
@@ -692,15 +755,13 @@ class write_html:
         self.file_html.write("\n\t\t<style>\n"+tabs(3)+"x3d\n"+tabs(4)+"{\n"+tabs(5)+"border:2px solid darkorange;\n"+tabs(5)+"width:95%;\n"+tabs(5)+"height: 80%;\n"+tabs(3)+"}\n"+tabs(3)+"</style>\n\t</head>\n\t<body>\n")
         
         
-        if pagetitle != None:
+        if pagetitle is not None:
             self.file_html.write('\t<h1 align="middle"> %s </h1>\n'%pagetitle)
             self.file_html.write('\t<hr/>\n')
-        if description != None:
-            self.file_html.write('\t<p style="width: 90%;"> <font size="3">\n\t %s \n'%description)
+        if description is not None:
+            self.file_html.write("\t<p>\n\t %s</p> \n"%description)
         
-        self.file_html.write('\t<br/>\n\t </font> </p>\n\n')
-        
-    def func_layers(self, nlayers):
+    def func_layers(self, l_isolevels):
         """
         Make the funcion to hide/show layers. If this is used, the buttons()
         function with isolevels should also be used to create the buttons.
@@ -716,26 +777,33 @@ class write_html:
         None.
 
         """
-        self.nlayers = nlayers
-        if type(nlayers) == list:
-            numcubes = len(nlayers)
+        if type(l_isolevels[0]) == list or type(l_isolevels[0]) == np.ndarray:
+            self.nlayers = [len(l) for l in l_isolevels]
+        else:
+            self.nlayers = len(l_isolevels)
+        if type(self.nlayers) == list:
+            numcubes = len(self.nlayers)
         else:
             numcubes = 1
         for nc in range(numcubes):
-            for i in range(nlayers[nc]):
-                if i != nlayers[nc]-1:
+            for i in range(self.nlayers[nc]):
+                if i != self.nlayers[nc]-1:
                     self.file_html.write("\t <script>\n\t \t function setHI%slayer%s()\n\t \t {\n\t \t if(document.getElementById('cube__%slayer%s').getAttribute('transparency') != '0.8') {\n"%(nc,i,nc,i))
                     self.file_html.write("\t\t document.getElementById('cube__%slayer%s').setAttribute('transparency', '0.8');\n"%(nc,i))
+                    self.file_html.write("\t\t document.getElementById('%sbut%s').style.border = '5px dashed black';\n"%(nc,i))
                     self.file_html.write("\t\t document.getElementById('cube__%slayer%s_shape').setAttribute('ispickable', 'true');\n"%(nc,i))
                     self.file_html.write("\t\t } else { \n\t\t document.getElementById('cube__%slayer%s').setAttribute('transparency', '1');\n"%(nc,i))
+                    self.file_html.write("\t\t document.getElementById('%sbut%s').style.border = 'inset black';\n"%(nc,i))
                     self.file_html.write("\t\t document.getElementById('cube__%slayer%s_shape').setAttribute('ispickable', 'false');\n"%(nc,i))
                     self.file_html.write("\t\t } \n\t\t }\n\t </script>\n")
                 else:
-                    self.file_html.write("\t <script>\n\t\t function setHI%slayer%s()\n\t \t {\n\t \t if(document.getElementById('cube__%slayer%s').getAttribute('transparency') != '0.001') {\n"%(nc,i,nc,i))
-                    self.file_html.write("\t\t document.getElementById('cube__%slayer%s').setAttribute('transparency', '0.001');\n"%(nc,i))
+                    self.file_html.write("\t <script>\n\t\t function setHI%slayer%s()\n\t \t {\n\t \t if(document.getElementById('cube__%slayer%s').getAttribute('transparency') != '0.3') {\n"%(nc,i,nc,i))
+                    self.file_html.write("\t\t document.getElementById('cube__%slayer%s').setAttribute('transparency', '0.3');\n"%(nc,i))
+                    self.file_html.write("\t\t document.getElementById('%sbut%s').style.border = '5px dashed black';\n"%(nc,i))
                     self.file_html.write("\t\t document.getElementById('cube__%slayer%s_shape').setAttribute('ispickable', 'true');\n"%(nc,i))
                     self.file_html.write("\t\t } else { \n\t\t document.getElementById('cube__%slayer%s').setAttribute('transparency', '1');\n"%(nc,i))
                     self.file_html.write("\t\t document.getElementById('cube__%slayer%s_shape').setAttribute('ispickable', 'false');\n"%(nc,i))
+                    self.file_html.write("\t\t document.getElementById('%sbut%s').style.border = 'inset black';\n"%(nc,i))
                     self.file_html.write("\t\t } \n\t\t }\n\t </script>\n")
 
     def func_galaxies(self, gals):
@@ -903,11 +971,11 @@ class write_html:
         self.file_html.write("\t\t <scene>\n")
         #correct camera postition and FoV, not to clip (hide) the figure
         ma = np.max(maxcoord)
-        self.file_html.write(tabs(3)+"<OrthoViewpoint id=\"front\" bind='false' centerOfRotation='0,0,0' description='RA-Dec view' fieldOfView='[-%s,-%s,%s,%s]' isActive='false' metadata='X3DMetadataObject' orientation='0,1,0,3.141593' position='0,0,-%s' zFar='10000' zNear='1' ></OrthoViewpoint>\n"%(ramax*1.4,decmax*1.4,ramax*1.4,decmax*1.4,ma*1.4))
-        self.file_html.write("\t\t\t <OrthoViewpoint id=\"side\" bind='false' centerOfRotation='0,0,0' description='Z - Dec view' fieldOfView='[-%s,-%s,%s,%s]' isActive='false' metadata='X3DMetadataObject' orientation='0,-1,0,1.570796' position='-%s,0,0' zFar='10000' zNear='1' ></OrthoViewpoint>\n"%(vmax*1.4,decmax*1.4,vmax*1.4,decmax*1.4,ma*1.4))
-        self.file_html.write("\t\t\t <OrthoViewpoint id=\"side2\" bind='false' centerOfRotation='0,0,0' description='Z - RA view' fieldOfView='[-%s,-%s,%s,%s]' isActive='false' metadata='X3DMetadataObject' orientation='1,1,1,4.1888' position='0,%s,0' zFar='10000' zNear='1' ></OrthoViewpoint>\n"%(vmax*1.4,ramax*1.4,vmax*1.4,ramax*1.4,ma*1.4))
+        self.file_html.write(tabs(3)+"<OrthoViewpoint id=\"front\" bind='false' centerOfRotation='0,0,0' description='RA-Dec view' fieldOfView='[-%s,-%s,%s,%s]' isActive='false' metadata='X3DMetadataObject' orientation='0,1,0,3.141593' position='0,0,-%s' zFar='10000' zNear='0.0001' ></OrthoViewpoint>\n"%(ramax*1.4,decmax*1.4,ramax*1.4,decmax*1.4,ma*1.4))
+        self.file_html.write("\t\t\t <OrthoViewpoint id=\"side\" bind='false' centerOfRotation='0,0,0' description='Z - Dec view' fieldOfView='[-%s,-%s,%s,%s]' isActive='false' metadata='X3DMetadataObject' orientation='0,-1,0,1.570796' position='-%s,0,0' zFar='10000' zNear='0.0001' ></OrthoViewpoint>\n"%(vmax*1.4,decmax*1.4,vmax*1.4,decmax*1.4,ma*1.4))
+        self.file_html.write("\t\t\t <OrthoViewpoint id=\"side2\" bind='false' centerOfRotation='0,0,0' description='Z - RA view' fieldOfView='[-%s,-%s,%s,%s]' isActive='false' metadata='X3DMetadataObject' orientation='1,1,1,4.1888' position='0,%s,0' zFar='10000' zNear='0.0001' ></OrthoViewpoint>\n"%(vmax*1.4,ramax*1.4,vmax*1.4,ramax*1.4,ma*1.4))
 
-    def buttons(self, l_isolevels=None, colormaps=None, hide2d=False, scalev=False, move2d=False, centRotLabs=True):
+    def buttons(self, l_isolevels=None, l_colors=None, colormaps=None, hide2d=False, scalev=False, move2d=False, lineLabs=True, centRot=False):
         """
         Makes the buttons to apply the functions to hide/show elements, if
         funcitons such as func_layers() or func_galaxies() have been created.
@@ -950,13 +1018,13 @@ class write_html:
         if hide2d:
             self.file_html.write(tabs(3)+'<button onclick="setimage2d();" >2D image</button>\n')
         
-        if centRotLabs:
+        if centRot:
             self.file_html.write(tabs(2)+'&nbsp <label for="rotationCenter"><b>Center of Rotation</b> </label>\n')
             self.file_html.write(tabs(3)+'<select id="rotationCenter">\n')
             self.file_html.write(tabs(4)+'<option value="Origin">Origin</option>\n')
             for nc in range(len(l_isolevels)):
-                if type(centRotLabs) == list:
-                    self.file_html.write(tabs(4)+'<option value="op%s">%s</option>\n'%(nc,centRotLabs[nc]))
+                if type(lineLabs) == list:
+                    self.file_html.write(tabs(4)+'<option value="op%s">%s</option>\n'%(nc,lineLabs[nc]))
                 else:
                     self.file_html.write(tabs(4)+'<option value="op%s">Center%s</option>\n'%(nc,nc))
             self.file_html.write(tabs(3)+'</select>\n')
@@ -968,14 +1036,26 @@ class write_html:
                 numcubes = 1
             for nc in range(numcubes):
                 self.file_html.write(tabs(2)+'<br><br>\n')
-                self.file_html.write(tabs(2)+'&nbsp <b>Cube %s (%s):</b>\n'%(nc,self.units[0]))
+                if lineLabs is not None:
+                    self.file_html.write(tabs(2)+'&nbsp <b>%s (%s):</b>\n'%(lineLabs[nc],self.units[0]))
+                else:
+                    self.file_html.write(tabs(2)+'&nbsp <b>Cube %s (%s):</b>\n'%(nc,self.units[0]))
                 for i in range(self.nlayers[nc]):
-                    self.file_html.write(tabs(3)+'<button onclick="setHI%slayer%s();" style="color:FireBrick">%s</button>\n'%(nc,i,np.round(l_isolevels[nc][i],1)))
+                    ca = np.array(l_colors[nc][i].split(' ')).astype(np.float)*255
+                    c = 'rgb('+str(ca.astype(int))[1:-1]+')'
+                    if (ca[0]*0.299 + ca[1]*0.587 + ca[2]*0.114) > 130:
+                        self.file_html.write(tabs(3)+'<button id="%sbut%s" onclick="setHI%slayer%s();" style="font-size:20px ; border:5px dashed black ; background:%s ; color:black"><b>%s</b></button>\n'%(nc,i,nc,i,c,np.round(l_isolevels[nc][i],1)))
+                    else:
+                        self.file_html.write(tabs(3)+'<button id="%sbut%s" onclick="setHI%slayer%s();" style="font-size:20px ; border:5px dashed black ; background:%s ; color:white"><b>%s</b></button>\n'%(nc,i,nc,i,c,np.round(l_isolevels[nc][i],1)))
+            self.file_html.write(tabs(2)+'<br><br>\n')
         elif l_isolevels is None and self.nlayers:
             self.file_html.write(tabs(2)+'<br><br>\n')
             self.file_html.write(tabs(2)+' &nbsp <b>Layers (%s):</b>\n'%self.units[0])
             for i in range(self.nlayers):
-                self.file_html.write(tabs(3)+'<button onclick="setHI1layer%s();" style="color:FireBrick">Layer %s</button>\n'%(i,i))
+                ca = np.array(l_colors[i].split(' ')).astype(np.float)*255
+                c = 'rgb('+str(ca.astype(int))[1:-1]+')'
+                self.file_html.write(tabs(3)+'<button id="but%s" onclick="setHI1layer%s();" style="font-size:20px ; background:%s ; color:black"><b>Layer %s</b></button>\n'%(i,i,c,i))
+            self.file_html.write(tabs(2)+'<br><br>\n')
                     
         # to separate buttons in two parts
         #if self.grids or self.gals or self.gallabs or self.axes or self.hclick or colormaps is not None:
@@ -989,7 +1069,7 @@ class write_html:
             for nc in range(numcubes):
                 self.colormaps = colormaps
                 #self.file_html.write('\t\t <br><br>\n')
-                self.file_html.write(tabs(2)+'&nbsp <label for="cmaps-choice%s"><b>Colormap %s</b> </label>\n'%(nc,nc))
+                self.file_html.write(tabs(2)+'&nbsp <label for="cmaps-choice%s"><b>Cmap %s</b> </label>\n'%(nc,nc))
                 self.file_html.write(tabs(2)+'<select id="cmaps-choice%s">\n'%nc)
                 for c in self.colormaps:
                     self.file_html.write(tabs(3)+'<option value="%s">%s</option>\n'%(c,c))
@@ -1021,7 +1101,7 @@ class write_html:
             
         self.file_html.write(tabs(1)+'</div>\n')
         
-    def func_move2dimage(self, real_vmax=None, diff_vmax=None):
+    def func_move2dimage(self, diff_vmax, real_vmax=None):
         """
         
         """
@@ -1033,7 +1113,10 @@ class write_html:
             self.file_html.write(tabs(2)+"function move2d()\n\t\t{\n")
             self.file_html.write(tabs(3)+"const sca = inpscam2.value;\n")
             self.file_html.write(tabs(3)+"const move = inpmovem2.value;\n")
-            self.file_html.write(tabs(3)+"showval.textContent = roundTo(inpmovem2.value*%s, 3)+' ( '+roundTo(inpmovem2.value*%s, 3)+' )';\n"%(real_vmax,diff_vmax))
+            if real_vmax is not None:
+                self.file_html.write(tabs(3)+"showval.textContent = roundTo(%s+(move-1)*%s, 3)+' ( '+roundTo(move*%s, 3)+' )';\n"%(real_vmax,diff_vmax,diff_vmax))
+            else:
+                self.file_html.write(tabs(3)+"showval.textContent = roundTo(move*%s, 3);\n"%(diff_vmax))
             self.file_html.write(tabs(3)+"if(document.getElementById('cube__image2d').getAttribute('translation') != '9e9 9e9 9e9') {\n")
             self.file_html.write(tabs(4)+"document.getElementById('cube__image2d').setAttribute('translation', '0 0 '+(sca*move-1)*%s); }\n"%diff_vmax)
             self.file_html.write(tabs(2)+"}\n")
@@ -1044,7 +1127,10 @@ class write_html:
             self.file_html.write(tabs(2)+"const showval = document.querySelector('#showvalue');\n")
             self.file_html.write(tabs(2)+"function move2d()\n\t\t {\n")
             self.file_html.write(tabs(3)+"const move = inpmovem2.value;\n")
-            self.file_html.write(tabs(3)+"showval.textContent = roundTo(inpmovem2.value*%s, 3)+' ( '+roundTo(inpmovem2.value*%s, 3)+' )';\n"%(real_vmax,diff_vmax))
+            if real_vmax is not None:
+                self.file_html.write(tabs(3)+"showval.textContent = roundTo(%s+(move-1)*%s, 3)+' ( '+roundTo(move*%s, 3)+' )';\n"%(real_vmax,diff_vmax,diff_vmax))
+            else:
+                self.file_html.write(tabs(3)+"showval.textContent = roundTo(move*%s, 3);\n"%(diff_vmax))
             self.file_html.write(tabs(3)+"if(document.getElementById('cube__image2d').getAttribute('translation') != '9e9 9e9 9e9') {\n")
             self.file_html.write(tabs(4)+"document.getElementById('cube__image2d').setAttribute('translation', '0 0 '+(move-1)*%s); }\n"%diff_vmax)
             self.file_html.write(tabs(2)+"}\n")
@@ -1099,22 +1185,29 @@ class write_html:
         else:
             numcubes = 1
         for nc in range(numcubes):
-            self.file_html.write("\t\t <script>\n")
-            self.file_html.write("\t\t const cc%s = document.querySelector('#cmaps-choice%s');\n"%(nc,nc))
-            self.file_html.write("\t\t cc%s.addEventListener('change', change_colormap%s);\n"%(nc,nc))
-            self.file_html.write("\t\t function change_colormap%s()\n\t\t {\n"%nc)
-            self.file_html.write("\t\t\t  const cmap = cc%s.value;\n"%nc)
+            self.file_html.write(tabs(2)+"<script>\n")
+            self.file_html.write(tabs(2)+"const cc%s = document.querySelector('#cmaps-choice%s');\n"%(nc,nc))
+            self.file_html.write(tabs(2)+"cc%s.addEventListener('change', change_colormap%s);\n"%(nc,nc))
+            self.file_html.write(tabs(2)+"function change_colormap%s()\n\t\t {\n"%nc)
+            self.file_html.write(tabs(3)+"const cmap = cc%s.value;\n"%nc)
             
             for (i,cmap) in enumerate(self.colormaps):
                 diffCol = create_colormap(cmap, l_isolevels[nc])
                 if i == 0:
-                    self.file_html.write("\t\t\t if (cmap === '%s') {\n"%cmap)
+                    self.file_html.write(tabs(3)+"if (cmap === '%s') {\n"%cmap)
                 else:
-                    self.file_html.write("\t\t\t else if (cmap === '%s') {\n"%cmap)
+                    self.file_html.write(tabs(3)+"else if (cmap === '%s') {\n"%cmap)
                 for lev in range(len(l_isolevels[nc])):
-                    self.file_html.write("\t\t\t document.getElementById('cube__%slayer%s').setAttribute('diffuseColor','%s')\n"%(nc,lev,diffCol[lev]))
-                self.file_html.write("\t\t\t }\n")
-            self.file_html.write("\t\t }\n\t\t </script>\n")
+                    self.file_html.write(tabs(3)+"document.getElementById('cube__%slayer%s').setAttribute('diffuseColor','%s')\n"%(nc,lev,diffCol[lev]))
+                    ca = np.array(diffCol[lev].split(' ')).astype(np.float)*255
+                    c = str(ca.astype(int))[1:-1]
+                    self.file_html.write(tabs(3)+"document.getElementById('%sbut%s').style.background = 'rgb(%s)';\n"%(nc,lev,c))
+                    if (ca[0]*0.299 + ca[1]*0.587 + ca[2]*0.114) > 130: 
+                        self.file_html.write(tabs(3)+"document.getElementById('%sbut%s').style.color = 'black';\n"%(nc,lev))
+                    else:
+                        self.file_html.write(tabs(3)+"document.getElementById('%sbut%s').style.color = 'white';\n"%(nc,lev))
+                self.file_html.write(tabs(3)+"}\n")
+            self.file_html.write(tabs(2)+"}\n\t\t </script>\n")
       
         
     def func_scalev(self, gals=None, axes='both', coords=None, vmax=None):
@@ -1357,7 +1450,34 @@ class make_all():
     def choose_buttons(self, layers=True, galaxies=True, gallab=True, grids=True, axes='both', 
                        viewpoints=True, image2d=True, move2d=True, scalev=True, cmaps=None, picking=True):
         """
-        Axes can be 'both', 'real', 'diff' or None
+        Choose the buttons to be included in the HTML.
+
+        Parameters
+        ----------
+        layers : bool
+            Hide/show different isosurfaces. Default is True.
+        galaxies : bool
+            Hide/show galaxy positions. Default is True.
+        gallab : bool
+            Hide/show galaxy labels. Default is True.
+        grids : bool
+            Hide/Show grids. Default is True.
+        axes : string
+            Hide/show axes labels. 'real' for only the actual values, 'diff for only the difference to 
+            the center of the cube, 'both' for both, or None for none. Default is 'both'.
+        viewpoints : bool
+            Show different viewpoints (ra-dec, dec-z, ra-z). Default is True. FALSE GIVES ERROR. 
+        image2d : bool
+            Hide/show the 2D image in the background. Default is True.
+        move2d : bool
+            Move 2D image along the Z axis and show the value it is at. Default is True.
+        scalev : bool
+            Change the scale of the Z axis. Default is True.
+        cmaps : list
+            List of colormaps to give as an option, must be from matplotlib.colormaps. If None a default set of colormaps is given.
+            Default is None. MUST CHANGE TO GIVE OPTION NOT TO CHANGE COLORMAP.
+        picking : bool
+            Show coordinates by clicking in the isosurfaces. Default is True.
         """
         self.layers = layers
         self.galaxies = galaxies
