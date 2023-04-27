@@ -289,74 +289,77 @@ class write_x3d:
         self.file_x3d.write('"/>')
         self.file_x3d.write('\n\t\t\t\t\t</IndexedLineSet>\n\t\t\t\t</Shape>\n\t\t\t</Transform>')
         self.file_x3d.write('\n\t\t</Transform>')
-        
-    def make_tubes(self, points, radius=None, col='1 0 1'):
+
+    def make_markers(self, geom, points, shape, color='1 0 1', labels=None):
         """
-        
+        geom = 'tube', 'Sphere', 'Box', 'Cone', 'Torus', 'Arc2D', 'ArcClose2D', 'Circle2D', 'Disk2D', 'Polyline2D',
+        'Polypoint2D', 'Rectangle2D', 'TriangleSet2D'
 
         Parameters
         ----------
         points : TYPE
             points = np.array([[1,2,1],[2,2,1],[],...]). Shape = (n,3)
-        radius : TYPE, optional
-            DESCRIPTION. The default is 10.
-
-        Returns
-        -------
-        None.
-
         """
-        if radius is None:
-            radius = self.mar/100.
-        # get mean point between consecutive points
-        trans = np.array([str(np.mean((points[i],points[i+1]), axis=0))[1:-1] for i in range(len(points)-1)])
-        # get distance between consecutive points
-        diff = np.diff(points, axis=0)
-        heights = np.linalg.norm(diff,axis=1)
-        #get rotation for each tube
-        angles = np.arccos(diff[:,1]/heights)
+        if geom == 'tube':
+            # get mean point between consecutive points
+            trans = np.array([str(np.mean((points[i],points[i+1]), axis=0))[1:-1] for i in range(len(points)-1)])
+            # get distance between consecutive points
+            diff = np.diff(points, axis=0)
+            heights = np.linalg.norm(diff,axis=1)
+            #get rotation for each tube
+            angles = np.arccos(diff[:,1]/heights)
+
+            for i in range(self.ntubes, self.ntubes+len(points)-1):
+                self.file_x3d.write("\n"+tabs(3)+'<Transform DEF="tubtra%s" translation="%s" rotation="%.4f 0 %.4f %.4f" scale="1 1 1">\n'%(i,trans[i],diff[i,2],-diff[i,0],angles[i]))
+                self.file_x3d.write(tabs(4)+'<Shape ispickable="false">\n')
+                self.file_x3d.write(tabs(5)+'<Cylinder DEF="tube%s" height="%s" radius="%s" solid="false"/>\n'%(i,heights[i]*1.05, 5.0))
+                self.file_x3d.write(tabs(5)+'<Appearance>\n')
+                self.file_x3d.write(tabs(6)+'<Material DEF="tubmat%s" ambientIntensity="0" emissiveColor="0 0 0" diffuseColor="%s" specularColor="0 0 0" shininess="0.0078" transparency="0"/>\n'%(i, color))
+                self.file_x3d.write(tabs(5)+'</Appearance>\n')
+                self.file_x3d.write(tabs(4)+'</Shape>\n')
+                self.file_x3d.write(tabs(3)+'</Transform>\n')
+
+            self.ntubes = self.ntubes + len(points)-1
+
+        if geom == 'sphere':
+            for i in range(self.nspheres, self.nspheres+len(points)):
+                self.file_x3d.write("\n"+tabs(3)+'<Transform DEF="spheretra%s" translation="%s" scale="1 1 1">\n'%(i,str(points[i])[1:-1]))
+                self.file_x3d.write(tabs(4)+'<Shape ispickable="false">\n')
+                if hasattr(shape, "__len__") and len(shape) == len(points):
+                    self.file_x3d.write(tabs(5)+'<Sphere DEF="sphere%s" radius="%s" solid="false"/>\n'%(i,shape[i]))
+                else:
+                    self.file_x3d.write(tabs(5)+'<Sphere DEF="sphere%s" radius="%s" solid="false"/>\n'%(i,shape))
+                self.file_x3d.write(tabs(5)+'<Appearance>\n')
+                if type(color) == list:
+                    self.file_x3d.write(tabs(6)+'<Material DEF="spheremat%s" ambientIntensity="0" emissiveColor="0 0 0" diffuseColor="%s" specularColor="0 0 0" shininess="0.0078" transparency="0"/>\n'%(i, color[i]))
+                else:
+                    self.file_x3d.write(tabs(6)+'<Material DEF="spheremat%s" ambientIntensity="0" emissiveColor="0 0 0" diffuseColor="%s" specularColor="0 0 0" shininess="0.0078" transparency="0"/>\n'%(i, color))
+                self.file_x3d.write(tabs(5)+'</Appearance>\n')
+                self.file_x3d.write(tabs(4)+'</Shape>\n')
+                self.file_x3d.write(tabs(3)+'</Transform>\n')
+            self.nspheres = self.nspheres + len(points)
         
-        for i in range(len(points)-1):
-            self.file_x3d.write("\n"+tabs(3)+'<Transform DEF="tubtra%s" translation="%s" rotation="%.4f 0 %.4f %.4f" scale="1 1 1">\n'%(i,trans[i],diff[i,2],-diff[i,0],angles[i]))
-            self.file_x3d.write(tabs(4)+'<Shape ispickable="false">\n')
-            self.file_x3d.write(tabs(5)+'<Cylinder DEF="tube%s" height="%s" radius="%s" solid="false"/>\n'%(i,heights[i]*1.05, 5.0))
-            self.file_x3d.write(tabs(5)+'<Appearance>\n')
-            self.file_x3d.write(tabs(6)+'<Material DEF="tubmat%s" ambientIntensity="0" emissiveColor="0 0 0" diffuseColor="%s" specularColor="0 0 0" shininess="0.0078" transparency="0"/>\n'%(i, col))
-            self.file_x3d.write(tabs(5)+'</Appearance>\n')
-            self.file_x3d.write(tabs(4)+'</Shape>\n')
-            self.file_x3d.write(tabs(3)+'</Transform>\n')
-            
-    def make_markers(self, centre, radius=None, box=True, col='0 1 0', labels=None):
-        if radius is None:
-            radius = self.mar/50.
-        if box:
-            lab = 'box'                
-        else:
-            lab = 'sph'
-            
-        for i in range(len(centre)):
-            self.file_x3d.write("\n"+tabs(3)+'<Transform DEF="%stra%s" translation="%s" scale="1 1 1">\n'%(lab,i,str(centre[i])[1:-1]))
-            self.file_x3d.write(tabs(4)+'<Shape ispickable="false">\n')
-            
-            if box:
-                if hasattr(radius, "shape") and radius.shape == centre.shape:
-                    size = str(radius[i])[1:-1]
+        if geom == 'box':
+            for i in range(self.nboxes, self.nboxes+len(points)):
+                self.file_x3d.write("\n"+tabs(3)+'<Transform DEF="boxtra%s" translation="%s" scale="1 1 1">\n'%(i,str(points[i])[1:-1]))
+                self.file_x3d.write(tabs(4)+'<Shape ispickable="false">\n')
+                if hasattr(shape, "shape") and shape.shape == points.shape:
+                    size = str(shape[i])[1:-1]
                 else:
-                    size = '%s %s %s'%(radius*2, radius*2, radius*2)
-                self.file_x3d.write(tabs(5)+'<Box DEF="%s%s" size="%s" solid="false"/>\n'%(lab,i,size))
-            else:
-                if hasattr(radius, "__len__") and len(radius) == len(centre):
-                    self.file_x3d.write(tabs(5)+'<Sphere DEF="%s%s" radius="%s" solid="false"/>\n'%(lab,i,radius[i]))
+                    size = '%s %s %s'%(shape*2, shape*2, shape*2)
+                self.file_x3d.write(tabs(5)+'<Box DEF="box%s" size="%s" solid="false"/>\n'%(i,size))
+                self.file_x3d.write(tabs(5)+'<Appearance>\n')
+                if type(color) == list:
+                    self.file_x3d.write(tabs(6)+'<Material DEF="boxmat%s" ambientIntensity="0" emissiveColor="0 0 0" diffuseColor="%s" specularColor="0 0 0" shininess="0.0078" transparency="0"/>\n'%(i, color[i]))
                 else:
-                    self.file_x3d.write(tabs(5)+'<Sphere DEF="%s%s" radius="%s" solid="false"/>\n'%(lab,i,radius))
-                
-            self.file_x3d.write(tabs(5)+'<Appearance>\n')
-            self.file_x3d.write(tabs(6)+'<Material DEF="%smat%s" ambientIntensity="0" emissiveColor="0 0 0" diffuseColor="%s" specularColor="0 0 0" shininess="0.0078" transparency="0"/>\n'%(lab, i, col))
-            self.file_x3d.write(tabs(5)+'</Appearance>\n')
-            self.file_x3d.write(tabs(4)+'</Shape>\n')
-            self.file_x3d.write(tabs(3)+'</Transform>\n')
+                    self.file_x3d.write(tabs(6)+'<Material DEF="boxmat%s" ambientIntensity="0" emissiveColor="0 0 0" diffuseColor="%s" specularColor="0 0 0" shininess="0.0078" transparency="0"/>\n'%(i, color))
+                self.file_x3d.write(tabs(5)+'</Appearance>\n')
+                self.file_x3d.write(tabs(4)+'</Shape>\n')
+                self.file_x3d.write(tabs(3)+'</Transform>\n')
+            self.nboxes = self.nboxes + len(points)
             
-            #if labels is not None:
+            # Create other shapes
+            # Add labels
                 
         
     def make_labels(self, gals=None, axlab=None):
