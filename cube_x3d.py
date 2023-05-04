@@ -1247,6 +1247,13 @@ def calc_scale(shape):
     #    scale = 1
     return scale
 
+def change_magnitude(data, magnitude='rms'):
+    if magnitude == 'rms':
+        from scipy.stats import norm
+        _, rms = norm.fit(data)
+        return rms
+    
+
 def create_colormap(colormap, isolevels):
     colors = cm.get_cmap(colormap)(range(256))[:,:-1]
     if np.sum(colors[0]) < np.sum(colors[-1]):
