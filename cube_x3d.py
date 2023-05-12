@@ -547,6 +547,9 @@ class write_x3d:
         self.file_x3d.write(tabs(3)+'</Transform>\n')
             
     def make_ticklines(self):
+        """
+        Must be change to close the Transform "ROOT" somewhere else, in case this is not used.
+        """
         ramin, ramean, ramax = self.diff_coords[0]
         decmin, decmean, decmax = self.diff_coords[1]
         vmin, vmean, vmax = self.diff_coords[2]
@@ -580,7 +583,21 @@ class write_x3d:
         self.file_x3d.write('"/>')
         self.file_x3d.write('\n\t\t\t\t\t</IndexedLineSet>\n\t\t\t\t</Shape>\n\t\t\t</Transform>')
         self.file_x3d.write('\n\t\t</Transform>')
-        
+
+    def make_animation(self, cycleinterval=10, axis=0):
+        """
+        Must be outside the Transform "ROOT" element (for now write after make_ticklines). 
+        axis = 0, 1 or 2
+        """
+        vec = np.zeros(3,dtype=int)
+        vec[axis] = 1
+        vec = str(vec)[1:-1]
+        self.file_x3d.write('\n'+tabs(2)+'<timeSensor DEF="time" cycleInterval="%s" loop="true" enabled="true" startTime="-1"></timeSensor>'%cycleinterval)
+        self.file_x3d.write('\n'+tabs(2)+'<OrientationInterpolator DEF="move" key="0 0.5 1" keyValue="%s 0  %s 3.14  %s 6.28"/>'%(vec,vec,vec))
+        self.file_x3d.write('\n'+tabs(2)+'<Route fromNode="time" fromField ="fraction_changed" toNode="move" toField="set_fraction"></Route>')
+        self.file_x3d.write('\n'+tabs(2)+'<Route fromNode="move" fromField ="value_changed" toNode="ROOT" toField="rotation"></Route>')
+
+
     def make_labels(self, gals=None, axlab=None):
         """
         Create the labels of different elements in the figure.
@@ -744,6 +761,7 @@ class write_html:
         self.hclick = False
         self.viewp = False
         self.units = units
+        self.anim = False
             
         self.file_html = open(filename, 'w')
         self.file_html.write('<html>\n\t <head>\n')
@@ -926,7 +944,22 @@ class write_html:
         self.file_html.write(tabs(3)+"$('#coordY').html(roundTo(coordinates[1], 2)+' %s');\n"%self.units[2])
         self.file_html.write(tabs(3)+"$('#coordZ').html(roundTo(coordinates[2], 2)/sca+' %s');\n"%self.units[3])
         self.file_html.write(tabs(2)+"}\n\t </script>\n")
-        
+
+    def func_animation(self):
+        self.anim = True
+        self.file_html.write('\n'+tabs(1)+"<script>")
+        self.file_html.write('\n'+tabs(2)+"function animation() {")
+        self.file_html.write('\n'+tabs(3)+"if (document.getElementById('cube__time').getAttribute('elapsedTime') == '0') {")
+        self.file_html.write('\n'+tabs(4)+"document.getElementById('cube__time').setAttribute('startTime', document.getElementById('cube__time').getAttribute('time'));")
+        self.file_html.write('\n'+tabs(4)+"document.getElementById('cube__time').setAttribute('isPaused', 'false');")
+        self.file_html.write('\n'+tabs(3)+"} else if (document.getElementById('cube__time').getAttribute('isPaused') == 'false') {")
+        self.file_html.write('\n'+tabs(4)+"document.getElementById('cube__time').setAttribute('loop', 'false');")
+        self.file_html.write('\n'+tabs(4)+"document.getElementById('cube__time').setAttribute('isPaused', 'true')")
+        self.file_html.write('\n'+tabs(3)+"} else {")
+        self.file_html.write('\n'+tabs(4)+"document.getElementById('cube__time').setAttribute('loop', 'true');")
+        self.file_html.write('\n'+tabs(4)+"document.getElementById('cube__time').setAttribute('isPaused', 'false');")
+        self.file_html.write('\n'+tabs(3)+"}\n"+tabs(2)+'}\n'+tabs(1)+'</script>\n')
+
     def start_x3d(self):
         """
         Start the X3D part of the HTML. Must go before close_x3d().
@@ -1028,6 +1061,10 @@ class write_html:
                 else:
                     self.file_html.write(tabs(4)+'<option value="op%s">Center%s</option>\n'%(nc,nc))
             self.file_html.write(tabs(3)+'</select>\n')
+            
+        if self.anim:
+            self.file_html.write(tabs(3)+'<button id="anim" onclick="animation()">Animation</button>')
+
                 
         if l_isolevels is not None:
             if type(self.nlayers) == list:
@@ -1594,6 +1631,13 @@ def calc_scale(shape):
     #if scale < 1:
     #    scale = 1
     return scale
+
+def change_magnitude(data, magnitude='rms'):
+    if magnitude == 'rms':
+        from scipy.stats import norm
+        _, rms = norm.fit(data)
+        return rms
+    
 
 def create_colormap(colormap, isolevels):
     colors = cm.get_cmap(colormap)(range(256))[:,:-1]
