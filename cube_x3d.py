@@ -281,7 +281,7 @@ class main:
                      tabtitle=tabtitle, pagetitle=pagetitle,
                      description=desc)
         if self.layers:
-            html.func_layers(len(self.isolevels))
+            html.func_layers(self.isolevels)
         if self.galaxies:
             html.func_galaxies(self.gals)
         if self.gallab:
@@ -293,11 +293,10 @@ class main:
             
         html.start_x3d()
         if self.viewpoints:
-            html.viewpoints(maxco=(file.diff_coords[0,2], file.diff_coords[1,2]),
-                            vrad=file.diff_coords[2])
+            html.viewpoints(maxcoord=file.diff_coords[:,2])
         html.close_x3d(path.split('/')[-1]+'.x3d')
         if self.layers or self.galaxies or self.gallab or self.grids or self.axes is not None or self.picking or self.viewpoints or self.image2d or self.cmaps is not None or self.image2d or self.scalev:
-            html.buttons(self.isolevels, colormaps=self.cmaps, hide2d=self.image2d, scalev=self.scalev, move2d=self.move2d)
+            html.buttons(self.isolevels, self.color, colormaps=self.cmaps, hide2d=self.image2d, scalev=self.scalev, move2d=self.move2d)
         #func_move2dimage, func_colormaps, func_picking and func_scalev must always go after buttons
         if self.image2d:
             html.func_image2d(vmax=file.diff_coords[2,2], scalev=True)
@@ -390,8 +389,14 @@ class write_x3d:
         else:
             numcubes = 1
         for nc in range(numcubes):
-            cube = l_cubes[nc]
-            isolevels = l_isolevels[nc]
+            if numcubes == 1:
+                if type(l_cubes) != list:
+                    cube = l_cubes
+                    isolevels = l_isolevels
+            else:
+                cube = l_cubes[nc]
+                isolevels = l_isolevels[nc]
+            
             for i in range(len(isolevels)):
                 verts, faces = marching_cubes(cube, level=isolevels[i], delta=self.delta, mins=mins)
                 self.file_x3d.write('\n\t\t\t<Transform DEF="%slt%s" translation="0 0 0" rotation="0 0 1 -0" scale="1 1 1">'%(nc,i))
@@ -798,11 +803,8 @@ class write_html:
         if type(l_isolevels[0]) == list or type(l_isolevels[0]) == np.ndarray:
             self.nlayers = [len(l) for l in l_isolevels]
         else:
-            self.nlayers = len(l_isolevels)
-        if type(self.nlayers) == list:
+            self.nlayers = [len(l_isolevels)]
             numcubes = len(self.nlayers)
-        else:
-            numcubes = 1
         for nc in range(numcubes):
             for i in range(self.nlayers[nc]):
                 if i != self.nlayers[nc]-1:
@@ -815,7 +817,7 @@ class write_html:
                     self.file_html.write("\t\t document.getElementById('cube__%slayer%s_shape').setAttribute('ispickable', 'false');\n"%(nc,i))
                     self.file_html.write("\t\t } \n\t\t }\n\t </script>\n")
                 else:
-                    self.file_html.write("\t <script>\n\t\t function setHI%slayer%s()\n\t \t {\n\t \t if(document.getElementById('cube__%slayer%s').getAttribute('transparency') != '0.3') {\n"%(nc,i,nc,i))
+                    self.file_html.write("\t <script>\n\t\t function setHI%slayer%s()\n\t \t {\n\t \t if(document.getElementById('cube__%slayer%s').getAttribute('transparency') != '0.4') {\n"%(nc,i,nc,i))
                     self.file_html.write("\t\t document.getElementById('cube__%slayer%s').setAttribute('transparency', '0.3');\n"%(nc,i))
                     self.file_html.write("\t\t document.getElementById('%sbut%s').style.border = '5px dashed black';\n"%(nc,i))
                     self.file_html.write("\t\t document.getElementById('cube__%slayer%s_shape').setAttribute('ispickable', 'true');\n"%(nc,i))
@@ -1008,7 +1010,7 @@ class write_html:
         self.file_html.write("\t\t\t <OrthoViewpoint id=\"side\" bind='false' centerOfRotation='0,0,0' description='Z - Dec view' fieldOfView='[-%s,-%s,%s,%s]' isActive='false' metadata='X3DMetadataObject' orientation='0,-1,0,1.570796' position='-%s,0,0' zFar='10000' zNear='0.0001' ></OrthoViewpoint>\n"%(vmax*1.4,decmax*1.4,vmax*1.4,decmax*1.4,ma*1.4))
         self.file_html.write("\t\t\t <OrthoViewpoint id=\"side2\" bind='false' centerOfRotation='0,0,0' description='Z - RA view' fieldOfView='[-%s,-%s,%s,%s]' isActive='false' metadata='X3DMetadataObject' orientation='1,1,1,4.1888' position='0,%s,0' zFar='10000' zNear='0.0001' ></OrthoViewpoint>\n"%(vmax*1.4,ramax*1.4,vmax*1.4,ramax*1.4,ma*1.4))
 
-    def buttons(self, l_isolevels=None, l_colors=None, colormaps=None, hide2d=False, scalev=False, move2d=False, lineLabs=True, centRot=False):
+    def buttons(self, l_isolevels=None, l_colors=None, colormaps=None, hide2d=False, scalev=False, move2d=False, lineLabs=False, centRot=False):
         """
         Makes the buttons to apply the functions to hide/show elements, if
         funcitons such as func_layers() or func_galaxies() have been created.
@@ -1073,7 +1075,7 @@ class write_html:
                 numcubes = 1
             for nc in range(numcubes):
                 self.file_html.write(tabs(2)+'<br><br>\n')
-                if lineLabs is not None:
+                if type(lineLabs) == list:
                     self.file_html.write(tabs(2)+'&nbsp <b>%s (%s):</b>\n'%(lineLabs[nc],self.units[0]))
                 else:
                     self.file_html.write(tabs(2)+'&nbsp <b>Cube %s (%s):</b>\n'%(nc,self.units[0]))
