@@ -105,10 +105,7 @@ class main:
         cube = cube.to_value()
         
         if isolevels is None:
-            if np.min(cube) < 0:    
-                isolevels = [np.max(cube)/10., np.max(cube)/5., np.max(cube)/3., np.max(cube)/1.5]
-            elif np.min(cube) < np.max(cube)/5.:
-                isolevels = [np.min(cube), np.max(cube)/5., np.max(cube)/3., np.max(cube)/1.5]
+            isolevels = calc_isolevels(cube)
             print("Automatic isolevels = "+str(isolevels))
         
         if gals == 'query':
@@ -221,12 +218,7 @@ class main:
         self.cmaps = cmaps
         self.picking = picking
         if cmaps is None:
-            self.cmaps = ['CMRmap', 'magma', 'inferno', 'plasma', 'viridis', 'Greys',
-           'Blues', 'OrRd', 'PuRd', 'Reds', 'Spectral', 'Wistia',
-          'YlGn', 'YlOrRd', 'afmhot', 'autumn', 'cool', 'coolwarm',
-          'copper', 'cubehelix', 'flag', 'gist_earth', 'gist_heat',
-          'gist_ncar', 'gist_stern', 'gnuplot', 'gnuplot2', 'hot',
-          'nipy_spectral', 'prism', 'winter', 'Paired']
+            self.cmaps = default_cmaps
         else:
             self.cmaps = cmaps
             
@@ -295,7 +287,7 @@ class main:
         if self.viewpoints:
             html.viewpoints(maxcoord=file.diff_coords[:,2])
         html.close_x3d(path.split('/')[-1]+'.x3d')
-        if self.layers or self.galaxies or self.gallab or self.grids or self.axes is not None or self.picking or self.viewpoints or self.image2d or self.cmaps is not None or self.image2d or self.scalev:
+        if self.layers or self.galaxies or self.gallab or self.grids or self.axes is not None or self.picking or self.viewpoints or self.image2d or self.cmaps is not None or self.scalev:
             html.buttons(self.isolevels, self.color, colormaps=self.cmaps, hide2d=self.image2d, scalev=self.scalev, move2d=self.move2d)
         #func_move2dimage, func_colormaps, func_picking and func_scalev must always go after buttons
         if self.image2d:
@@ -359,8 +351,9 @@ class write_x3d:
         self.file_x3d.write('\n\t\t<DirectionalLight ambientIntensity="1" intensity="0" color="1 1 1"/>')
         self.file_x3d.write('\n\t\t<Transform DEF="ROOT" translation="0 0 0">')
         
-    def make_layers(self, l_cubes, l_isolevels, colors):
+    def make_layers(self, l_cubes, l_isolevels, colors, shifts=None):
         #Change colors for default color using create_colormap()
+        #change l_cubes and l_isolevels as to accept only lists, e.g. [cube1, cube2, cube3] and or [onecube]
         """
         Makes layers of the equal intensity and writes an x3d file
 
@@ -368,14 +361,16 @@ class write_x3d:
 
         Parameters
         ----------
-        cube : 3d array
+        l_cube : 3d array
             The data cube.
-        isolevels : list, array
+        l_isolevels : list, array
             An array or list with the value of each isosurface layer. 
             E.g.[2,5,9] for three layers at values 2,5 and 9 of the cube.
             Should be in increasing order.
         colors : list of len 3 arrays
             List with RGB colors to be given to the layers, in the same order as isolevels.
+        shift : list, optional
+            A list with 3D vectors giving the shift in RA, DEC and V in same units of to the cube. Similar to l_cube or l_isolevels.
 
         Returns
         -------
@@ -398,7 +393,10 @@ class write_x3d:
                 isolevels = l_isolevels[nc]
             
             for i in range(len(isolevels)):
-                verts, faces = marching_cubes(cube, level=isolevels[i], delta=self.delta, mins=mins)
+                if shifts is not None:
+                    verts, faces = marching_cubes(cube, level=isolevels[i], delta=self.delta, mins=mins, shift=shifts[nc])
+                else:
+                    verts, faces = marching_cubes(cube, level=isolevels[i], delta=self.delta, mins=mins)
                 self.file_x3d.write('\n\t\t\t<Transform DEF="%slt%s" translation="0 0 0" rotation="0 0 1 -0" scale="1 1 1">'%(nc,i))
                 self.file_x3d.write('\n\t\t\t\t<Shape DEF="%slayer%s_shape">'%(nc,i))
                 self.file_x3d.write('\n\t\t\t\t\t<Appearance sortKey="%s">'%(len(isolevels)-1-i))
@@ -629,9 +627,9 @@ class write_x3d:
         self.file_x3d.write('\n\t\t<Collision enabled="false">')
         self.file_x3d.write('\n\t\t\t<Transform DEF="TRANS_LABEL">')
         
-        ramin1, ramean1, ramax1 = self.diff_coords[0]
-        decmin1, decmean1, decmax1 = self.diff_coords[1]
-        vmin1, vmean1, vmax1 = self.diff_coords[2]
+        ramin1, _ , ramax1 = self.diff_coords[0]
+        decmin1, _ , decmax1 = self.diff_coords[1]
+        vmin1, _ , vmax1 = self.diff_coords[2]
         ramin2, _, ramax2 = Angle(self.real_coords[0] * u.Unit('deg')).to_string(u.hour, precision=0)
         decmin2, _, decmax2 = Angle(self.real_coords[1] * u.Unit('deg')).to_string(u.degree, precision=0)
         vmin2, _, vmax2 = self.real_coords[2]
@@ -643,14 +641,14 @@ class write_x3d:
         ax,axtick = labpos(self.diff_coords)
         
         #Names for the axes tick labels
-        axticknames1 = np.array([f'{ramax1:.0f}',f'{ramin1:.0f}',f'{decmax1:.0f}',
-                       f'{decmin1:.0f}',f'{vmin1:.0f}',f'{vmax1:.0f}',
-                       f'{decmax1:.0f}',f'{decmin1:.0f}',f'{vmin1:.0f}',
-                       f'{vmax1:.0f}',f'{ramax1:.0f}',f'{ramin1:.0f}'])
+        axticknames1 = np.array([f'{ramax1:.2f}',f'{ramin1:.2f}',f'{decmax1:.2f}',
+                       f'{decmin1:.2f}',f'{vmin1:.0f}',f'{vmax1:.0f}',
+                       f'{decmax1:.2f}',f'{decmin1:.2f}',f'{vmin1:.0f}',
+                       f'{vmax1:.0f}',f'{ramax1:.2f}',f'{ramin1:.2f}'])
         
         axticknames2 = np.array([ramax2, ramin2, decmax2,
                        decmin2, f'{vmin2:.0f}', f'{vmax2:.0f}',
-                       decmax2, decmin2, f'{vmin2:.0f}',
+                       decmax2, decmin2, f'{vmin2:.2f}',
                        f'{vmax2:.0f}', ramax2, ramin2])
         
         #galaxy labels
@@ -802,6 +800,7 @@ class write_html:
         """
         if type(l_isolevels[0]) == list or type(l_isolevels[0]) == np.ndarray:
             self.nlayers = [len(l) for l in l_isolevels]
+            numcubes = len(self.nlayers)
         else:
             self.nlayers = [len(l_isolevels)]
             numcubes = len(self.nlayers)
@@ -818,7 +817,7 @@ class write_html:
                     self.file_html.write("\t\t } \n\t\t }\n\t </script>\n")
                 else:
                     self.file_html.write("\t <script>\n\t\t function setHI%slayer%s()\n\t \t {\n\t \t if(document.getElementById('cube__%slayer%s').getAttribute('transparency') != '0.4') {\n"%(nc,i,nc,i))
-                    self.file_html.write("\t\t document.getElementById('cube__%slayer%s').setAttribute('transparency', '0.3');\n"%(nc,i))
+                    self.file_html.write("\t\t document.getElementById('cube__%slayer%s').setAttribute('transparency', '0.4');\n"%(nc,i))
                     self.file_html.write("\t\t document.getElementById('%sbut%s').style.border = '5px dashed black';\n"%(nc,i))
                     self.file_html.write("\t\t document.getElementById('cube__%slayer%s_shape').setAttribute('ispickable', 'true');\n"%(nc,i))
                     self.file_html.write("\t\t } else { \n\t\t document.getElementById('cube__%slayer%s').setAttribute('transparency', '1');\n"%(nc,i))
@@ -1249,21 +1248,21 @@ class write_html:
             self.file_html.write(tabs(2)+"}\n\t\t </script>\n")
       
         
-    def func_scalev(self, gals=None, axes='both', coords=None, vmax=None):
+    def func_scalev(self, gals=None, axes='both', coords=None, move2d=True):
         """
-        vmax is a scalar, float
+        
         """
         self.file_html.write(tabs(2)+"<script>\n")
         self.file_html.write(tabs(2)+"const inpscasv = document.querySelector('#scalev');\n")
-        if vmax != None:
+        if move2d:
             self.file_html.write(tabs(2)+"const inpmovesv = document.querySelector('#move2dimg');\n")
         #self.file_html.write(tabs(2)+"inpscasv.addEventListener('change', changescalev);\n")
         self.file_html.write(tabs(2)+"function changescalev()\n\t\t {\n")
         self.file_html.write(tabs(3)+"const sca = inpscasv.value;\n")
-        if vmax != None:
+        if move2d:
             self.file_html.write(tabs(3)+"const move = inpmovesv.value;\n")
             self.file_html.write(tabs(3)+"if(document.getElementById('cube__image2d').getAttribute('translation') != '9e9 9e9 9e9') {\n")
-            self.file_html.write(tabs(4)+"document.getElementById('cube__image2d').setAttribute('translation', '0 0 '+(sca*move-1)*%s); }\n"%vmax)
+            self.file_html.write(tabs(4)+"document.getElementById('cube__image2d').setAttribute('translation', '0 0 '+(sca*move-1)*%s); }\n"%coords[2,2])
         #scale layers
         if type(self.nlayers) == list:
             numcubes = len(self.nlayers)
@@ -1611,7 +1610,26 @@ class make_all():
 
 #Some miscellaneoues functions
 
-def marching_cubes(cube, level, delta, mins):
+def marching_cubes(cube, level, delta, mins, shift=(0,0,0)):
+    """
+
+    Parameters
+    ----------
+
+    cube : 3D array
+        Datacube.
+    level : float
+        Value of the isosurface.
+    delta : tuple
+        Spacing in each dimension.
+    mins : tuple
+        Minimum values of each dimension.
+    shift : tuple, optional
+        Shift in RA, DEC and V in same units as delta and mins. The default is (0,0,0).
+
+    Returns: 
+    
+    """
     ramin, decmin, vmin = mins
     verts, faces, _, _ = measure.marching_cubes(cube, level = level,
                     #spacing gives the spacing in each dimension.
@@ -1619,8 +1637,8 @@ def marching_cubes(cube, level, delta, mins):
                     #in increasing order, same as cube
                             spacing = delta,
                             allow_degenerate=False)
-    return np.array([verts[:,0]+ramin, verts[:,1]+decmin, 
-                     verts[:,2]+vmin]).T, faces
+    return np.array([verts[:,0]+ramin+shift[0], verts[:,1]+decmin+shift[1], 
+                     verts[:,2]+vmin+shift[2]]).T, faces
 
 def calc_scale(shape):
     """
@@ -1641,14 +1659,14 @@ def change_magnitude(data, magnitude='rms'):
         return rms
     
 
-def create_colormap(colormap, isolevels):
+def create_colormap(colormap, isolevels, start=0, end=255):
     colors = cm.get_cmap(colormap)(range(256))[:,:-1]
     if np.sum(colors[0]) < np.sum(colors[-1]):
         colors = colors[::-1]
     cmap = []
     for i in range(len(isolevels)):
-        m = 255/(np.max(isolevels)-np.min(isolevels))
-        pos = int(m*isolevels[i]-m*np.min(isolevels))
+        m = (end-start)/(np.max(isolevels)-np.min(isolevels))
+        pos = int((m*isolevels[i]-m*np.min(isolevels))+start)
         cmap.append(f'{colors[pos][0]:.5e} {colors[pos][1]:.5e} {colors[pos][2]:.5e}')
     return cmap
 
@@ -1672,6 +1690,12 @@ def get_coords(ra, dec, v):
 
 def tabs(n):
     return '\t'*n
+
+def calc_isolevels(cube):
+    if np.min(cube) < 0:    
+        isolevels = [np.max(cube)/10., np.max(cube)/5., np.max(cube)/3., np.max(cube)/1.5]
+    elif np.min(cube) < np.max(cube)/5.:
+        isolevels = [np.min(cube), np.max(cube)/5., np.max(cube)/3., np.max(cube)/1.5]
 
 def objquery(result, coords, otype):
     """
@@ -1878,3 +1902,10 @@ axlabrot = np.array(['0 1 0 3.14','1 1 0 3.14','0 1 0 -1.57',
 
 # side and corresponding name of html buttons
 side,nam = np.array([['front',"R.A. - Dec."],['side',"Z - Dec."],['side2',"Z - R.A."],['perspective',"Perspective View"]]).T
+
+default_cmaps = ['inferno', 'CMRmap', 'magma', 'plasma', 'viridis', 'Greys',
+           'Blues', 'OrRd', 'PuRd', 'Reds', 'Spectral', 'Wistia',
+          'YlGn', 'YlOrRd', 'afmhot', 'autumn', 'cool', 'coolwarm',
+          'copper', 'cubehelix', 'flag', 'gist_earth', 'gist_heat',
+          'gist_ncar', 'gist_stern', 'gnuplot', 'gnuplot2', 'hot',
+          'nipy_spectral', 'prism', 'winter', 'Paired']
