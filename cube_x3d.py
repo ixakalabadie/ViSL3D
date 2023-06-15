@@ -1672,10 +1672,15 @@ def calc_scale(shape):
     return scale
 
 def change_magnitude(data, magnitude='rms'):
+    """
+    Assume third axis is spectral/velocity axis.
+    """
     if magnitude == 'rms':
-        from scipy.stats import norm
-        _, rms = norm.fit(data)
-        return rms
+        # calculate std from first 10 spectral slices and divede data by it.
+        rms = np.std(data[:,:,:10])
+        return (data/rms, rms)
+    if magnitude == 'percent':
+        return data/np.max(data)*100
     
 
 def create_colormap(colormap, isolevels, start=0, end=255):
