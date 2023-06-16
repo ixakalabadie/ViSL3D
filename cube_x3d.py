@@ -1249,13 +1249,21 @@ class write_html:
             self.file_html.write(tabs(3)+"const cmap = cc%s.value;\n"%nc)
             
             for (i,cmap) in enumerate(self.colormaps):
-                diffCol = create_colormap(cmap, l_isolevels[nc])
+                if cmap in ['Greys', 'Purples', 'Blues', 'Greens', 'Oranges', 'Reds',
+                      'YlOrBr', 'YlOrRd', 'OrRd', 'PuRd', 'RdPu', 'BuPu',
+                      'GnBu', 'PuBu', 'YlGnBu', 'PuBuGn', 'BuGn', 'YlGn']:
+                    start = 255/2.5
+                else:
+                    start=0
+                    
+                diffCol = create_colormap(cmap, l_isolevels[nc], start=start)
                 if i == 0:
                     self.file_html.write(tabs(3)+"if (cmap === '%s') {\n"%cmap)
                 else:
                     self.file_html.write(tabs(3)+"else if (cmap === '%s') {\n"%cmap)
                 for lev in range(len(l_isolevels[nc])):
                     self.file_html.write(tabs(3)+"document.getElementById('cube__%slayer%s').setAttribute('diffuseColor','%s')\n"%(nc,lev,diffCol[lev]))
+                    self.file_html.write(tabs(3)+"document.getElementById('cube__%slayer%s').setAttribute('emissiveColor','%s')\n"%(nc,lev,diffCol[lev]))
                     ca = np.array(diffCol[lev].split(' ')).astype(np.float)*255
                     c = str(ca.astype(int))[1:-1]
                     self.file_html.write(tabs(3)+"document.getElementById('%sbut%s').style.background = 'rgb(%s)';\n"%(nc,lev,c))
