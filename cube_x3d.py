@@ -17,12 +17,11 @@ import numpy as np
 from skimage import measure
 from matplotlib import cm
 import astropy.units as u
-from astropy.coordinates import Angle
-import matplotlib.pyplot as plt
-
-from spectral_cube import SpectralCube
+from astropy.coordinates import Angle, SkyCoord
 from astropy import wcs
-from astropy.coordinates import SkyCoord
+import matplotlib.pyplot as plt
+from spectral_cube import SpectralCube
+
 
 
 class main:
@@ -380,19 +379,11 @@ class write_x3d:
         """
         
         mins = (self.diff_coords[0][0], self.diff_coords[1][0], self.diff_coords[2][0])
-        if type(l_cubes) == list:
-            numcubes = len(l_cubes)
-        else:
-            numcubes = 1
+
+        numcubes = len(l_cubes)
         for nc in range(numcubes):
-            if numcubes == 1:
-                if type(l_cubes) != list:
-                    cube = l_cubes
-                    isolevels = l_isolevels
-            else:
-                cube = l_cubes[nc]
-                isolevels = l_isolevels[nc]
-            
+            cube = l_cubes[nc]
+            isolevels = l_isolevels[nc]
             for i in range(len(isolevels)):
                 if shifts is not None:
                     verts, faces = marching_cubes(cube, level=isolevels[i], delta=self.delta, mins=mins, shift=shifts[nc])
@@ -737,7 +728,9 @@ class write_html:
     Parameters
     ----------
     filename : string
-        Name of the file to be created, should have ".html" extension.
+        Name of the file to be created, should have ".html" extension. 
+    l_isolevels : list
+        list of lists of isolevels. Must be a list even if its just one line. e.g. [[0.5,2,5]].
     tabtitle : string, optional
         Title of the tab in the web browser. The default is 'new_html_x3d'.
     pagetitle : string, optional
@@ -788,9 +781,11 @@ class write_html:
         # self.file_html.write(tabs(5)+"if (nl === %s) \n"+tabs(6)+"const op = 0.4;\n"+tabs(5)+"else\n"+tabs(6)+"const op = 0.8;\n")
         # self.file_html.write(tabs(5)+"document.getElementById('cube__'+nc+'layer'+nl).setAttribute('transparency', op);\n")
 
-        for nc in range(len(l_isolevels)):
-            for nl in range(len(l_isolevels[nc])):
-                if nl == len(l_isolevels[nc])-1:
+        numcubes = len(l_isolevels)
+        for nc in range(numcubes):
+            isolevels = l_isolevels[nc]
+            for nl in range(len(isolevels)):
+                if nl == len(isolevels)-1:
                     op = 0.4
                 else:
                     op = 0.8
@@ -817,12 +812,8 @@ class write_html:
         None.
 
         """
-        if type(l_isolevels[0]) == list or type(l_isolevels[0]) == np.ndarray:
-            self.nlayers = [len(l) for l in l_isolevels]
-            numcubes = len(self.nlayers)
-        else:
-            self.nlayers = [len(l_isolevels)]
-            numcubes = len(self.nlayers)
+        numcubes = len(l_isolevels)
+        self.nlayers = [len(l) for l in l_isolevels]
         for nc in range(numcubes):
             for i in range(self.nlayers[nc]):
                 if i != self.nlayers[nc]-1:
@@ -1087,10 +1078,7 @@ class write_html:
 
                 
         if l_isolevels is not None:
-            if type(self.nlayers) == list:
-                numcubes = len(self.nlayers)
-            else:
-                numcubes = 1
+            numcubes = len(self.nlayers)
             for nc in range(numcubes):
                 self.file_html.write(tabs(2)+'<br><br>\n')
                 if type(lineLabs) == list:
@@ -1119,10 +1107,7 @@ class write_html:
             #self.file_html.write('\n\t <div style="position:absolute;left:800px;top:140px;width:600px">\n')
             
         if colormaps is not None:
-            if type(self.nlayers) == list:
-                numcubes = len(self.nlayers)
-            else:
-                numcubes = 1
+            numcubes = len(self.nlayers)
             for nc in range(numcubes):
                 self.colormaps = colormaps
                 #self.file_html.write('\t\t <br><br>\n')
@@ -1237,10 +1222,7 @@ class write_html:
 
         """
         self.file_html.write("\t\t <!--MUST BE BELOW THE <select> ELEMENT-->\n")
-        if type(self.nlayers) == list:
-            numcubes = len(self.nlayers)
-        else:
-            numcubes = 1
+        numcubes = len(self.nlayers)
         for nc in range(numcubes):
             self.file_html.write(tabs(2)+"<script>\n")
             self.file_html.write(tabs(2)+"const cc%s = document.querySelector('#cmaps-choice%s');\n"%(nc,nc))
@@ -1291,10 +1273,7 @@ class write_html:
             self.file_html.write(tabs(3)+"if(document.getElementById('cube__image2d').getAttribute('translation') != '9e9 9e9 9e9') {\n")
             self.file_html.write(tabs(4)+"document.getElementById('cube__image2d').setAttribute('translation', '0 0 '+(sca*move-1)*%s); }\n"%coords[2,2])
         #scale layers
-        if type(self.nlayers) == list:
-            numcubes = len(self.nlayers)
-        else:
-            numcubes = 1
+        numcubes = len(self.nlayers)
         for nc in range(numcubes):
             for nlays in range(self.nlayers[nc]):
                 self.file_html.write(tabs(3)+"document.getElementById('cube__%slt%s').setAttribute('scale', '1 1 '+sca);\n"%(nc,nlays))
@@ -1728,6 +1707,7 @@ def calc_isolevels(cube):
         isolevels = [np.max(cube)/10., np.max(cube)/5., np.max(cube)/3., np.max(cube)/1.5]
     elif np.min(cube) < np.max(cube)/5.:
         isolevels = [np.min(cube), np.max(cube)/5., np.max(cube)/3., np.max(cube)/1.5]
+    return isolevels
 
 def objquery(result, coords, otype):
     """
@@ -1743,8 +1723,8 @@ def objquery(result, coords, otype):
     return result
 
 def labpos(coords):
-    ramin1, ramean1, ramax1 = coords[0]
-    decmin1, decmean1, decmax1 = coords[1]
+    ramin1, _ , ramax1 = coords[0]
+    decmin1, _ , decmax1 = coords[1]
     vmin1, vmean1, vmax1 = coords[2]
     ax = np.array([[0,decmin1*1.1,vmin1],
                    [ramax1*1.1, 0,vmin1],
