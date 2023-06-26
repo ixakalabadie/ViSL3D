@@ -9,7 +9,6 @@ Created on Tue Jan 10 13:02:38 2023
 import numpy as np
 import astropy.units as u
 from astropy.coordinates import Angle
-from astropy import wcs
 from skimage import measure
 from matplotlib import cm
 import matplotlib.pyplot as plt
@@ -25,10 +24,11 @@ class write_x3d:
         Name of the file to be created. Should have the extension '.x3d'.
     delta : len 3 array
         Array with the step in each direction of the cube.
+        Absolute values
         Better if they are all around the same order and between 0.1~10.
-    coords : astropy.Quantity 2d array
+    coords : 2d array
         Array with the minimum and maximum of the RA, DEC and VRAD
-        in each row, in that order, of the cube. Must be an astropy quantity.
+        in each row, in that order, of the cube. 
 
     Returns
     -------
@@ -728,9 +728,9 @@ class write_html:
         self.file_html.write("\t\t <scene>\n")
         #correct camera postition and FoV, not to clip (hide) the figure
         ma = np.max(maxcoord)
-        self.file_html.write(tabs(3)+"<OrthoViewpoint id=\"front\" bind='false' centerOfRotation='0,0,0' description='RA-Dec view' fieldOfView='[-%s,-%s,%s,%s]' isActive='false' metadata='X3DMetadataObject' orientation='0,1,0,3.141593' position='0,0,-%s' zFar='10000' zNear='0.0001' ></OrthoViewpoint>\n"%(ramax*1.4,decmax*1.4,ramax*1.4,decmax*1.4,ma*1.4))
-        self.file_html.write("\t\t\t <OrthoViewpoint id=\"side\" bind='false' centerOfRotation='0,0,0' description='Z - Dec view' fieldOfView='[-%s,-%s,%s,%s]' isActive='false' metadata='X3DMetadataObject' orientation='0,-1,0,1.570796' position='-%s,0,0' zFar='10000' zNear='0.0001' ></OrthoViewpoint>\n"%(vmax*1.4,decmax*1.4,vmax*1.4,decmax*1.4,ma*1.4))
-        self.file_html.write("\t\t\t <OrthoViewpoint id=\"side2\" bind='false' centerOfRotation='0,0,0' description='Z - RA view' fieldOfView='[-%s,-%s,%s,%s]' isActive='false' metadata='X3DMetadataObject' orientation='1,1,1,4.1888' position='0,%s,0' zFar='10000' zNear='0.0001' ></OrthoViewpoint>\n"%(vmax*1.4,ramax*1.4,vmax*1.4,ramax*1.4,ma*1.4))
+        self.file_html.write(tabs(3)+"<OrthoViewpoint id=\"front\" bind='false' centerOfRotation='0,0,0' description='RA-Dec view' fieldOfView='[%s,%s,%s,%s]' isActive='false' metadata='X3DMetadataObject' orientation='0,1,0,3.141593' position='0,0,-%s' zFar='10000' zNear='0.0001' ></OrthoViewpoint>\n"%(-ramax*1.4,-decmax*1.4,ramax*1.4,decmax*1.4,ma*1.4))
+        self.file_html.write("\t\t\t <OrthoViewpoint id=\"side\" bind='false' centerOfRotation='0,0,0' description='Z - Dec view' fieldOfView='[%s,%s,%s,%s]' isActive='false' metadata='X3DMetadataObject' orientation='0,-1,0,1.570796' position='-%s,0,0' zFar='10000' zNear='0.0001' ></OrthoViewpoint>\n"%(-vmax*1.4,-decmax*1.4,vmax*1.4,decmax*1.4,ma*1.4))
+        self.file_html.write("\t\t\t <OrthoViewpoint id=\"side2\" bind='false' centerOfRotation='0,0,0' description='Z - RA view' fieldOfView='[%s,%s,%s,%s]' isActive='false' metadata='X3DMetadataObject' orientation='1,1,1,4.1888' position='0,%s,0' zFar='10000' zNear='0.0001' ></OrthoViewpoint>\n"%(-vmax*1.4,-ramax*1.4,vmax*1.4,ramax*1.4,ma*1.4))
 
     def buttons(self, l_isolevels=None, l_colors=None, colormaps=None, hide2d=False, scalev=False, move2d=False, lineLabs=False, centRot=False):
         """
@@ -972,7 +972,7 @@ class write_html:
         
     def func_scalev(self, gals=None, axes='both', coords=None, move2d=True):
         """
-        
+        coords are difference from center
         """
         self.file_html.write(tabs(2)+"<script>\n")
         self.file_html.write(tabs(2)+"const inpscasv = document.querySelector('#scalev');\n")
@@ -1255,6 +1255,7 @@ def get_imcol(position, survey, verts, unit='deg', cmap='Greys', **kwargs):
     """
     from astroquery.skyview import SkyView
     from astropy.coordinates import SkyCoord
+    from astropy import wcs
     import matplotlib.colors as colors
     
     img = SkyView.get_images(position=position, survey=survey, **kwargs)[0]
