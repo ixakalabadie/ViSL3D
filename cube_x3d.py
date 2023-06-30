@@ -1248,7 +1248,7 @@ class write_html:
             self.file_html.write(tabs(2)+"}\n\t\t </script>\n")
       
         
-    def func_scalev(self, gals=None, axes='both', coords=None, move2d=True):
+    def func_scalev(self, coords, gals=None, axes='both', move2d=True):
         """
         
         """
