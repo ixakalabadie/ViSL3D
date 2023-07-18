@@ -1827,7 +1827,7 @@ def get_imcol(position, survey, verts, unit='deg', cmap='Greys', **kwargs):
     _,ul_dec = imw.world_to_pixel(SkyCoord(verts[0],verts[3]))
     if ll_ra < 0 or ll_dec < 0 or lr_ra < 0 or ul_dec < 0:
         print('ERROR: The image is smaller than the cube. Increase parameter "pixels"')
-        print("Pixel indices for [ra1, dec1, ra2, dec2] = "+list(ll_ra, ll_dec, lr_ra, ul_dec)+". Set 'pixels' parameter higher than the difference between 1 and 2.")
+        print("Pixel indices for [ra1, dec1, ra2, dec2] = "+str([ll_ra, ll_dec, lr_ra, ul_dec])+". Set 'pixels' parameter higher than the difference between 1 and 2.")
     img = img[int(ll_dec):int(ul_dec), int(lr_ra):int(ll_ra)] #dec first, ra second!!
     
     shape = img.shape
