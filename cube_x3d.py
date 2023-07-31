@@ -438,7 +438,7 @@ class write_x3d:
         self.file_x3d.write('"/>')
         self.file_x3d.write('\n\t\t\t\t\t</IndexedLineSet>\n\t\t\t\t</Shape>\n\t\t\t</Transform>\n')
         
-    def make_galaxies(self, gals, labels=True):
+    def make_galaxies(self, gals):
         """
         
 
@@ -446,8 +446,6 @@ class write_x3d:
         ----------
         gals : TYPE
             DESCRIPTION.
-        labels : TYPE, optional
-            DESCRIPTION. The default is True.
 
         Returns
         -------
@@ -1086,7 +1084,7 @@ class write_html:
                 else:
                     self.file_html.write(tabs(2)+'&nbsp <b>Cube %s (%s):</b>\n'%(nc,self.units[0]))
                 for i in range(self.nlayers[nc]):
-                    ca = np.array(l_colors[nc][i].split(' ')).astype(np.float)*255
+                    ca = np.array(l_colors[nc][i].split(' ')).astype(float)*255
                     c = 'rgb('+str(ca.astype(int))[1:-1]+')'
                     if (ca[0]*0.299 + ca[1]*0.587 + ca[2]*0.114) > 130:
                         self.file_html.write(tabs(3)+'<button id="%sbut%s" onclick="setHI%slayer%s();" style="font-size:20px ; border:5px dashed black ; background:%s ; color:black"><b>%s</b></button>\n'%(nc,i,nc,i,c,np.round(l_isolevels[nc][i],1)))
@@ -1097,7 +1095,7 @@ class write_html:
             self.file_html.write(tabs(2)+'<br><br>\n')
             self.file_html.write(tabs(2)+' &nbsp <b>Layers (%s):</b>\n'%self.units[0])
             for i in range(self.nlayers):
-                ca = np.array(l_colors[i].split(' ')).astype(np.float)*255
+                ca = np.array(l_colors[i].split(' ')).astype(float)*255
                 c = 'rgb('+str(ca.astype(int))[1:-1]+')'
                 self.file_html.write(tabs(3)+'<button id="but%s" onclick="setHI1layer%s();" style="font-size:20px ; background:%s ; color:black"><b>Layer %s</b></button>\n'%(i,i,c,i))
             self.file_html.write(tabs(2)+'<br><br>\n')
@@ -1246,7 +1244,7 @@ class write_html:
                 for lev in range(len(l_isolevels[nc])):
                     self.file_html.write(tabs(3)+"document.getElementById('cube__%slayer%s').setAttribute('diffuseColor','%s')\n"%(nc,lev,diffCol[lev]))
                     self.file_html.write(tabs(3)+"document.getElementById('cube__%slayer%s').setAttribute('emissiveColor','%s')\n"%(nc,lev,diffCol[lev]))
-                    ca = np.array(diffCol[lev].split(' ')).astype(np.float)*255
+                    ca = np.array(diffCol[lev].split(' ')).astype(float)*255
                     c = str(ca.astype(int))[1:-1]
                     self.file_html.write(tabs(3)+"document.getElementById('%sbut%s').style.background = 'rgb(%s)';\n"%(nc,lev,c))
                     if (ca[0]*0.299 + ca[1]*0.587 + ca[2]*0.114) > 130: 
@@ -1670,10 +1668,11 @@ def change_magnitude(data, magnitude='rms'):
         return data/np.max(data)*100
     
 
-def create_colormap(colormap, isolevels, start=0, end=255):
+def create_colormap(colormap, isolevels, start=0, end=255, lightdark=False):
     colors = cm.get_cmap(colormap)(range(256))[:,:-1]
-    if np.sum(colors[0]) < np.sum(colors[-1]):
-        colors = colors[::-1]
+    if lightdark:
+        if np.sum(colors[0]) < np.sum(colors[-1]):
+            colors = colors[::-1]
     cmap = []
     for i in range(len(isolevels)):
         m = (end-start)/(np.max(isolevels)-np.min(isolevels))
