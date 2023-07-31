@@ -346,7 +346,7 @@ class write_x3d:
         if meta != None:
             for met in meta.keys():
                 self.file_x3d.write('\n\t<meta name="%s" content="%s"/>'%(met,meta[met]))
-        self.file_x3d.write('\n </head>\n\t<Scene doPickPass="%s">\n\t\t<Background skyColor="0.9 0.9 0.9"/>'%picking)
+        self.file_x3d.write('\n </head>\n\t<Scene doPickPass="%s">\n\t\t<Background skyColor="0.6 0.6 0.6"/>'%picking)
         self.file_x3d.write('\n\t\t<NavigationInfo type=\'"EXAMINE" "ANY"\' speed="4" headlight="true"/>')
         self.file_x3d.write('\n\t\t<DirectionalLight ambientIntensity="1" intensity="0" color="1 1 1"/>')
         self.file_x3d.write('\n\t\t<Transform DEF="ROOT" translation="0 0 0">')
@@ -660,7 +660,7 @@ class write_x3d:
                 self.file_x3d.write('\n\t\t\t\t\t\t<Material DEF="%s" diffuseColor="0 0 0" emissiveColor="0 0 0"/>'%('label_'+gal))
                 self.file_x3d.write('\n\t\t\t\t\t\t</Appearance>')
                 self.file_x3d.write('\n\t\t\t\t\t\t<Text string="%s">'%gal)
-                self.file_x3d.write('\n\t\t\t\t\t\t\t<FontStyle family=\'"SANS"\' topToBottom="false" justify=\'"BEGIN" "BEGIN"\' size="10"/>')
+                self.file_x3d.write('\n\t\t\t\t\t\t\t<FontStyle family=\'"SANS"\' topToBottom="false" justify=\'"BEGIN" "BEGIN"\' size="8"/>')
                 self.file_x3d.write('\n\t\t\t\t\t\t</Text> \n\t\t\t\t\t\t</Shape>\n\t\t\t\t\t</Billboard>\n\t\t\t\t</Transform>')
         
         axlabnames = get_axlabnames(head=self.hdr, units=self.units)
@@ -769,9 +769,9 @@ class write_html:
         self.file_html = open(filename, 'w')
         self.file_html.write('<html>\n\t <head>\n')
         self.file_html.write('\t\t <title> %s </title>\n'%tabtitle)
-        self.file_html.write("\t\t <script type='text/javascript' src='http://www.x3dom.org/download/1.8.0/x3dom.js'></script>\n")
+        self.file_html.write("\t\t <script type='text/javascript' src='x3dom/x3dom.js'></script>\n")
         self.file_html.write("\n\t\t <script type='text/javascript'  src='https://www.maths.nottingham.ac.uk/plp/pmadw/LaTeXMathML.js'></script>\n")
-        self.file_html.write("\t\t <link rel='stylesheet' type='text/css' href='http://www.x3dom.org/release/x3dom.css'></link>\n")
+        self.file_html.write("\t\t <link rel='stylesheet' type='text/css' href='x3dom/x3dom.css'></link>\n")
         self.file_html.write("\t\t <script type='text/javascript' src='https://code.jquery.com/jquery-3.6.3.min.js'></script>\n")
         self.file_html.write("\n\t\t<style>\n"+tabs(3)+"x3d\n"+tabs(4)+"{\n"+tabs(5)+"border:2px solid darkorange;\n"+tabs(5)+"width:95%;\n"+tabs(5)+"height: 80%;\n"+tabs(3)+"}\n"+tabs(3)+"</style>\n\t</head>\n\t<body>\n")
         
@@ -1079,7 +1079,7 @@ class write_html:
                 else:
                     self.file_html.write(tabs(2)+'&nbsp <b>Cube %s (%s):</b>\n'%(nc,self.units[0]))
                 for i in range(self.nlayers[nc]):
-                    ca = np.array(l_colors[nc][i].split(' ')).astype(np.float)*255
+                    ca = np.array(l_colors[nc][i].split(' ')).astype(float)*255
                     c = 'rgb('+str(ca.astype(int))[1:-1]+')'
                     if (ca[0]*0.299 + ca[1]*0.587 + ca[2]*0.114) > 130:
                         self.file_html.write(tabs(3)+'<button id="%sbut%s" onclick="setHI%slayer%s();" style="font-size:20px ; border:5px dashed black ; background:%s ; color:black"><b>%s</b></button>\n'%(nc,i,nc,i,c,np.round(l_isolevels[nc][i],1)))
@@ -1090,7 +1090,7 @@ class write_html:
             self.file_html.write(tabs(2)+'<br><br>\n')
             self.file_html.write(tabs(2)+' &nbsp <b>Layers (%s):</b>\n'%self.units[0])
             for i in range(self.nlayers):
-                ca = np.array(l_colors[i].split(' ')).astype(np.float)*255
+                ca = np.array(l_colors[i].split(' ')).astype(float)*255
                 c = 'rgb('+str(ca.astype(int))[1:-1]+')'
                 self.file_html.write(tabs(3)+'<button id="but%s" onclick="setHI1layer%s();" style="font-size:20px ; background:%s ; color:black"><b>Layer %s</b></button>\n'%(i,i,c,i))
             self.file_html.write(tabs(2)+'<br><br>\n')
@@ -1237,7 +1237,7 @@ class write_html:
                     self.file_html.write(tabs(3)+"else if (cmap === '%s') {\n"%cmap)
                 for lev in range(len(l_isolevels[nc])):
                     self.file_html.write(tabs(3)+"document.getElementById('cube__%slayer%s').setAttribute('diffuseColor','%s')\n"%(nc,lev,diffCol[lev]))
-                    ca = np.array(diffCol[lev].split(' ')).astype(np.float)*255
+                    ca = np.array(diffCol[lev].split(' ')).astype(float)*255
                     c = str(ca.astype(int))[1:-1]
                     self.file_html.write(tabs(3)+"document.getElementById('%sbut%s').style.background = 'rgb(%s)';\n"%(nc,lev,c))
                     if (ca[0]*0.299 + ca[1]*0.587 + ca[2]*0.114) > 130: 
@@ -1315,10 +1315,10 @@ class write_html:
         self.file_html.write(tabs(2)+"<script>\n")
         
         self.file_html.write(tabs(2)+"function setimage2d()\n\t\t{\n")
-        self.file_html.write(tabs(2)+"if(document.getElementById('cube__immat').getAttribute('transparency') != '0')\n")
-        self.file_html.write(tabs(3)+"document.getElementById('cube__immat').setAttribute('transparency', '0');\n")
+        self.file_html.write(tabs(2)+"if(document.getElementById('cube__image2d').getAttribute('scale') != '1 1 1')\n")
+        self.file_html.write(tabs(3)+"document.getElementById('cube__image2d').setAttribute('scale', '1 1 1');\n")
         self.file_html.write(tabs(2)+"else \n")
-        self.file_html.write(tabs(3)+"document.getElementById('cube__immat').setAttribute('transparency', '1');\n")
+        self.file_html.write(tabs(3)+"document.getElementById('cube__image2d').setAttribute('scale', '0 0 0');\n")
         self.file_html.write(tabs(2)+"}\n\t\t</script>\n")
 
             
@@ -1664,10 +1664,11 @@ def change_magnitude(data, magnitude='rms'):
         return data/np.max(data)*100
     
 
-def create_colormap(colormap, isolevels, start=0, end=255):
+def create_colormap(colormap, isolevels, start=0, end=255,lightdark=False):
     colors = cm.get_cmap(colormap)(range(256))[:,:-1]
-    if np.sum(colors[0]) < np.sum(colors[-1]):
-        colors = colors[::-1]
+    if lightdark:
+    	if np.sum(colors[0]) < np.sum(colors[-1]):
+        	colors = colors[::-1]
     cmap = []
     for i in range(len(isolevels)):
         m = (end-start)/(np.max(isolevels)-np.min(isolevels))
