@@ -346,7 +346,7 @@ class write_x3d:
         if meta != None:
             for met in meta.keys():
                 self.file_x3d.write('\n\t<meta name="%s" content="%s"/>'%(met,meta[met]))
-        self.file_x3d.write('\n </head>\n\t<Scene doPickPass="%s">\n\t\t<Background skyColor="0.6 0.6 0.6"/>'%picking)
+        self.file_x3d.write('\n </head>\n\t<Scene doPickPass="%s">\n\t\t<Background DEF="back" skyColor="0.6 0.6 0.6"/>'%picking)
         self.file_x3d.write('\n\t\t<NavigationInfo type=\'"EXAMINE" "ANY"\' speed="4" headlight="true"/>')
         self.file_x3d.write('\n\t\t<DirectionalLight ambientIntensity="1" intensity="0" color="1 1 1"/>')
         self.file_x3d.write('\n\t\t<Transform DEF="ROOT" translation="0 0 0">')
@@ -476,7 +476,7 @@ class write_x3d:
         #create galaxy crosses and spheres
         for i, gal in enumerate(gals.keys()):
             #galaxy crosses
-            self.file_x3d.write(tabs(3)+'<Transform DEF="gct%s" translation="0 0 0" rotation="0 0 1 -0" scale="1 1 1">\n'%i)
+            self.file_x3d.write(tabs(3)+'<Transform DEF="%s_cross_tra" translation="0 0 0" rotation="0 0 1 -0" scale="1 1 1">\n'%gal)
             self.file_x3d.write(tabs(4)+'<Shape ispickable="false">\n')
             self.file_x3d.write(tabs(5)+'<Appearance>\n')
             self.file_x3d.write(tabs(6)+'<Material DEF="%s" ambientIntensity="0" emissiveColor="0 0 0" diffuseColor="0 0 0" specularColor="0 0 0" shininess="0.0078" transparency="0"/>\n'%(gal+'_cross'))
@@ -496,7 +496,7 @@ class write_x3d:
             self.file_x3d.write(tabs(6)+'"/>\n')
             self.file_x3d.write(tabs(3)+'</IndexedLineSet>\n\t\t\t\t</Shape>\n\t\t\t</Transform>\n')
             #galaxy spheres (ADD SCALE, ROTATION, ETC.??)
-            self.file_x3d.write(tabs(3)+'<Transform DEF="gst%s" translation="%s %s %s">\n'%(i,vec[0],vec[1],vec[2]))
+            self.file_x3d.write(tabs(3)+'<Transform DEF="%s_sphere_tra" translation="%s %s %s">\n'%(gal,vec[0],vec[1],vec[2]))
             self.file_x3d.write(tabs(4)+'<Shape ispickable="false">\n')
             self.file_x3d.write(tabs(5)+'<Sphere radius="%s" solid="false"/>\n'%sphereradius)
             self.file_x3d.write(tabs(5)+'<Appearance>\n')
@@ -660,7 +660,7 @@ class write_x3d:
                 self.file_x3d.write('\n\t\t\t\t\t\t<Material DEF="%s" diffuseColor="0 0 0" emissiveColor="0 0 0"/>'%('label_'+gal))
                 self.file_x3d.write('\n\t\t\t\t\t\t</Appearance>')
                 self.file_x3d.write('\n\t\t\t\t\t\t<Text string="%s">'%gal)
-                self.file_x3d.write('\n\t\t\t\t\t\t\t<FontStyle family=\'"SANS"\' topToBottom="false" justify=\'"BEGIN" "BEGIN"\' size="8"/>')
+                self.file_x3d.write('\n\t\t\t\t\t\t\t<FontStyle DEF="%s_fs" family=\'"SANS"\' topToBottom="false" justify=\'"BEGIN" "BEGIN"\' size="8"/>'%gal)
                 self.file_x3d.write('\n\t\t\t\t\t\t</Text> \n\t\t\t\t\t\t</Shape>\n\t\t\t\t\t</Billboard>\n\t\t\t\t</Transform>')
         
         axlabnames = get_axlabnames(head=self.hdr, units=self.units)
@@ -804,6 +804,15 @@ class write_html:
         else:
             self.nlayers = [len(l_isolevels)]
             numcubes = len(self.nlayers)
+            
+        self.file_html.write(tabs(2)+"<script>\n")
+        self.file_html.write(tabs(3)+"function hideall() {\n")
+        for nc in range(numcubes):
+            for i in range(self.nlayers[nc]):
+                self.file_html.write(tabs(4)+"setHI%slayer%s();\n"%(nc,i))
+        self.file_html.write(tabs(3)+"}\n")
+        self.file_html.write(tabs(2)+"</script>\n")
+
         for nc in range(numcubes):
             for i in range(self.nlayers[nc]):
                 if i != self.nlayers[nc]-1:
@@ -1006,10 +1015,27 @@ class write_html:
         #correct camera postition and FoV, not to clip (hide) the figure
         ma = np.max(maxcoord)
         self.file_html.write(tabs(3)+"<OrthoViewpoint id=\"front\" bind='false' centerOfRotation='0,0,0' description='RA-Dec view' fieldOfView='[-%s,-%s,%s,%s]' isActive='false' metadata='X3DMetadataObject' orientation='0,1,0,3.141593' position='0,0,-%s' zFar='10000' zNear='0.0001' ></OrthoViewpoint>\n"%(ramax*1.4,decmax*1.4,ramax*1.4,decmax*1.4,ma*1.4))
-        self.file_html.write("\t\t\t <OrthoViewpoint id=\"side\" bind='false' centerOfRotation='0,0,0' description='Z - Dec view' fieldOfView='[-%s,-%s,%s,%s]' isActive='false' metadata='X3DMetadataObject' orientation='0,-1,0,1.570796' position='-%s,0,0' zFar='10000' zNear='0.0001' ></OrthoViewpoint>\n"%(vmax*1.4,decmax*1.4,vmax*1.4,decmax*1.4,ma*1.4))
-        self.file_html.write("\t\t\t <OrthoViewpoint id=\"side2\" bind='false' centerOfRotation='0,0,0' description='Z - RA view' fieldOfView='[-%s,-%s,%s,%s]' isActive='false' metadata='X3DMetadataObject' orientation='1,1,1,4.1888' position='0,%s,0' zFar='10000' zNear='0.0001' ></OrthoViewpoint>\n"%(vmax*1.4,ramax*1.4,vmax*1.4,ramax*1.4,ma*1.4))
+        self.file_html.write(tabs(3)+"<OrthoViewpoint id=\"side\" bind='false' centerOfRotation='0,0,0' description='Z - Dec view' fieldOfView='[-%s,-%s,%s,%s]' isActive='false' metadata='X3DMetadataObject' orientation='0,-1,0,1.570796' position='-%s,0,0' zFar='10000' zNear='0.0001' ></OrthoViewpoint>\n"%(vmax*1.4,decmax*1.4,vmax*1.4,decmax*1.4,ma*1.4))
+        self.file_html.write(tabs(3)+"<OrthoViewpoint id=\"side2\" bind='false' centerOfRotation='0,0,0' description='Z - RA view' fieldOfView='[-%s,-%s,%s,%s]' isActive='false' metadata='X3DMetadataObject' orientation='1,1,1,4.1888' position='0,%s,0' zFar='10000' zNear='0.0001' ></OrthoViewpoint>\n"%(vmax*1.4,ramax*1.4,vmax*1.4,ramax*1.4,ma*1.4))
 
-    def buttons(self, l_isolevels=None, l_colors=None, colormaps=None, hide2d=False, scalev=False, move2d=False, lineLabs=False, centRot=False):
+    def func_background(self):
+        self.file_html.write(tabs(3)+"<script>\n")
+        self.file_html.write(tabs(4)+"function hex2Rgb(hex) {\n")
+        self.file_html.write(tabs(5)+"var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);\n")
+        self.file_html.write(tabs(5)+"var r = parseInt(result[1], 16)/255.;\n")
+        self.file_html.write(tabs(5)+"var g = parseInt(result[2], 16)/255.;\n")
+        self.file_html.write(tabs(5)+"var b = parseInt(result[3], 16)/255.;\n")
+        self.file_html.write(tabs(5)+"return r.toString()+' '+g.toString()+' '+b.toString()\n")
+        self.file_html.write(tabs(4)+"}\n")
+        self.file_html.write(tabs(4)+"const background = document.querySelector('#back-choice');\n")
+        self.file_html.write(tabs(4)+"background.addEventListener('change', change_background());\n")
+        self.file_html.write(tabs(4)+"function change_background() {\n")
+        self.file_html.write(tabs(5)+"const backCol = background.value; \n")
+        self.file_html.write(tabs(5)+"document.getElementById('cube__back').setAttribute('skyColor', hex2Rgb(backCol));\n")
+        self.file_html.write(tabs(4)+"}\n")
+        self.file_html.write(tabs(3)+"</script>\n")
+
+    def buttons(self, l_isolevels=None, l_colors=None, colormaps=None, hide2d=False, scalev=False, move2d=False, lineLabs=False, centRot=False, background=False):
         """
         Makes the buttons to apply the functions to hide/show elements, if
         funcitons such as func_layers() or func_galaxies() have been created.
@@ -1065,8 +1091,16 @@ class write_html:
             
         if self.anim:
             self.file_html.write(tabs(3)+'<button id="anim" onclick="animation()">Animation</button>')
+        
+        if background:
+            self.file_html.write(tabs(3)+'&nbsp <label for="back-choice"><b>Background:</b> </label>;\n')
+            self.file_html.write(tabs(3)+'<input oninput="change_background()" id="back-choice" type="color" value="#999999">\n')
 
-                
+        if self.gallabs:
+            self.file_html.write(tabs(3)+'&nbsp <b>Font Size:</b>\n')
+            self.file_html.write(tabs(3)+'&nbsp <label for="back-choice">Galaxy: </label>\n')
+            self.file_html.write(tabs(3)+'<input oninput="change_galsize()" id="galsize-choice" type="number" min="2" max="100" value="8", step="2">\n')
+
         if l_isolevels is not None:
             if type(self.nlayers) == list:
                 numcubes = len(self.nlayers)
@@ -1085,6 +1119,7 @@ class write_html:
                         self.file_html.write(tabs(3)+'<button id="%sbut%s" onclick="setHI%slayer%s();" style="font-size:20px ; border:5px dashed black ; background:%s ; color:black"><b>%s</b></button>\n'%(nc,i,nc,i,c,np.round(l_isolevels[nc][i],1)))
                     else:
                         self.file_html.write(tabs(3)+'<button id="%sbut%s" onclick="setHI%slayer%s();" style="font-size:20px ; border:5px dashed black ; background:%s ; color:white"><b>%s</b></button>\n'%(nc,i,nc,i,c,np.round(l_isolevels[nc][i],1)))
+            self.file_html.write(tabs(3)+'&nbsp <button id="all" onclick="hideall()"><b>Invert</b></button>')
             self.file_html.write(tabs(2)+'<br><br>\n')
         elif l_isolevels is None and self.nlayers:
             self.file_html.write(tabs(2)+'<br><br>\n')
@@ -1173,6 +1208,20 @@ class write_html:
             self.file_html.write(tabs(4)+"document.getElementById('cube__image2d').setAttribute('translation', '0 0 '+(move-1)*%s); }\n"%diff_vmax)
             self.file_html.write(tabs(2)+"}\n")
             self.file_html.write(tabs(2)+"</script>\n")
+
+    def func_galsize(self, gals):
+        self.file_html.write(tabs(2)+"<script>\n")
+        self.file_html.write(tabs(3)+"const galsize = document.querySelector('#galsize-choice');\n")
+        self.file_html.write(tabs(3)+"galsize.addEventListener('change', change_galsize());\n")
+        self.file_html.write(tabs(3)+"function change_galsize() {\n")
+        self.file_html.write(tabs(4)+"let gals = %s;\n"%str(list(gals.keys())))
+        self.file_html.write(tabs(4)+"const gsval = galsize.value/8.;\n")
+        self.file_html.write(tabs(4)+"for (const gal of gals) {\n")
+        self.file_html.write(tabs(5)+"document.getElementById('cube__'+gal+'_sphere_tra').setAttribute('scale', gsval.toString()+' '+gsval.toString()+' '+gsval.toString());\n")
+        self.file_html.write(tabs(5)+"document.getElementById('cube__'+gal+'_fs').setAttribute('size', gsval*8);\n")
+        self.file_html.write(tabs(5)+"}\n")
+        self.file_html.write(tabs(3)+"}\n")
+        self.file_html.write(tabs(2)+"</script>\n")
 
     def func_setCenterOfRotation(self, centers):
         """
@@ -1279,8 +1328,8 @@ class write_html:
                 v = gals[gal]['coord'][2]
                 a = gals[gal]['coord'][0]
                 b = gals[gal]['coord'][1]
-                self.file_html.write(tabs(3)+"document.getElementById('cube__gct%s').setAttribute('translation', '0 0 '+(sca-1)*%s);\n"%(n,v))
-                self.file_html.write(tabs(3)+"document.getElementById('cube__gst%s').setAttribute('translation', '%s %s '+sca*%s);\n"%(n,a,b,v))
+                self.file_html.write(tabs(3)+"document.getElementById('cube__%s_cross_tra').setAttribute('translation', '0 0 '+(sca-1)*%s);\n"%(gal,v))
+                self.file_html.write(tabs(3)+"document.getElementById('cube__%s_sphere_tra').setAttribute('translation', '%s %s '+sca*%s);\n"%(gal,a,b,v))
                 self.file_html.write(tabs(3)+"document.getElementById('cube__glt%s').setAttribute('translation', '%s %s '+sca*%s);\n"%(n,a,b,v))
         #scale grids
         self.file_html.write("\t\t\t document.getElementById('cube__tlt').setAttribute('scale', '1 1 '+sca);\n")
@@ -1647,7 +1696,7 @@ def calc_scale(shape):
     #scale = 0.71096782*np.sqrt(shape)-3.84296963 #sqrt
     #scale = 0.02985932*shape-0.16425599 #linear
     #scale = 3.72083418*np.log(shape)-19.84129672 #logarithmic
-    scale = shape*0.01 #linear, seems best
+    scale = shape*0.01 #linear, seems best (ORIGINALLY 0.01)
     #if scale < 1:
     #    scale = 1
     return scale
@@ -1664,11 +1713,15 @@ def change_magnitude(data, magnitude='rms'):
         return data/np.max(data)*100
     
 
-def create_colormap(colormap, isolevels, start=0, end=255,lightdark=False):
+def create_colormap(colormap, isolevels, start=0, end=255, lightdark=True):
+    """
+    Lightdark: if True, the colormap will be reversed if the first color is darker than the last one.
+    """
     colors = cm.get_cmap(colormap)(range(256))[:,:-1]
     if lightdark:
     	if np.sum(colors[0]) < np.sum(colors[-1]):
-        	colors = colors[::-1]
+            colors = colors[::-1]
+    
     cmap = []
     for i in range(len(isolevels)):
         m = (end-start)/(np.max(isolevels)-np.min(isolevels))
