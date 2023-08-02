@@ -469,10 +469,10 @@ class write_x3d:
         ramin1, _, ramax1 = self.diff_coords[0]
         decmin1, _, decmax1 = self.diff_coords[1]
         vmin1, _, vmax1 = self.diff_coords[2]
-        m = np.min([ramax1-ramin1, decmax1-decmin1, vmax1-vmin1])
+        self.mar = np.min([ramax1-ramin1, decmax1-decmin1, vmax1-vmin1])
         
-        sphereradius = m/45 #min(self.delta)*8
-        crosslen = m/20 #min(self.delta)*20
+        sphereradius = self.mar/45 #min(self.delta)*8
+        crosslen = self.mar/20 #min(self.delta)*20
         #create galaxy crosses and spheres
         for i, gal in enumerate(gals.keys()):
             #galaxy crosses
@@ -601,6 +601,78 @@ class write_x3d:
         self.file_x3d.write('\n'+tabs(2)+'<Route fromNode="move" fromField ="value_changed" toNode="ROOT" toField="rotation"></Route>')
 
 
+    def make_markers(self, geom, points, shape, color='1 0 1', labels=None):
+        """
+        geom = 'tube', 'Sphere', 'Box', 'Cone', 'Torus', 'Arc2D', 'ArcClose2D', 'Circle2D', 'Disk2D', 'Polyline2D',
+        'Polypoint2D', 'Rectangle2D', 'TriangleSet2D'
+
+        Parameters
+        ----------
+        points : TYPE
+            points = np.array([[1,2,1],[2,2,1],[],...]). Shape = (n,3)
+        """
+        if geom == 'tube':
+            # get mean point between consecutive points
+            trans = np.array([str(np.mean((points[i],points[i+1]), axis=0))[1:-1] for i in range(len(points)-1)])
+            # get distance between consecutive points
+            diff = np.diff(points, axis=0)
+            heights = np.linalg.norm(diff,axis=1)
+            #get rotation for each tube
+            angles = np.arccos(diff[:,1]/heights)
+
+            for i in range(self.ntubes, self.ntubes+len(points)-1):
+                self.file_x3d.write("\n"+tabs(3)+'<Transform DEF="tubtra%s" translation="%s" rotation="%.4f 0 %.4f %.4f" scale="1 1 1">\n'%(i,trans[i],diff[i,2],-diff[i,0],angles[i]))
+                self.file_x3d.write(tabs(4)+'<Shape ispickable="false">\n')
+                self.file_x3d.write(tabs(5)+'<Cylinder DEF="tube%s" height="%s" radius="%s" solid="false"/>\n'%(i,heights[i]*1.05, 5.0))
+                self.file_x3d.write(tabs(5)+'<Appearance>\n')
+                self.file_x3d.write(tabs(6)+'<Material DEF="tubmat%s" ambientIntensity="0" emissiveColor="0 0 0" diffuseColor="%s" specularColor="0 0 0" shininess="0.0078" transparency="0"/>\n'%(i, color))
+                self.file_x3d.write(tabs(5)+'</Appearance>\n')
+                self.file_x3d.write(tabs(4)+'</Shape>\n')
+                self.file_x3d.write(tabs(3)+'</Transform>\n')
+
+            self.ntubes = self.ntubes + len(points)-1
+
+        if geom == 'sphere':
+            for i in range(self.nspheres, self.nspheres+len(points)):
+                self.file_x3d.write("\n"+tabs(3)+'<Transform DEF="spheretra%s" translation="%s" scale="1 1 1">\n'%(i,str(points[i])[1:-1]))
+                self.file_x3d.write(tabs(4)+'<Shape ispickable="false">\n')
+                if hasattr(shape, "__len__") and len(shape) == len(points):
+                    self.file_x3d.write(tabs(5)+'<Sphere DEF="sphere%s" radius="%s" solid="false"/>\n'%(i,shape[i]))
+                else:
+                    self.file_x3d.write(tabs(5)+'<Sphere DEF="sphere%s" radius="%s" solid="false"/>\n'%(i,shape))
+                self.file_x3d.write(tabs(5)+'<Appearance>\n')
+                if type(color) == list:
+                    self.file_x3d.write(tabs(6)+'<Material DEF="spheremat%s" ambientIntensity="0" emissiveColor="0 0 0" diffuseColor="%s" specularColor="0 0 0" shininess="0.0078" transparency="0"/>\n'%(i, color[i]))
+                else:
+                    self.file_x3d.write(tabs(6)+'<Material DEF="spheremat%s" ambientIntensity="0" emissiveColor="0 0 0" diffuseColor="%s" specularColor="0 0 0" shininess="0.0078" transparency="0"/>\n'%(i, color))
+                self.file_x3d.write(tabs(5)+'</Appearance>\n')
+                self.file_x3d.write(tabs(4)+'</Shape>\n')
+                self.file_x3d.write(tabs(3)+'</Transform>\n')
+            self.nspheres = self.nspheres + len(points)
+        
+        if geom == 'box':
+            for i in range(self.nboxes, self.nboxes+len(points)):
+                self.file_x3d.write("\n"+tabs(3)+'<Transform DEF="boxtra%s" translation="%s" scale="1 1 1">\n'%(i,str(points[i])[1:-1]))
+                self.file_x3d.write(tabs(4)+'<Shape ispickable="false">\n')
+                if hasattr(shape, "shape") and shape.shape == points.shape:
+                    size = str(shape[i])[1:-1]
+                else:
+                    size = '%s %s %s'%(shape*2, shape*2, shape*2)
+                self.file_x3d.write(tabs(5)+'<Box DEF="box%s" size="%s" solid="false"/>\n'%(i,size))
+                self.file_x3d.write(tabs(5)+'<Appearance>\n')
+                if type(color) == list:
+                    self.file_x3d.write(tabs(6)+'<Material DEF="boxmat%s" ambientIntensity="0" emissiveColor="0 0 0" diffuseColor="%s" specularColor="0 0 0" shininess="0.0078" transparency="0"/>\n'%(i, color[i]))
+                else:
+                    self.file_x3d.write(tabs(6)+'<Material DEF="boxmat%s" ambientIntensity="0" emissiveColor="0 0 0" diffuseColor="%s" specularColor="0 0 0" shininess="0.0078" transparency="0"/>\n'%(i, color))
+                self.file_x3d.write(tabs(5)+'</Appearance>\n')
+                self.file_x3d.write(tabs(4)+'</Shape>\n')
+                self.file_x3d.write(tabs(3)+'</Transform>\n')
+            self.nboxes = self.nboxes + len(points)
+            
+            # Create other shapes
+            # Add labels
+                
+        
     def make_labels(self, gals=None, axlab=None):
         """
         Create the labels of different elements in the figure.
@@ -765,7 +837,9 @@ class write_html:
         self.viewp = False
         self.units = units
         self.anim = False
-            
+        self.boxbut = False
+        self.sphbut = False
+
         self.file_html = open(filename, 'w')
         self.file_html.write('<html>\n\t <head>\n')
         self.file_html.write('\t\t <title> %s </title>\n'%tabtitle)
@@ -774,7 +848,6 @@ class write_html:
         self.file_html.write("\t\t <link rel='stylesheet' type='text/css' href='x3dom/x3dom.css'></link>\n")
         self.file_html.write("\t\t <script type='text/javascript' src='https://code.jquery.com/jquery-3.6.3.min.js'></script>\n")
         self.file_html.write("\n\t\t<style>\n"+tabs(3)+"x3d\n"+tabs(4)+"{\n"+tabs(5)+"border:2px solid darkorange;\n"+tabs(5)+"width:95%;\n"+tabs(5)+"height: 80%;\n"+tabs(3)+"}\n"+tabs(3)+"</style>\n\t</head>\n\t<body>\n")
-        
         
         if pagetitle is not None:
             self.file_html.write('\t<h1 align="middle"> %s </h1>\n'%pagetitle)
@@ -895,6 +968,40 @@ class write_html:
         self.file_html.write(tabs(3)+"else \n")
         self.file_html.write(tabs(4)+"document.getElementById('cube__ticklines').setAttribute('transparency', '1');\n")
         self.file_html.write(tabs(2)+"}\n\t\t </script>\n")
+    
+    def func_tubes(self, ntubes):
+        self.tubes = True
+        self.file_html.write(tabs(2)+"<script>\n\t\tfunction settubes()\n\t\t{\n")
+        self.file_html.write(tabs(3)+"if(document.getElementById('cube__tubmat0').getAttribute('transparency')!= '0') {\n")
+        for i in range(ntubes):
+            self.file_html.write(tabs(4)+"document.getElementById('cube__tubmat%s').setAttribute('transparency', '0');\n"%i)
+        self.file_html.write(tabs(3)+" } else {\n")
+        for i in range(ntubes):
+            self.file_html.write(tabs(4)+"document.getElementById('cube__tubmat%s').setAttribute('transparency', '1');\n"%i)
+        self.file_html.write(tabs(3)+"}\n\t\t}\n\t\t </script>\n")
+
+    def func_markers(self, nbox=0, nsph=0):
+        if nbox != 0:
+            self.boxbut = True
+            self.file_html.write(tabs(2)+"<script>\n\t\tfunction setbox()\n\t\t{\n")
+            self.file_html.write(tabs(3)+"if(document.getElementById('cube__boxmat0').getAttribute('transparency')!= '0') {\n")
+            for i in range(nbox):
+                self.file_html.write(tabs(4)+"document.getElementById('cube__boxmat%s').setAttribute('transparency', '0');\n"%i)
+            self.file_html.write(tabs(3)+" } else {\n")
+            for i in range(nbox):
+                self.file_html.write(tabs(4)+"document.getElementById('cube__boxmat%s').setAttribute('transparency', '1');\n"%i)
+            self.file_html.write(tabs(3)+"}\n\t\t}\n\t\t </script>\n")
+
+        if nsph != 0:
+            self.sphbut = True
+            self.file_html.write(tabs(2)+"<script>\n\t\tfunction setsph()\n\t\t{\n")
+            self.file_html.write(tabs(3)+"if(document.getElementById('cube__sphmat0').getAttribute('transparency')!= '0') {\n")
+            for i in range(nbox):
+                self.file_html.write(tabs(4)+"document.getElementById('cube__sphmat%s').setAttribute('transparency', '0');\n"%i)
+            self.file_html.write(tabs(3)+" } else {\n")
+            for i in range(nbox):
+                self.file_html.write(tabs(4)+"document.getElementById('cube__sphmat%s').setAttribute('transparency', '1');\n"%i)
+            self.file_html.write(tabs(3)+"}\n\t\t}\n\t\t </script>\n")
             
     def func_axes(self, axes):
         self.axes = True
@@ -1065,7 +1172,7 @@ class write_html:
             #unccoment next line for next view button
             #self.file_html.write('\t\t   <button onclick="document.getElementById(\'cubeFixed\').runtime.nextView();">Next View</button>\n')
                 
-        if self.grids or self.gals or self.gallabs or self.axes or hide2d:
+        if self.grids or self.gals or self.gallabs or self.axes or hide2d or self.tubes or self.boxbut or self.sphbut:
             self.file_html.write('\n'+tabs(2)+'&nbsp <b>Labels:</b>\n')
         if self.grids:
             self.file_html.write(tabs(3)+'<button onclick="setgrids();" >Grids</button>\n')
@@ -1100,6 +1207,13 @@ class write_html:
             self.file_html.write(tabs(3)+'&nbsp <b>Font Size:</b>\n')
             self.file_html.write(tabs(3)+'&nbsp <label for="back-choice">Galaxy: </label>\n')
             self.file_html.write(tabs(3)+'<input oninput="change_galsize()" id="galsize-choice" type="number" min="2" max="100" value="8", step="2">\n')
+           
+        if self.tubes:
+            self.file_html.write(tabs(3)+'<button onclick="settubes();" >Tube</button>\n')
+        if self.boxbut:
+            self.file_html.write(tabs(3)+'<button onclick="setbox();" >Boxes</button>\n')
+        if self.sphbut:
+            self.file_html.write(tabs(3)+'<button onclick="setsph();" >Spheres</button>\n')
 
         if l_isolevels is not None:
             if type(self.nlayers) == list:
@@ -1295,11 +1409,33 @@ class write_html:
                         self.file_html.write(tabs(3)+"document.getElementById('%sbut%s').style.color = 'white';\n"%(nc,lev))
                 self.file_html.write(tabs(3)+"}\n")
             self.file_html.write(tabs(2)+"}\n\t\t </script>\n")
-      
-        
-    def func_scalev(self, coords, gals=None, axes='both', move2d=True):
+            
+            
+    def func_scalev(self, nlayers, gals=None, axes='both', coords=None, vmax=None, points=None, box=None, sph=None):
         """
         
+
+        Parameters
+        ----------
+        nlayers : TYPE
+            DESCRIPTION.
+        gals : TYPE, optional
+            DESCRIPTION. The default is None.
+        axes : TYPE, optional
+            DESCRIPTION. The default is 'both'.
+        coords : TYPE, optional
+            DESCRIPTION. The default is None.
+        vmax : TYPE, optional
+            DESCRIPTION. The default is None.
+        tubes : TYPE, optional
+            DESCRIPTION. The default is None.
+        markers : dict, optional
+            markers = {'box':3 , 'sph':4}. The default is None.
+
+        Returns
+        -------
+        None.
+
         """
         self.file_html.write(tabs(2)+"<script>\n")
         self.file_html.write(tabs(2)+"const inpscasv = document.querySelector('#scalev');\n")
@@ -1333,7 +1469,33 @@ class write_html:
                 self.file_html.write(tabs(3)+"document.getElementById('cube__glt%s').setAttribute('translation', '%s %s '+sca*%s);\n"%(n,a,b,v))
         #scale grids
         self.file_html.write("\t\t\t document.getElementById('cube__tlt').setAttribute('scale', '1 1 '+sca);\n")
+
+        #scale tubes and markers
+        if points is not None:
+            trans = np.array([np.mean((points[i],points[i+1]), axis=0) for i in range(len(points)-1)])
+            diff = np.diff(points, axis=0)
+            for i in range(len(points)-1):
+                self.file_html.write(tabs(3)+"document.getElementById('cube__tubtra%s').setAttribute('translation', '%s %s '+sca*%s);\n"%(i,trans[i,0],trans[i,1],trans[i,2]))
+                if diff[i,2] != 0:
+                    if diff[i,1] == 0:
+                        self.file_html.write(tabs(3)+"const norm%s = Math.sqrt(%s+(sca*%s)**2);\n"%(i,diff[i,0]**2,diff[i,2]))
+                        self.file_html.write(tabs(3)+"document.getElementById('cube__tubtra%s').setAttribute('rotation', sca*%s+' 0 %s 1.57079633');\n"%(i,diff[i,2],-diff[i,0]))
+                    else:
+                        self.file_html.write(tabs(3)+"const norm%s = Math.sqrt(%s+(sca*%s)**2);\n"%(i,diff[i,0]**2+diff[i,1]**2,diff[i,2]))
+                        self.file_html.write(tabs(3)+"const angley%s = Math.acos(%s/norm%s);\n"%(i,diff[i,1],i))
+                        self.file_html.write(tabs(3)+"document.getElementById('cube__tubtra%s').setAttribute('rotation', sca*%s+' 0 %s '+angley%s);\n"%(i,diff[i,2],-diff[i,0],i))
+                    self.file_html.write(tabs(3)+"document.getElementById('cube__tube%s').setAttribute('height', norm%s*1.05);\n"%(i,i))
+                    
+        #box always changes scale and translation, sphere only translation
+        if box is not None:
+            for i in range(len(box)):
+                self.file_html.write(tabs(3)+"document.getElementById('cube__boxtra%s').setAttribute('translation', '%s %s '+sca*%s);\n"%(i,box[i,0],box[i,1],box[i,2]))
+                self.file_html.write(tabs(3)+"document.getElementById('cube__boxtra%s').setAttribute('scale','1 1 '+sca);\n"%i)
         
+        if sph is not None:
+            for i in range(len(sph)):
+                self.file_html.write(tabs(3)+"document.getElementById('cube__sphtra%s').setAttribute('translation', '%s %s '+sca*%s);\n"%(i,sph[i,0],sph[i,1],sph[i,2]))
+
         ax, axtick = labpos(coords)
         
         for i in range(12):
