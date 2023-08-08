@@ -898,6 +898,37 @@ class write_html:
             
     def func_axes(self, axes):
         self.axes = True
+
+        if axes == 'both':
+            self.file_html.write(tabs(2)+"<script>\n")
+            self.file_html.write(tabs(2)+"function setaxes()\n")
+            self.file_html.write(tabs(2)+"{\n")
+            self.file_html.write(tabs(2)+"if(document.getElementById('cube__axlab_diff1').getAttribute('transparency') == '0') {\n")
+            self.file_html.write(tabs(3)+"for (i=0; i<12; i++) {\n")
+            self.file_html.write(tabs(3)+"if (i<6) {\n")
+            self.file_html.write(tabs(4)+"document.getElementById('cube__axlab_diff'+i).setAttribute('transparency', '1');\n")
+            self.file_html.write(tabs(4)+"document.getElementById('cube__axlab_real'+i).setAttribute('transparency', '0');\n")
+            self.file_html.write(tabs(3)+"}\n")
+            self.file_html.write(tabs(4)+"document.getElementById('cube__axtick_diff'+i).setAttribute('transparency', '1');\n")
+            self.file_html.write(tabs(4)+"document.getElementById('cube__axtick_real'+i).setAttribute('transparency', '0');\n")
+            self.file_html.write(tabs(3)+"}\n")
+            self.file_html.write(tabs(2)+"}\n")
+            self.file_html.write(tabs(2)+"else if (document.getElementById('cube__axlab_real1').getAttribute('transparency') == '0') {\n")
+            self.file_html.write(tabs(3)+"for (i=0; i<12; i++) {\n")
+            self.file_html.write(tabs(3)+"if (i<6) {\n")
+            self.file_html.write(tabs(4)+"document.getElementById('cube__axlab_real'+i).setAttribute('transparency', '1');\n")
+            self.file_html.write(tabs(3)+"}\n")
+            self.file_html.write(tabs(4)+"document.getElementById('cube__axtick_real'+i).setAttribute('transparency', '1');\n")
+            self.file_html.write(tabs(3)+"}\n")
+            self.file_html.write(tabs(2)+"}\n")
+            self.file_html.write(tabs(2)+"else {\n")
+            self.file_html.write(tabs(3)+"for (i=0; i<12; i++) {\n")
+            self.file_html.write(tabs(3)+"if (i<6) {\n")
+            self.file_html.write(tabs(4)+"document.getElementById('cube__axlab_diff'+i).setAttribute('transparency', '0');\n")
+            self.file_html.write(tabs(3)+"}\n")
+            self.file_html.write(tabs(4)+"document.getElementById('cube__axtick_diff'+i).setAttribute('transparency', '0');\n")
+            self.file_html.write(tabs(3)+"}\n")
+
         if axes == 'diff' or axes == 'real':
             self.file_html.write("\t \t <script>\n\t\t function setaxes()\n\t \t {\n\t \t if(document.getElementById('cube__axlab_diff1').getAttribute('transparency')!= '0') {\n")
             for i in range(6):
@@ -910,27 +941,7 @@ class write_html:
             for i in range(12):
                 self.file_html.write("\t\t document.getElementById('cube__axtick_%s%s').setAttribute('transparency', '1');\n"%(axes,i))
                 
-        if axes == 'both':
-            self.file_html.write("\t \t <script>\n\t\t function setaxes()\n\t \t {\n\t \t if(document.getElementById('cube__axlab_diff1').getAttribute('transparency') == '0') {\n")
-            for i in range(6):
-                self.file_html.write("\t\t document.getElementById('cube__axlab_diff%s').setAttribute('transparency', '1');\n"%(i))
-                self.file_html.write("\t\t document.getElementById('cube__axlab_real%s').setAttribute('transparency', '0');\n"%(i))
-            for i in range(12):
-                self.file_html.write("\t\t document.getElementById('cube__axtick_diff%s').setAttribute('transparency', '1');\n"%(i))
-                self.file_html.write("\t\t document.getElementById('cube__axtick_real%s').setAttribute('transparency', '0');\n"%(i))
                 
-            self.file_html.write("\t \t }\n\t \t else if (document.getElementById('cube__axlab_real1').getAttribute('transparency') == '0') {\n")
-            for i in range(6):
-                self.file_html.write("\t\t document.getElementById('cube__axlab_real%s').setAttribute('transparency', '1');\n"%(i))
-            for i in range(12):
-                self.file_html.write("\t\t document.getElementById('cube__axtick_real%s').setAttribute('transparency', '1');\n"%(i))
-                
-            self.file_html.write("\t\t }\n\t\t else {\n")
-            for i in range(6):
-                self.file_html.write("\t\t document.getElementById('cube__axlab_diff%s').setAttribute('transparency', '0');\n"%(i))
-            for i in range(12):
-                self.file_html.write("\t\t document.getElementById('cube__axtick_diff%s').setAttribute('transparency', '0');\n"%(i))
-            
         self.file_html.write("\t\t }\n\t\t }\n\t\t </script>\n")
         
     def func_pick(self):
