@@ -889,10 +889,14 @@ class write_html:
     def func_grids(self):
         self.grids = True # to use in buttons()
         self.file_html.write(tabs(2)+"<script>\n\t\tfunction setgrids()\n\t\t{\n")
-        self.file_html.write(tabs(3)+"if(document.getElementById('cube__ticklines').getAttribute('transparency')!= '0')\n")
-        self.file_html.write(tabs(4)+"document.getElementById('cube__ticklines').setAttribute('transparency', '0');\n")
-        self.file_html.write(tabs(3)+"else \n")
+        self.file_html.write(tabs(3)+"if(document.getElementById('cube__ticklines').getAttribute('transparency') == '0') {\n")
         self.file_html.write(tabs(4)+"document.getElementById('cube__ticklines').setAttribute('transparency', '1');\n")
+        self.file_html.write(tabs(3)+"} else if (document.getElementById('cube__outline').getAttribute('transparency') == '0') {\n")
+        self.file_html.write(tabs(4)+"document.getElementById('cube__outline').setAttribute('transparency', '1');\n")
+        self.file_html.write(tabs(3)+"} else {\n")
+        self.file_html.write(tabs(4)+"document.getElementById('cube__ticklines').setAttribute('transparency', '0');\n")
+        self.file_html.write(tabs(4)+"document.getElementById('cube__outline').setAttribute('transparency', '0');\n")
+        self.file_html.write(tabs(3)+"}\n")
         self.file_html.write(tabs(2)+"}\n\t\t </script>\n")
             
     def func_axes(self, axes):
