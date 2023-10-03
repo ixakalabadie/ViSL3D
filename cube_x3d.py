@@ -328,6 +328,7 @@ class write_x3d:
         self.delta = delta
         self.hdr = header
         self.units = units
+        self.ntubes = 0
         self.real_coords, self.diff_coords = get_coords(coords[0], coords[1], coords[2])
         self.diff_coords[0] = self.diff_coords[0] * u.Unit(header["CUNIT1"]).to(units[1])
         self.diff_coords[1] = self.diff_coords[1] * u.Unit(header["CUNIT2"]).to(units[2])
@@ -469,10 +470,10 @@ class write_x3d:
         ramin1, _, ramax1 = self.diff_coords[0]
         decmin1, _, decmax1 = self.diff_coords[1]
         vmin1, _, vmax1 = self.diff_coords[2]
-        m = np.min([ramax1-ramin1, decmax1-decmin1, vmax1-vmin1])
+        self.mar = np.min([ramax1-ramin1, decmax1-decmin1, vmax1-vmin1])
         
-        sphereradius = m/45 #min(self.delta)*8
-        crosslen = m/20 #min(self.delta)*20
+        sphereradius = self.mar/45 #min(self.delta)*8
+        crosslen = self.mar/20 #min(self.delta)*20
         #create galaxy crosses and spheres
         for i, gal in enumerate(gals.keys()):
             #galaxy crosses
@@ -601,6 +602,79 @@ class write_x3d:
         self.file_x3d.write('\n'+tabs(2)+'<Route fromNode="move" fromField ="value_changed" toNode="ROOT" toField="rotation"></Route>')
 
 
+    def make_markers(self, geom, points, shape, color='1 0 1', labels=None):
+        """
+        geom = 'tube', 'Sphere', 'Box', 'Cone', 'Torus', 'Arc2D', 'ArcClose2D', 'Circle2D', 'Disk2D', 'Polyline2D',
+        'Polypoint2D', 'Rectangle2D', 'TriangleSet2D'
+
+        Parameters
+        ----------
+        points : TYPE
+            points = np.array([[1,2,1],[2,2,1],[],...]). Shape = (n,3)
+        """
+        if geom == 'tube':
+            # get mean point between consecutive points
+            trans = np.array([str(np.mean((points[i],points[i+1]), axis=0))[1:-1] for i in range(len(points)-1)])
+            # get distance between consecutive points
+            diff = np.diff(points, axis=0)
+            heights = np.linalg.norm(diff,axis=1)
+            #get rotation for each tube
+            angles = np.arccos(diff[:,1]/heights)
+
+            # create x3d object
+            for i in range(self.ntubes, self.ntubes+len(points)-1):
+                self.file_x3d.write("\n"+tabs(3)+'<Transform DEF="tubtra%s" translation="%s" rotation="%.4f 0 %.4f %.4f" scale="1 1 1">\n'%(i,trans[i],diff[i,2],-diff[i,0],angles[i]))
+                self.file_x3d.write(tabs(4)+'<Shape ispickable="false">\n')
+                self.file_x3d.write(tabs(5)+'<Cylinder DEF="tube%s" height="%s" radius="%s" solid="false"/>\n'%(i,heights[i]*1.05, 5.0))
+                self.file_x3d.write(tabs(5)+'<Appearance>\n')
+                self.file_x3d.write(tabs(6)+'<Material DEF="tubmat%s" ambientIntensity="0" emissiveColor="0 0 0" diffuseColor="%s" specularColor="0 0 0" shininess="0.0078" transparency="0"/>\n'%(i, color))
+                self.file_x3d.write(tabs(5)+'</Appearance>\n')
+                self.file_x3d.write(tabs(4)+'</Shape>\n')
+                self.file_x3d.write(tabs(3)+'</Transform>\n')
+
+            self.ntubes = self.ntubes + len(points)-1
+
+        if geom == 'sphere':
+            for i in range(self.nspheres, self.nspheres+len(points)):
+                self.file_x3d.write("\n"+tabs(3)+'<Transform DEF="spheretra%s" translation="%s" scale="1 1 1">\n'%(i,str(points[i])[1:-1]))
+                self.file_x3d.write(tabs(4)+'<Shape ispickable="false">\n')
+                if hasattr(shape, "__len__") and len(shape) == len(points):
+                    self.file_x3d.write(tabs(5)+'<Sphere DEF="sphere%s" radius="%s" solid="false"/>\n'%(i,shape[i]))
+                else:
+                    self.file_x3d.write(tabs(5)+'<Sphere DEF="sphere%s" radius="%s" solid="false"/>\n'%(i,shape))
+                self.file_x3d.write(tabs(5)+'<Appearance>\n')
+                if type(color) == list:
+                    self.file_x3d.write(tabs(6)+'<Material DEF="spheremat%s" ambientIntensity="0" emissiveColor="0 0 0" diffuseColor="%s" specularColor="0 0 0" shininess="0.0078" transparency="0"/>\n'%(i, color[i]))
+                else:
+                    self.file_x3d.write(tabs(6)+'<Material DEF="spheremat%s" ambientIntensity="0" emissiveColor="0 0 0" diffuseColor="%s" specularColor="0 0 0" shininess="0.0078" transparency="0"/>\n'%(i, color))
+                self.file_x3d.write(tabs(5)+'</Appearance>\n')
+                self.file_x3d.write(tabs(4)+'</Shape>\n')
+                self.file_x3d.write(tabs(3)+'</Transform>\n')
+            self.nspheres = self.nspheres + len(points)
+        
+        if geom == 'box':
+            for i in range(self.nboxes, self.nboxes+len(points)):
+                self.file_x3d.write("\n"+tabs(3)+'<Transform DEF="boxtra%s" translation="%s" scale="1 1 1">\n'%(i,str(points[i])[1:-1]))
+                self.file_x3d.write(tabs(4)+'<Shape ispickable="false">\n')
+                if hasattr(shape, "shape") and shape.shape == points.shape:
+                    size = str(shape[i])[1:-1]
+                else:
+                    size = '%s %s %s'%(shape*2, shape*2, shape*2)
+                self.file_x3d.write(tabs(5)+'<Box DEF="box%s" size="%s" solid="false"/>\n'%(i,size))
+                self.file_x3d.write(tabs(5)+'<Appearance>\n')
+                if type(color) == list:
+                    self.file_x3d.write(tabs(6)+'<Material DEF="boxmat%s" ambientIntensity="0" emissiveColor="0 0 0" diffuseColor="%s" specularColor="0 0 0" shininess="0.0078" transparency="0"/>\n'%(i, color[i]))
+                else:
+                    self.file_x3d.write(tabs(6)+'<Material DEF="boxmat%s" ambientIntensity="0" emissiveColor="0 0 0" diffuseColor="%s" specularColor="0 0 0" shininess="0.0078" transparency="0"/>\n'%(i, color))
+                self.file_x3d.write(tabs(5)+'</Appearance>\n')
+                self.file_x3d.write(tabs(4)+'</Shape>\n')
+                self.file_x3d.write(tabs(3)+'</Transform>\n')
+            self.nboxes = self.nboxes + len(points)
+            
+            # Create other shapes
+            # Add labels
+                
+        
     def make_labels(self, gals=None, axlab=None):
         """
         Create the labels of different elements in the figure.
@@ -755,7 +829,7 @@ class write_html:
 
     """
     
-    def __init__(self, filename, units, tabtitle='new_html_x3d', pagetitle=None, description=None):
+    def __init__(self, filename, units, tabtitle='new_html_x3d', pagetitle=None, description=None, ntubes=0):
         #some attributes to use later
         self.grids = False
         self.gals = False
@@ -765,7 +839,11 @@ class write_html:
         self.viewp = False
         self.units = units
         self.anim = False
-            
+        self.boxbut = False
+        self.sphbut = False
+        self.tubes = ntubes
+        self.intmarks = False
+
         self.file_html = open(filename, 'w')
         self.file_html.write('<html>\n\t <head>\n')
         self.file_html.write('\t\t <title> %s </title>\n'%tabtitle)
@@ -774,7 +852,6 @@ class write_html:
         self.file_html.write("\t\t <link rel='stylesheet' type='text/css' href='x3dom/x3dom.css'></link>\n")
         self.file_html.write("\t\t <script type='text/javascript' src='https://code.jquery.com/jquery-3.6.3.min.js'></script>\n")
         self.file_html.write("\n\t\t<style>\n"+tabs(3)+"x3d\n"+tabs(4)+"{\n"+tabs(5)+"border:2px solid darkorange;\n"+tabs(5)+"width:95%;\n"+tabs(5)+"height: 80%;\n"+tabs(3)+"}\n"+tabs(3)+"</style>\n\t</head>\n\t<body>\n")
-        
         
         if pagetitle is not None:
             self.file_html.write('\t<h1 align="middle"> %s </h1>\n'%pagetitle)
@@ -895,6 +972,54 @@ class write_html:
         self.file_html.write(tabs(3)+"else \n")
         self.file_html.write(tabs(4)+"document.getElementById('cube__ticklines').setAttribute('transparency', '1');\n")
         self.file_html.write(tabs(2)+"}\n\t\t </script>\n")
+
+    def func_interactivemarkers(self,):
+        self.write_html(tabs(3)+'<div id="divmaster" style="margin-left: 2%">\n')
+        self.write_html(tabs(4)+'<option value="none">None</option>\n')
+        self.write_html(tabs(4)+'<option value="sphere">Sphere</option>\n')
+        self.write_html(tabs(4)+'<option value="box">Box</option>\n')
+        self.write_html(tabs(4)+'<option value="tube">Tube</option>\n')
+        self.write_html(tabs(4)+'<option value="cone">Cone</option>\n')
+        self.write_html(tabs(3)+'</select>\n')
+        self.write_html(tabs(3)+'<input type="color" id="butcol0" value="#ff0000">\n')
+        self.write_html(tabs(3)+'<button id="butcreate" onclick="creategeom1()">Create</button> <br><br>\n')
+        self.write_html(tabs(3)+'\n')
+        self.write_html(tabs(3)+'\n')
+
+    
+    def func_tubes(self, ntubes):
+        self.tubes = True
+        self.file_html.write(tabs(2)+"<script>\n\t\tfunction settubes()\n\t\t{\n")
+        self.file_html.write(tabs(3)+"if(document.getElementById('cube__tubmat0').getAttribute('transparency')!= '0') {\n")
+        for i in range(ntubes):
+            self.file_html.write(tabs(4)+"document.getElementById('cube__tubmat%s').setAttribute('transparency', '0');\n"%i)
+        self.file_html.write(tabs(3)+" } else {\n")
+        for i in range(ntubes):
+            self.file_html.write(tabs(4)+"document.getElementById('cube__tubmat%s').setAttribute('transparency', '1');\n"%i)
+        self.file_html.write(tabs(3)+"}\n\t\t}\n\t\t </script>\n")
+
+    def func_markers(self, nbox=0, nsph=0):
+        if nbox != 0:
+            self.boxbut = True
+            self.file_html.write(tabs(2)+"<script>\n\t\tfunction setbox()\n\t\t{\n")
+            self.file_html.write(tabs(3)+"if(document.getElementById('cube__boxmat0').getAttribute('transparency')!= '0') {\n")
+            for i in range(nbox):
+                self.file_html.write(tabs(4)+"document.getElementById('cube__boxmat%s').setAttribute('transparency', '0');\n"%i)
+            self.file_html.write(tabs(3)+" } else {\n")
+            for i in range(nbox):
+                self.file_html.write(tabs(4)+"document.getElementById('cube__boxmat%s').setAttribute('transparency', '1');\n"%i)
+            self.file_html.write(tabs(3)+"}\n\t\t}\n\t\t </script>\n")
+
+        if nsph != 0:
+            self.sphbut = True
+            self.file_html.write(tabs(2)+"<script>\n\t\tfunction setsph()\n\t\t{\n")
+            self.file_html.write(tabs(3)+"if(document.getElementById('cube__sphmat0').getAttribute('transparency')!= '0') {\n")
+            for i in range(nbox):
+                self.file_html.write(tabs(4)+"document.getElementById('cube__sphmat%s').setAttribute('transparency', '0');\n"%i)
+            self.file_html.write(tabs(3)+" } else {\n")
+            for i in range(nbox):
+                self.file_html.write(tabs(4)+"document.getElementById('cube__sphmat%s').setAttribute('transparency', '1');\n"%i)
+            self.file_html.write(tabs(3)+"}\n\t\t}\n\t\t </script>\n")
             
     def func_axes(self, axes):
         self.axes = True
@@ -1046,6 +1171,261 @@ class write_html:
         self.file_html.write(tabs(4)+"}\n")
         self.file_html.write(tabs(3)+"</script>\n")
 
+    # TUBESTUBESTUBES
+
+    def func_tubes(self):
+        """
+        Run after buttons(). It is assumed that scalev is used. It will fail otherwise. To use without scalev, remove(modify parts with sca).
+        """
+        self.intmarks = True
+        self.file_html.write(tabs(2) + '\n')
+        self.file_html.write(tabs(2) + '<div id="divmaster" style="margin-left: 2%">\n')
+        self.file_html.write(tabs(3) + '<!-- BUTTON TO CHANGE LAYOUT -->\n')
+        self.file_html.write(tabs(3) + '<label for="markers-choice"><b>Markers:</b> </label>\n')
+        self.file_html.write(tabs(3) + '<select id="markers-choice">\n')
+        self.file_html.write(tabs(4) + '<option value="none">None</option>\n')
+        self.file_html.write(tabs(4) + '<option value="sphere">Sphere</option>\n')
+        self.file_html.write(tabs(4) + '<option value="box">Box</option>\n')
+        self.file_html.write(tabs(4) + '<option value="tube">Tube</option>\n')
+        self.file_html.write(tabs(4) + '<option value="cone">Cone</option>\n')
+        self.file_html.write(tabs(3) + '</select>\n')
+        self.file_html.write(tabs(3) + '<input type="color" id="butcol" value="#ff0000">\n')
+        self.file_html.write(tabs(3) + '<button id="butcreate" onclick="createmarker()">Create</button>\n')
+        self.file_html.write(tabs(3) + '<button id="butremove" onclick="removemarker()">Remove</button> <br><br>\n')
+        self.file_html.write(tabs(2) + '</div>\n')
+        self.file_html.write(tabs(2) + '<!-- create various layouts for different objects -->\n')
+        self.file_html.write(tabs(2) + '<div id="spherediv" style="display:none ; margin-left: 2%">\n')
+        self.file_html.write(tabs(3) + '<input type="number" id="sphX0" step="1" placeholder="RA">\n')
+        self.file_html.write(tabs(3) + '<input type="number" id="sphY0" step="1" placeholder="Dec">\n')
+        self.file_html.write(tabs(3) + '<input type="number" id="sphZ0" step="1" placeholder="V">\n')
+        self.file_html.write(tabs(3) + '<input type="number" id="sphrad0" min="0" max="50" step="0.5" placeholder="Radius">\n')
+        self.file_html.write(tabs(2) + '</div>\n')
+        self.file_html.write(tabs(2) + '<div id="boxdiv" style="display:none ; margin-left: 2%">\n')
+        self.file_html.write(tabs(3) + '<input type="number" id="boxX0" step="1" placeholder="RA">\n')
+        self.file_html.write(tabs(3) + '<input type="number" id="boxY0" step="1" placeholder="Dec">\n')
+        self.file_html.write(tabs(3) + '<input type="number" id="boxZ0" step="1" placeholder="V">\n')
+        self.file_html.write(tabs(3) + '<input type="text" id="boxrad0" placeholder="shape, e.g. \'20 20 20\'">\n')
+        self.file_html.write(tabs(2) + '</div>\n')
+        self.file_html.write(tabs(2) + '<div id="tubediv" style="display:none ; margin-left: 2% ; width: 80%">\n')
+        self.file_html.write(tabs(3) + '<br>\n')
+        self.file_html.write(tabs(3) + '<button id="newtube" onclick="newtube()">New</button>\n')
+        self.file_html.write(tabs(3) + '<button id="addpoint" onclick="addpoint()">Add point</button>\n')
+        self.file_html.write(tabs(3) + '<select id="new-tubes">\n')
+        self.file_html.write(tabs(4) + '<option value="none">None</option>\n')
+        self.file_html.write(tabs(3) + '</select>\n')
+        self.file_html.write(tabs(3) + '<br>\n')
+        self.file_html.write(tabs(2) + '</div>\n')
+
+        self.file_html.write(tabs(2)+'<script>\n')
+        self.file_html.write(tabs(3) + 'var ngeo = 0; //number of new geometrical shapes\n')
+        self.file_html.write(tabs(3) + 'var tubelen = []; //number of cylinders in each tube\n')
+        self.file_html.write(tabs(3) + 'var npoints = 0; // number of points of a tube (number of cylinders -1)(is changed for each tube)\n')
+        self.file_html.write(tabs(3) + 'var tpars = []; // parameters needed in changescalev() for tubes\n')
+        self.file_html.write(tabs(3) + 'const marktype = document.querySelector(\'#markers-choice\');\n')
+        self.file_html.write(tabs(3) + 'marktype.addEventListener(\'change\', newlayout);\n')
+        self.file_html.write(tabs(3) + 'const selTube = document.querySelector(\'#new-tubes\');\n')
+        self.file_html.write(tabs(3) + 'selTube.addEventListener(\'change\', changeTube)\n')
+        self.file_html.write(tabs(3) + 'const sscasv = document.querySelector(\'#scalev\');\n')
+        self.file_html.write(tabs(3) + 'const col = document.querySelector(\'#butcol\');\n')
+
+        self.file_html.write(tabs(3) + 'function addpoint() {\n')
+        self.file_html.write(tabs(4) + 'const tubeIndex = selTube.value.split(\'\');\n')
+        self.file_html.write(tabs(4) + 'const tubeInd = tubeIndex[tubeIndex.length-1];\n')
+        self.file_html.write(tabs(4) + 'npoints = tubelen[tubeInd] + 2; // add 2 to add one point more. tubelen gives the number of cylinders.\n')
+        self.file_html.write(tabs(4) + 'const newra = document.createElement(\'input\');\n')
+        self.file_html.write(tabs(4) + 'newra.setAttribute(\'type\', \'number\');\n')
+        self.file_html.write(tabs(4) + 'newra.setAttribute(\'id\', \'tub\'+tubeInd+\'X\'+(npoints-1));\n')
+        self.file_html.write(tabs(4) + 'newra.setAttribute(\'placeholder\', \'RA\');\n')
+        self.file_html.write(tabs(4) + 'newra.setAttribute(\'step\', \'1\');\n')
+        self.file_html.write(tabs(4) + '\n')
+        self.file_html.write(tabs(4) + 'const newdec = document.createElement(\'input\');\n')
+        self.file_html.write(tabs(4) + 'newdec.setAttribute(\'type\', \'number\');\n')
+        self.file_html.write(tabs(4) + 'newdec.setAttribute(\'id\', \'tub\'+tubeInd+\'Y\'+' '(npoints-1));\n')
+        self.file_html.write(tabs(4) + 'newdec.setAttribute(\'placeholder\', \'Dec\');\n')
+        self.file_html.write(tabs(4) + 'newdec.setAttribute(\'step\', \'1\');\n')
+        self.file_html.write(tabs(4) + '\n')
+        self.file_html.write(tabs(4) + 'const newv = document.createElement(\'input\');\n')
+        self.file_html.write(tabs(4) + 'newv.setAttribute(\'type\', \'number\');\n')
+        self.file_html.write(tabs(4) + 'newv.setAttribute(\'id\', \'tub\'+tubeInd+\'Z\'+' '(npoints-1));\n')
+        self.file_html.write(tabs(4) + 'newv.setAttribute(\'placeholder\', \'V\');\n')
+        self.file_html.write(tabs(4) + 'newv.setAttribute(\'step\', \'1\');\n')
+        self.file_html.write(tabs(4) + 'const newline = document.createElement("br");\n')
+        self.file_html.write(tabs(4) + 'document.getElementById(\'div\'+selTube.value).appendChild(newline);\n')
+        self.file_html.write(tabs(4) + 'document.getElementById(\'div\'+selTube.value).appendChild(newra);\n')
+        self.file_html.write(tabs(4) + 'document.getElementById(\'div\'+selTube.value).appendChild(newdec);\n')
+        self.file_html.write(tabs(4) + 'document.getElementById(\'div\'+selTube.value).appendChild(newv);\n')
+        self.file_html.write(tabs(4) + '\n')
+        self.file_html.write(tabs(4) + 'tubelen[tubeInd] = npoints - 1;\n')
+        self.file_html.write(tabs(3) + '}\n')
+        self.file_html.write(tabs(4) + '\n')
+
+        self.file_html.write(tabs(3) + 'function newtube() {\n')
+        self.file_html.write(tabs(4) + 'tubelen.push(1);\n')
+        self.file_html.write(tabs(4) + 'const l = tubelen.length-1;\n')
+        self.file_html.write(tabs(4) + '\n')
+        self.file_html.write(tabs(4) + 'if (selTube.value != \'none\') {\n')
+        self.file_html.write(tabs(5) + 'document.getElementById(\'div\'+selTube.value).style.display = \'none\'\n')
+        self.file_html.write(tabs(5) + 'const len = document.getElementById("new-tubes").length\n')
+        self.file_html.write(tabs(5) + 'document.getElementById("new-tubes")[len] = new Option(\'tube\'+l, \'tube\'+l, true, true);\n')
+        self.file_html.write(tabs(4) + '} else {\n')
+        self.file_html.write(tabs(5) + 'document.getElementById("new-tubes")[0] = new Option(\'tube\'+l, \'tube\'+l, true, true); //this value is selected in the input button\n')
+        self.file_html.write(tabs(4) + '}\n')
+        self.file_html.write(tabs(4) + '// move tubediv0 here. use new button to create new div, no coordinate inputs from start\n')
+        self.file_html.write(tabs(4) + 'const newdiv = document.createElement(\'div\');\n')
+        self.file_html.write(tabs(4) + 'document.getElementById(\'tubediv\').appendChild(newdiv);\n')
+        self.file_html.write(tabs(4) + 'newdiv.setAttribute(\'id\', \'divtube\'+l);\n')
+        self.file_html.write(tabs(4) + 'newdiv.setAttribute(\'style\', \'margin-left: 2%\');\n')
+        self.file_html.write(tabs(4) + 'newdiv.appendChild(document.createElement("br"));\n')
+        self.file_html.write(tabs(4) + '\n')
+        self.file_html.write(tabs(4) + '// create different radius for each tube\n')
+        self.file_html.write(tabs(4) + '//<input type="number" id="tubrad" min="0" max="50" step="0.5" placeholder="Radius">\n')
+        self.file_html.write(tabs(4) + 'const newrad = document.createElement(\'input\');\n')
+        self.file_html.write(tabs(4) + 'newrad.setAttribute(\'type\', \'number\');\n')
+        self.file_html.write(tabs(4) + 'newrad.setAttribute(\'id\', \'tubrad\'+l);\n')
+        self.file_html.write(tabs(4) + 'newrad.setAttribute(\'min\', \'0\');\n')
+        self.file_html.write(tabs(4) + 'newrad.setAttribute(\'max\', \'50\');\n')
+        self.file_html.write(tabs(4) + 'newrad.setAttribute(\'step\', \'0.5\');\n')
+        self.file_html.write(tabs(4) + 'newrad.setAttribute(\'placeholder\', \'Radius\');\n')
+        self.file_html.write(tabs(4) + 'newdiv.appendChild(newrad);\n')
+        self.file_html.write(tabs(4) + '\n')
+        self.file_html.write(tabs(4) + 'for (i=0 ; i<2 ; i++) {\n')
+        self.file_html.write(tabs(5) + 'const newra = document.createElement(\'input\');\n')
+        self.file_html.write(tabs(5) + 'newra.setAttribute(\'type\', \'number\');\n')
+        self.file_html.write(tabs(5) + 'newra.setAttribute(\'id\', \'tub\'+l+\'X\'+i);\n')
+        self.file_html.write(tabs(5) + 'newra.setAttribute(\'placeholder\', \'RA\');\n')
+        self.file_html.write(tabs(5) + 'newra.setAttribute(\'step\', \'1\');\n')
+        self.file_html.write(tabs(5) + '\n')
+        self.file_html.write(tabs(5) + 'const newdec = document.createElement(\'input\');\n')
+        self.file_html.write(tabs(5) + 'newdec.setAttribute(\'type\', \'number\');\n')
+        self.file_html.write(tabs(5) + 'newdec.setAttribute(\'id\', \'tub\'+l+\'Y\'+i);\n')
+        self.file_html.write(tabs(5) + 'newdec.setAttribute(\'placeholder\', \'Dec\');\n')
+        self.file_html.write(tabs(5) + 'newdec.setAttribute(\'step\', \'1\');\n')
+        self.file_html.write(tabs(5) + '\n')
+        self.file_html.write(tabs(5) + 'const newv = document.createElement(\'input\');\n')
+        self.file_html.write(tabs(5) + 'newv.setAttribute(\'type\', \'number\');\n')
+        self.file_html.write(tabs(5) + 'newv.setAttribute(\'id\', \'tub\'+l+\'Z\'+i);\n')
+        self.file_html.write(tabs(5) + 'newv.setAttribute(\'placeholder\', \'V\');\n')
+        self.file_html.write(tabs(5) + 'newv.setAttribute(\'step\', \'1\');\n')
+        self.file_html.write(tabs(5) + '\n')
+        self.file_html.write(tabs(5) + 'const newline = document.createElement("br");\n')
+        self.file_html.write(tabs(5) + 'newdiv.appendChild(newline);\n')
+        self.file_html.write(tabs(5) + 'newdiv.appendChild(newra);\n')
+        self.file_html.write(tabs(5) + 'newdiv.appendChild(newdec);\n')
+        self.file_html.write(tabs(5) + 'newdiv.appendChild(newv);\n')
+        self.file_html.write(tabs(4) + '}\n')
+        self.file_html.write(tabs(3) + '}\n')
+
+        self.file_html.write(tabs(3) + 'function newlayout() {\n')
+        self.file_html.write(tabs(4) + 'document.getElementById(\'spherediv\').style.display = \'none\'\n')
+        self.file_html.write(tabs(4) + 'document.getElementById(\'boxdiv\').style.display = \'none\'\n')
+        self.file_html.write(tabs(4) + 'document.getElementById(\'tubediv\').style.display = \'none\'\n')
+        self.file_html.write(tabs(4) + 'name = marktype.value+\'div\'\n')
+        self.file_html.write(tabs(4) + 'document.getElementById(name).style.display = \'inline-block\'\n')
+        self.file_html.write(tabs(3) + '}\n')
+
+
+        self.file_html.write(tabs(3) + 'function createmarker() {\n')
+        self.file_html.write(tabs(4) + 'const sca = inpscasv.value;\n')
+        self.file_html.write(tabs(4) + 'const tubeIndex = selTube.value.split(\'\');\n')
+        self.file_html.write(tabs(4) + 'const tubeInd = tubeIndex[tubeIndex.length-1];\n')
+        self.file_html.write(tabs(4) + 'const tpars_s = [];\n')
+        self.file_html.write(tabs(4) + 'npoints = tubelen[tubeInd] + 1\n')
+        self.file_html.write(tabs(4) + 'if (document.getElementById(tubeInd+\'newtra0\') == null) {\n')
+        self.file_html.write(tabs(5) + 'for (i=0; i<npoints-1; i++) {\n')
+        self.file_html.write(tabs(6) + 'const x0 = Number(document.querySelector(\'#tub\'+tubeInd+\'X\'+i).value);\n')
+        self.file_html.write(tabs(6) + 'const y0 = Number(document.querySelector(\'#tub\'+tubeInd+\'Y\'+i).value);\n')
+        self.file_html.write(tabs(6) + 'const z0 = Number(document.querySelector(\'#tub\'+tubeInd+\'Z\'+i).value);\n')
+        self.file_html.write(tabs(6) + 'const x1 = Number(document.querySelector(\'#tub\'+tubeInd+\'X\'+(i+1)).value);\n')
+        self.file_html.write(tabs(6) + 'const y1 = Number(document.querySelector(\'#tub\'+tubeInd+\'Y\'+(i+1)).value);\n')
+        self.file_html.write(tabs(6) + 'const z1 = Number(document.querySelector(\'#tub\'+tubeInd+\'Z\'+(i+1)).value);\n')
+        self.file_html.write(tabs(6) + 'const rad = document.querySelector(\'#tubrad\'+tubeInd);\n')
+        self.file_html.write(tabs(6) + 'const trans = [(x0+x1)/2, (y0+y1)/2, (z0+z1)/2]\n')
+        self.file_html.write(tabs(6) + 'const diff = [x1-x0, y1-y0, z1-z0]\n')
+        self.file_html.write(tabs(6) + 'const height = Math.sqrt(diff[0]**2+diff[1]**2+(sca*diff[2])**2)*1.03;\n')
+        self.file_html.write(tabs(6) + 'const angle = Math.acos(diff[1]/height);\n')
+        self.file_html.write(tabs(6) + 'tpars_s.push([trans,diff]);\n')
+        self.file_html.write(tabs(6) + 'const newtra = document.createElement(\'transform\');\n')
+        self.file_html.write(tabs(6) + 'newtra.setAttribute(\'id\', tubeInd+\'newtra\'+i);\n')
+        self.file_html.write(tabs(6) + 'const newshape = document.createElement(\'shape\');\n')
+        self.file_html.write(tabs(6) + 'newshape.setAttribute(\'id\', tubeInd+\'newsha\'+i);\n')
+        self.file_html.write(tabs(6) + 'const newape = document.createElement(\'appearance\');\n')
+        self.file_html.write(tabs(6) + 'const newmat = document.createElement(\'material\');\n')
+        self.file_html.write(tabs(6) + 'newmat.setAttribute(\'diffuseColor\', col.value);\n')
+        self.file_html.write(tabs(6) + 'newmat.setAttribute(\'id\', tubeInd+\'mat\'+i);\n')
+        self.file_html.write(tabs(6) + 'const newgeo = document.createElement(\'cylinder\');\n')
+        self.file_html.write(tabs(6) + 'newgeo.setAttribute(\'id\', tubeInd+\'newcyl\'+i);\n')
+        self.file_html.write(tabs(6) + 'newgeo.setAttribute(\'radius\', rad.value);\n')
+        self.file_html.write(tabs(6) + 'newgeo.setAttribute(\'solid\', \'false\');\n')
+        self.file_html.write(tabs(6) + 'newgeo.setAttribute(\'height\', height.toString());\n')
+        self.file_html.write(tabs(6) + 'newtra.setAttribute(\'translation\', trans[0]+\' \'+trans[1]+\' \'+sca*trans[2]);\n')
+        self.file_html.write(tabs(6) + 'newtra.setAttribute(\'rotation\', sca*diff[2]+\' 0 \'+(-diff[0])+\' \'+angle);\n')
+        self.file_html.write(tabs(6) + 'newshape.appendChild(newape).appendChild(newmat);\n')
+        self.file_html.write(tabs(6) + 'newtra.appendChild(newshape).appendChild(newgeo);\n')
+        self.file_html.write(tabs(6) + 'document.getElementById(\'cube__ROOT\').appendChild(newtra);\n')
+        self.file_html.write(tabs(5) + '}\n')
+        self.file_html.write(tabs(5) + 'tpars.push(tpars_s);\n')
+        self.file_html.write(tabs(4) + '}\n')
+        self.file_html.write(tabs(4) + 'else {\n')
+        self.file_html.write(tabs(5) + 'for (i=0; i<npoints-1; i++) {\n')
+        self.file_html.write(tabs(6) + 'const x0 = Number(document.querySelector(\'#tub\'+tubeInd+\'X\'+i).value);\n')
+        self.file_html.write(tabs(6) + 'const y0 = Number(document.querySelector(\'#tub\'+tubeInd+\'Y\'+i).value);\n')
+        self.file_html.write(tabs(6) + 'const z0 = Number(document.querySelector(\'#tub\'+tubeInd+\'Z\'+i).value);\n')
+        self.file_html.write(tabs(6) + 'const x1 = Number(document.querySelector(\'#tub\'+tubeInd+\'X\'+(i+1)).value);\n')
+        self.file_html.write(tabs(6) + 'const y1 = Number(document.querySelector(\'#tub\'+tubeInd+\'Y\'+(i+1)).value);\n')
+        self.file_html.write(tabs(6) + 'const z1 = Number(document.querySelector(\'#tub\'+tubeInd+\'Z\'+(i+1)).value);\n')
+        self.file_html.write(tabs(6) + 'const rad = document.querySelector(\'#tubrad\'+tubeInd);\n')
+        self.file_html.write(tabs(6) + 'const trans = [(x0+x1)/2, (y0+y1)/2, (z0+z1)/2]\n')
+        self.file_html.write(tabs(6) + 'const diff = [x1-x0, y1-y0, z1-z0]\n')
+        self.file_html.write(tabs(6) + 'const height = Math.sqrt(diff[0]**2+diff[1]**2+(sca*diff[2])**2)*1.03;\n')
+        self.file_html.write(tabs(6) + 'const angle = Math.acos(diff[1]/height);\n')
+        self.file_html.write(tabs(6) + 'tpars_s.push([trans,diff]);\n')
+        self.file_html.write(tabs(6) + 'document.getElementById(tubeInd+\'newtra\'+i).setAttribute(\'rotation\', sca*diff[2]+\' 0 \'+(-diff[0])+\' \'+angle);\n')
+        self.file_html.write(tabs(6) + 'document.getElementById(tubeInd+\'newtra\'+i).setAttribute(\'translation\', trans[0]+\' \'+trans[1]+\' \'+sca*trans[2]);\n')
+        self.file_html.write(tabs(6) + 'document.getElementById(tubeInd+\'newcyl\'+i).setAttribute(\'height\', height.toString());\n')
+        self.file_html.write(tabs(6) + 'document.getElementById(tubeInd+\'newcyl\'+i).setAttribute(\'radius\', rad.value);\n')
+        self.file_html.write(tabs(5) + '}\n')
+        self.file_html.write(tabs(5) + 'tpars[tubeInd] = tpars_s;\n')
+        self.file_html.write(tabs(4) + '}\n')
+        self.file_html.write(tabs(3) + '}\n')
+
+        self.file_html.write(tabs(3) + 'function removemarker() {\n')
+        self.file_html.write(tabs(4) + 'const tubeIndex = selTube.value.split(\'\');\n')
+        self.file_html.write(tabs(4) + 'const tubeInd = tubeIndex[tubeIndex.length-1];\n')
+        self.file_html.write(tabs(4) + 'npoints = tubelen[tubeInd] + 1\n')
+        self.file_html.write(tabs(4) + 'if (document.getElementById("new-tubes").length === 1) {\n')
+        self.file_html.write(tabs(5) + 'document.getElementById("new-tubes")[0] = new Option("None", "none", true, true);\n')
+        self.file_html.write(tabs(4) + '} else {\n')
+        self.file_html.write(tabs(5) + 'for (i=0; i<document.getElementById("new-tubes").length; i++) {\n')
+        self.file_html.write(tabs(6) + 'if ("tube"+i === document.getElementById("new-tubes")[i].value) {\n')
+        self.file_html.write(tabs(7) + 'document.getElementById("new-tubes")[i].remove();\n')
+        self.file_html.write(tabs(7) + 'break;\n')
+        self.file_html.write(tabs(6) + '}\n')
+        self.file_html.write(tabs(5) + '}\n')
+        self.file_html.write(tabs(5) + 'document.getElementById("new-tubes")[0].setAttribute(\'selected\', \'selected\');\n')
+        self.file_html.write(tabs(5) + 'const nexttube = document.getElementById("new-tubes")[0].value;\n')
+        self.file_html.write(tabs(5) + 'document.getElementById(\'div\'+nexttube).style.display = \'inline-block\';\n')
+        self.file_html.write(tabs(4) + '}\n')
+        self.file_html.write(tabs(4) + 'for (i=0; i<npoints-1; i++){\n')
+        self.file_html.write(tabs(5) + 'document.getElementById(tubeInd+\'newtra\'+i).remove();\n')
+        self.file_html.write(tabs(4) + '}\n')
+        self.file_html.write(tabs(4) + 'document.getElementById(\'divtube\'+tubeInd).remove();\n')
+        self.file_html.write(tabs(3) + '}\n')
+
+        self.file_html.write(tabs(3) + 'function changeTube() {\n')
+        self.file_html.write(tabs(4) + 'for (i=0; i<tubelen.length; i++) {\n')
+        self.file_html.write(tabs(5) + 'if (\'tube\'+i != selTube.value) {\n')
+        self.file_html.write(tabs(6) + 'if (document.getElementById(\'divtube\'+i) != null) {\n')
+        self.file_html.write(tabs(7) + 'document.getElementById(\'divtube\'+i).style.display = \'none\';\n')
+        self.file_html.write(tabs(6) + '}\n')
+        self.file_html.write(tabs(5) + '}\n')
+        self.file_html.write(tabs(5) + 'document.getElementById(\'div\'+selTube.value).style.display = \'inline-block\';\n')
+        self.file_html.write(tabs(4) + '}\n')
+        self.file_html.write(tabs(3) + '}\n')
+
+        self.file_html.write(tabs(2)+'</script>\n')
+
+    #TUBESTUBESTUBES
+
     def buttons(self, l_isolevels=None, l_colors=None, colormaps=None, hide2d=False, scalev=False, move2d=False, lineLabs=False, centRot=False, background=False):
         """
         Makes the buttons to apply the functions to hide/show elements, if
@@ -1076,7 +1456,7 @@ class write_html:
             #unccoment next line for next view button
             #self.file_html.write('\t\t   <button onclick="document.getElementById(\'cubeFixed\').runtime.nextView();">Next View</button>\n')
                 
-        if self.grids or self.gals or self.gallabs or self.axes or hide2d:
+        if self.grids or self.gals or self.gallabs or self.axes or hide2d or self.tubes or self.boxbut or self.sphbut:
             self.file_html.write('\n'+tabs(2)+'&nbsp <b>Labels:</b>\n')
         if self.grids:
             self.file_html.write(tabs(3)+'<button onclick="setgrids();" >Grids</button>\n')
@@ -1111,6 +1491,13 @@ class write_html:
             self.file_html.write(tabs(3)+'&nbsp <b>Font Size:</b>\n')
             self.file_html.write(tabs(3)+'&nbsp <label for="back-choice">Galaxy: </label>\n')
             self.file_html.write(tabs(3)+'<input oninput="change_galsize()" id="galsize-choice" type="number" min="2" max="100" value="8", step="2">\n')
+           
+        if self.tubes:
+            self.file_html.write(tabs(3)+'<button onclick="settubes();" >Tube</button>\n')
+        if self.boxbut:
+            self.file_html.write(tabs(3)+'<button onclick="setbox();" >Boxes</button>\n')
+        if self.sphbut:
+            self.file_html.write(tabs(3)+'<button onclick="setsph();" >Spheres</button>\n')
 
         if l_isolevels is not None:
             if type(self.nlayers) == list:
@@ -1201,9 +1588,7 @@ class write_html:
                 self.file_html.write(tabs(3)+"showval.textContent = roundTo(%s+(move-1)*%s, 3)+' ( '+roundTo(move*%s, 3)+' )';\n"%(real_vmax,diff_vmax,diff_vmax))
             else:
                 self.file_html.write(tabs(3)+"showval.textContent = roundTo(move*%s, 3);\n"%(diff_vmax))
-            self.file_html.write(tabs(3)+"if(document.getElementById('cube__image2d').getAttribute('translation') != '9e9 9e9 9e9') {\n")
-            self.file_html.write(tabs(4)+"document.getElementById('cube__image2d').setAttribute('translation', '0 0 '+(sca*move-1)*%s); }\n"%diff_vmax)
-            self.file_html.write(tabs(2)+"}\n")
+            self.file_html.write(tabs(3)+"document.getElementById('cube__image2d').setAttribute('translation', '0 0 '+(sca*move-1)*Number(document.getElementById('cube__imgCoords').getAttribute('point').slice(24,31))); }\n")
             self.file_html.write(tabs(2)+"</script>\n")
         else:
             self.file_html.write(tabs(2)+"<script>\n")
@@ -1215,8 +1600,7 @@ class write_html:
                 self.file_html.write(tabs(3)+"showval.textContent = roundTo(%s+(move-1)*%s, 3)+' ( '+roundTo(move*%s, 3)+' )';\n"%(real_vmax,diff_vmax,diff_vmax))
             else:
                 self.file_html.write(tabs(3)+"showval.textContent = roundTo(move*%s, 3);\n"%(diff_vmax))
-            self.file_html.write(tabs(3)+"if(document.getElementById('cube__image2d').getAttribute('translation') != '9e9 9e9 9e9') {\n")
-            self.file_html.write(tabs(4)+"document.getElementById('cube__image2d').setAttribute('translation', '0 0 '+(move-1)*%s); }\n"%diff_vmax)
+            self.file_html.write(tabs(3)+"document.getElementById('cube__image2d').setAttribute('translation', '0 0 '+(move-1)*Number(document.getElementById('cube__imgCoords').getAttribute('point').slice(24,31)));\n")
             self.file_html.write(tabs(2)+"}\n")
             self.file_html.write(tabs(2)+"</script>\n")
 
@@ -1306,11 +1690,33 @@ class write_html:
                         self.file_html.write(tabs(3)+"document.getElementById('%sbut%s').style.color = 'white';\n"%(nc,lev))
                 self.file_html.write(tabs(3)+"}\n")
             self.file_html.write(tabs(2)+"}\n\t\t </script>\n")
-      
-        
-    def func_scalev(self, coords, gals=None, axes='both', move2d=True):
+            
+            
+    def func_scalev(self, coords, gals=None, axes='both', move2d=True, points=None, box=None, sph=None):
         """
         
+
+        Parameters
+        ----------
+        nlayers : TYPE
+            DESCRIPTION.
+        gals : TYPE, optional
+            DESCRIPTION. The default is None.
+        axes : TYPE, optional
+            DESCRIPTION. The default is 'both'.
+        coords : TYPE, optional
+            DESCRIPTION. The default is None.
+        vmax : TYPE, optional
+            DESCRIPTION. The default is None.
+        tubes : TYPE, optional
+            DESCRIPTION. The default is None.
+        markers : dict, optional
+            markers = {'box':3 , 'sph':4}. The default is None.
+
+        Returns
+        -------
+        None.
+
         """
         self.file_html.write(tabs(2)+"<script>\n")
         self.file_html.write(tabs(2)+"const inpscasv = document.querySelector('#scalev');\n")
@@ -1321,8 +1727,7 @@ class write_html:
         self.file_html.write(tabs(3)+"const sca = inpscasv.value;\n")
         if move2d:
             self.file_html.write(tabs(3)+"const move = inpmovesv.value;\n")
-            self.file_html.write(tabs(3)+"if(document.getElementById('cube__image2d').getAttribute('translation') != '9e9 9e9 9e9') {\n")
-            self.file_html.write(tabs(4)+"document.getElementById('cube__image2d').setAttribute('translation', '0 0 '+(sca*move-1)*%s); }\n"%coords[2,2])
+            self.file_html.write(tabs(4)+"document.getElementById('cube__image2d').setAttribute('translation', '0 0 '+(sca*move-1)*Number(document.getElementById('cube__imgCoords').getAttribute('point').slice(24,31)));\n")
         #scale layers
         if type(self.nlayers) == list:
             numcubes = len(self.nlayers)
@@ -1344,7 +1749,49 @@ class write_html:
                 self.file_html.write(tabs(3)+"document.getElementById('cube__glt%s').setAttribute('translation', '%s %s '+sca*%s);\n"%(n,a,b,v))
         #scale grids
         self.file_html.write("\t\t\t document.getElementById('cube__tlt').setAttribute('scale', '1 1 '+sca);\n")
+
+        #scale interactive tubes
+        if self.intmarks:
+            self.file_html.write(tabs(3)+"const arr = [];\n")
+            self.file_html.write(tabs(3)+"const ind = 0;\n")
+            self.file_html.write(tabs(3)+"for (sel=0; sel<document.getElementById('new-tubes').length; sel++) {\n")
+            self.file_html.write(tabs(4)+"const tubeInd = document.getElementById('new-tubes')[sel].value.split('')[4];\n")
+            self.file_html.write(tabs(4)+"arr.push(Number(tubeInd));\n")
+            self.file_html.write(tabs(4)+"for (j=0; j<tubelen[arr[sel]]; j++) {\n")
+            self.file_html.write(tabs(5)+"document.getElementById(arr[sel]+'newtra'+j).setAttribute('translation', tpars[arr[sel]][j][0][0]+' '+tpars[arr[sel]][j][0][1]+' '+sca*tpars[arr[sel]][j][0][2]);\n")
+            self.file_html.write(tabs(5)+"const norm = Math.sqrt(tpars[arr[sel]][j][1][0]**2+tpars[arr[sel]][j][1][1]**2+(tpars[arr[sel]][j][1][2]*sca)**2)*1.03;\n")
+            self.file_html.write(tabs(5)+"const angle = Math.acos(tpars[arr[sel]][j][1][1]/norm);\n")
+            self.file_html.write(tabs(5)+"document.getElementById(arr[sel]+'newtra'+j).setAttribute('rotation', tpars[arr[sel]][j][1][2]*sca+' 0 '+(-tpars[arr[sel]][j][1][0])+' '+angle);\n")
+            self.file_html.write(tabs(5)+"document.getElementById(arr[sel]+'newcyl'+j).setAttribute('height', norm);\n")
+            self.file_html.write(tabs(4)+"}\n")
+            self.file_html.write(tabs(3)+"}\n")
+
+        #scale tubes and markers
+        if points is not None:
+            trans = np.array([np.mean((points[i],points[i+1]), axis=0) for i in range(len(points)-1)])
+            diff = np.diff(points, axis=0)
+            for i in range(len(points)-1):
+                self.file_html.write(tabs(3)+"document.getElementById('cube__tubtra%s').setAttribute('translation', '%s %s '+sca*%s);\n"%(i,trans[i,0],trans[i,1],trans[i,2]))
+                if diff[i,2] != 0:
+                    if diff[i,1] == 0:
+                        self.file_html.write(tabs(3)+"const norm%s = Math.sqrt(%s+(sca*%s)**2);\n"%(i,diff[i,0]**2,diff[i,2]))
+                        self.file_html.write(tabs(3)+"document.getElementById('cube__tubtra%s').setAttribute('rotation', sca*%s+' 0 %s 1.57079633');\n"%(i,diff[i,2],-diff[i,0]))
+                    else:
+                        self.file_html.write(tabs(3)+"const norm%s = Math.sqrt(%s+(sca*%s)**2);\n"%(i,diff[i,0]**2+diff[i,1]**2,diff[i,2]))
+                        self.file_html.write(tabs(3)+"const angley%s = Math.acos(%s/norm%s);\n"%(i,diff[i,1],i))
+                        self.file_html.write(tabs(3)+"document.getElementById('cube__tubtra%s').setAttribute('rotation', sca*%s+' 0 %s '+angley%s);\n"%(i,diff[i,2],-diff[i,0],i))
+                    self.file_html.write(tabs(3)+"document.getElementById('cube__tube%s').setAttribute('height', norm%s*1.05);\n"%(i,i))
+                    
+        #box always changes scale and translation, sphere only translation
+        if box is not None:
+            for i in range(len(box)):
+                self.file_html.write(tabs(3)+"document.getElementById('cube__boxtra%s').setAttribute('translation', '%s %s '+sca*%s);\n"%(i,box[i,0],box[i,1],box[i,2]))
+                self.file_html.write(tabs(3)+"document.getElementById('cube__boxtra%s').setAttribute('scale','1 1 '+sca);\n"%i)
         
+        if sph is not None:
+            for i in range(len(sph)):
+                self.file_html.write(tabs(3)+"document.getElementById('cube__sphtra%s').setAttribute('translation', '%s %s '+sca*%s);\n"%(i,sph[i,0],sph[i,1],sph[i,2]))
+
         ax, axtick = labpos(coords)
         
         for i in range(12):
