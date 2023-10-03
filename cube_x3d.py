@@ -17,12 +17,11 @@ import numpy as np
 from skimage import measure
 from matplotlib import cm
 import astropy.units as u
-from astropy.coordinates import Angle
-import matplotlib.pyplot as plt
-
-from spectral_cube import SpectralCube
+from astropy.coordinates import Angle, SkyCoord
 from astropy import wcs
-from astropy.coordinates import SkyCoord
+import matplotlib.pyplot as plt
+from spectral_cube import SpectralCube
+
 
 
 class main:
@@ -380,19 +379,11 @@ class write_x3d:
         """
         
         mins = (self.diff_coords[0][0], self.diff_coords[1][0], self.diff_coords[2][0])
-        if type(l_cubes) == list:
-            numcubes = len(l_cubes)
-        else:
-            numcubes = 1
+
+        numcubes = len(l_cubes)
         for nc in range(numcubes):
-            if numcubes == 1:
-                if type(l_cubes) != list:
-                    cube = l_cubes
-                    isolevels = l_isolevels
-            else:
-                cube = l_cubes[nc]
-                isolevels = l_isolevels[nc]
-            
+            cube = l_cubes[nc]
+            isolevels = l_isolevels[nc]
             for i in range(len(isolevels)):
                 if shifts is not None:
                     verts, faces = marching_cubes(cube, level=isolevels[i], delta=self.delta, mins=mins, shift=shifts[nc])
@@ -401,12 +392,8 @@ class write_x3d:
                 self.file_x3d.write('\n\t\t\t<Transform DEF="%slt%s" translation="0 0 0" rotation="0 0 1 -0" scale="1 1 1">'%(nc,i))
                 self.file_x3d.write('\n\t\t\t\t<Shape DEF="%slayer%s_shape">'%(nc,i))
                 self.file_x3d.write('\n\t\t\t\t\t<Appearance sortKey="%s">'%(len(isolevels)-1-i))
-                #set color and transparency of layer
-                if i == len(isolevels)-1:
-                    op = 0.4
-                else:
-                    op = 0.8
-                self.file_x3d.write('\n'+tabs(6)+'<Material DEF="%slayer%s" ambientIntensity="0" emissiveColor="0 0 0" diffuseColor="%s" specularColor="0 0 0" shininess="0.0078" transparency="%s"/>'%(nc,i,colors[nc][i],op))
+                #set color of layer, transparency is set in HTML
+                self.file_x3d.write('\n'+tabs(6)+'<Material DEF="%slayer%s" ambientIntensity="0" emissiveColor="%s" diffuseColor="%s" specularColor="0 0 0" shininess="0.0078"/>'%(nc,i,colors[nc][i],colors[nc][i]))
                 #correct color with depthmode (ALSO FOR LAST LAYER?)
                 # if i != len(isolevels)-1:
                 self.file_x3d.write('\n'+tabs(6)+'<DepthMode readOnly="true"></DepthMode>')
@@ -439,7 +426,7 @@ class write_x3d:
         self.file_x3d.write('\n\t\t\t\t<Shape ispickable="false">')
         self.file_x3d.write('\n\t\t\t\t\t<Appearance>')
         #define ouline ID
-        self.file_x3d.write('\n\t\t\t\t\t\t<Material DEF="outline" ambientIntensity="0" emissiveColor="0 0 0" diffuseColor="0 0 0" specularColor="0 0 0" shininess="0.0078" transparency="0"/>')
+        self.file_x3d.write('\n\t\t\t\t\t\t<Material DEF="outline" emissiveColor="1 1 1" diffuseColor="0 0 0"/>')
         self.file_x3d.write('\n\t\t\t\t\t</Appearance>')
         self.file_x3d.write('\n\t\t\t\t\t<IndexedLineSet colorPerVertex="false" coordIndex="\n\t\t\t\t\t\t')
         #write indices
@@ -451,7 +438,7 @@ class write_x3d:
         self.file_x3d.write('"/>')
         self.file_x3d.write('\n\t\t\t\t\t</IndexedLineSet>\n\t\t\t\t</Shape>\n\t\t\t</Transform>\n')
         
-    def make_galaxies(self, gals, labels=True):
+    def make_galaxies(self, gals):
         """
         
 
@@ -459,8 +446,6 @@ class write_x3d:
         ----------
         gals : TYPE
             DESCRIPTION.
-        labels : TYPE, optional
-            DESCRIPTION. The default is True.
 
         Returns
         -------
@@ -480,7 +465,7 @@ class write_x3d:
             self.file_x3d.write(tabs(3)+'<Transform DEF="%s_cross_tra" translation="0 0 0" rotation="0 0 1 -0" scale="1 1 1">\n'%gal)
             self.file_x3d.write(tabs(4)+'<Shape ispickable="false">\n')
             self.file_x3d.write(tabs(5)+'<Appearance>\n')
-            self.file_x3d.write(tabs(6)+'<Material DEF="%s" ambientIntensity="0" emissiveColor="0 0 0" diffuseColor="0 0 0" specularColor="0 0 0" shininess="0.0078" transparency="0"/>\n'%(gal+'_cross'))
+            self.file_x3d.write(tabs(6)+'<Material DEF="%s" emissiveColor="1 1 1" diffuseColor="0 0 0"/>\n'%(gal+'_cross'))
             self.file_x3d.write(tabs(5)+'</Appearance>\n')
             #cross indices
             self.file_x3d.write(tabs(5)+'<IndexedLineSet colorPerVertex="true" coordIndex="\n'+tabs(6)+'0 1 -1\n'+tabs(6)+'2 3 -1\n'+tabs(6)+'4 5 -1\n'+tabs(6)+'">\n')
@@ -532,7 +517,7 @@ class write_x3d:
         self.file_x3d.write(tabs(3)+'<Transform DEF="image2d" translation="0 0 0" rotation="0 0 1 -0" scale="1 1 1">\n')
         self.file_x3d.write(tabs(4)+'<Shape ispickable="False">\n')
         self.file_x3d.write(tabs(5)+'<Appearance>\n')
-        self.file_x3d.write(tabs(6)+'<Material DEF="immat" ambientIntensity="1" emissiveColor="0 0 0" diffuseColor="1 1 1" specularColor="0 0 0" shininess="0.0078" transparency="0"/>\n')
+        self.file_x3d.write(tabs(6)+'<Material DEF="immat" ambientIntensity="1" emissiveColor="0 0 0" diffuseColor="1 1 1" shininess="0.0078"/>\n')
         if imcol is not None and img_shape is not None:
             self.file_x3d.write(tabs(6)+'<PixelTexture repeatS="false" repeatT="false" image=" %s %s 3 \n'%(img_shape[0], img_shape[1]))
             # write pixel colors
@@ -575,7 +560,7 @@ class write_x3d:
         self.file_x3d.write('\n\t\t\t\t<Shape ispickable="false">')
         self.file_x3d.write('\n\t\t\t\t\t<Appearance>')
         #set color and transparency of layer
-        self.file_x3d.write('\n\t\t\t\t\t\t<Material DEF="ticklines" ambientIntensity="0" emissiveColor="0 0 0" diffuseColor="0 0 0" specularColor="0 0 0" shininess="0.0078" transparency="0"/>')
+        self.file_x3d.write('\n\t\t\t\t\t\t<Material DEF="ticklines"  emissiveColor="1 1 1" diffuseColor="0 0 0"/>')
         self.file_x3d.write('\n\t\t\t\t\t</Appearance>')
         self.file_x3d.write('\n\t\t\t\t\t<IndexedLineSet colorPerVertex="false" coordIndex="\n\t\t\t\t\t\t')
         #write indices
@@ -731,7 +716,7 @@ class write_x3d:
                 self.file_x3d.write('\n\t\t\t\t<Transform DEF="glt%s" translation="%s %s %s" rotation="0 1 0 3.14" scale="%s %s %s">'%(i,gals[gal]['coord'][0],gals[gal]['coord'][1], gals[gal]['coord'][2], labelscale, labelscale, labelscale))
                 self.file_x3d.write('\n\t\t\t\t\t<Billboard axisOfRotation="0,0,0"  bboxCenter="0,0,0">')
                 self.file_x3d.write('\n\t\t\t\t\t\t<Shape ispickable="false">\n\t\t\t\t\t\t<Appearance>')
-                self.file_x3d.write('\n\t\t\t\t\t\t<Material DEF="%s" diffuseColor="0 0 0" emissiveColor="0 0 0"/>'%('label_'+gal))
+                self.file_x3d.write('\n\t\t\t\t\t\t<Material DEF="%s" diffuseColor="0 0 0" emissiveColor="1 1 1"/>'%('label_'+gal))
                 self.file_x3d.write('\n\t\t\t\t\t\t</Appearance>')
                 self.file_x3d.write('\n\t\t\t\t\t\t<Text string="%s">'%gal)
                 self.file_x3d.write('\n\t\t\t\t\t\t\t<FontStyle DEF="%s_fs" family=\'"SANS"\' topToBottom="false" justify=\'"BEGIN" "BEGIN"\' size="8"/>'%gal)
@@ -745,7 +730,7 @@ class write_x3d:
             for i in range(6):
                 self.file_x3d.write('\n\t\t\t\t<Transform DEF="alt_diff%s" translation="%s %s %s" rotation="%s" scale="%s %s %s">'%(i,ax[i,0],ax[i,1],ax[i,2],axlabrot[i], labelscale, labelscale, labelscale))
                 self.file_x3d.write('\n\t\t\t\t\t<Shape ispickable="false">\n\t\t\t\t\t\t<Appearance>')
-                self.file_x3d.write('\n\t\t\t\t\t\t\t<Material DEF="axlab_diff%s" diffuseColor="0 0 0" emissiveColor="0 0 0"/>'%i)
+                self.file_x3d.write('\n\t\t\t\t\t\t\t<Material DEF="axlab_diff%s" diffuseColor="0 0 0" emissiveColor="1 1 1"/>'%i)
                 self.file_x3d.write('\n\t\t\t\t\t\t</Appearance>')
                 self.file_x3d.write("\n\t\t\t\t\t\t<Text string='%s'>"%axlabnames[i])
                 self.file_x3d.write('\n\t\t\t\t\t\t\t<FontStyle family=\'"SANS"\' topToBottom="false" justify=\'%s\' size="10"/>'%axlabeljustify[i])
@@ -757,7 +742,7 @@ class write_x3d:
                 else: rot = axlabrot[4]
                 self.file_x3d.write('\n\t\t\t\t<Transform DEF="att_diff%s" translation="%s %s %s" rotation="%s" scale="%s %s %s">'%(i,axtick[i,0],axtick[i,1],axtick[i,2], rot, labelscale, labelscale, labelscale))
                 self.file_x3d.write('\n\t\t\t\t\t<Shape ispickable="false">\n\t\t\t\t\t\t<Appearance>')
-                self.file_x3d.write('\n\t\t\t\t\t\t\t<Material DEF="axtick_diff%s" diffuseColor="0 0 0" emissiveColor="0 0 0"/>'%i)
+                self.file_x3d.write('\n\t\t\t\t\t\t\t<Material DEF="axtick_diff%s" diffuseColor="0 0 0" emissiveColor="1 1 1"/>'%i)
                 self.file_x3d.write('\n\t\t\t\t\t\t</Appearance>')
                 self.file_x3d.write('\n\t\t\t\t\t\t<Text string="%s">'%axticknames1[i])
                 self.file_x3d.write('\n\t\t\t\t\t\t\t<FontStyle family=\'"SANS"\' topToBottom="false" justify=\'%s\' size="8"/>'%axticklabjus[i])
@@ -770,7 +755,7 @@ class write_x3d:
             for i in range(6):
                 self.file_x3d.write('\n\t\t\t\t<Transform DEF="alt_real%s" translation="%s %s %s" rotation="%s" scale="%s %s %s">'%(i,ax[i,0],ax[i,1],ax[i,2],axlabrot[i], labelscale, labelscale, labelscale))
                 self.file_x3d.write('\n\t\t\t\t\t<Shape ispickable="false">\n\t\t\t\t\t\t<Appearance>')
-                self.file_x3d.write('\n\t\t\t\t\t\t\t<Material DEF="axlab_real%s" diffuseColor="0 0 0" emissiveColor="0 0 0" transparency="%s"/>'%(i,trans))
+                self.file_x3d.write('\n\t\t\t\t\t\t\t<Material DEF="axlab_real%s" diffuseColor="0 0 0" emissiveColor="1 1 1" transparency="%s"/>'%(i,trans))
                 self.file_x3d.write('\n\t\t\t\t\t\t</Appearance>')
                 self.file_x3d.write("\n\t\t\t\t\t\t<Text string='%s'>"%axlabnames[i])
                 self.file_x3d.write('\n\t\t\t\t\t\t\t<FontStyle family=\'"SANS"\' topToBottom="false" justify=\'%s\' size="10"/>'%axlabeljustify[i])
@@ -782,7 +767,7 @@ class write_x3d:
                 else: rot = axlabrot[4]
                 self.file_x3d.write('\n\t\t\t\t<Transform DEF="att_real%s" translation="%s %s %s" rotation="%s" scale="%s %s %s">'%(i,axtick[i,0],axtick[i,1],axtick[i,2], rot, labelscale, labelscale, labelscale))
                 self.file_x3d.write('\n\t\t\t\t\t<Shape ispickable="false">\n\t\t\t\t\t\t<Appearance>')
-                self.file_x3d.write('\n\t\t\t\t\t\t\t<Material DEF="axtick_real%s" diffuseColor="0 0 0" emissiveColor="0 0 0" transparency="%s"/>'%(i, trans))
+                self.file_x3d.write('\n\t\t\t\t\t\t\t<Material DEF="axtick_real%s" diffuseColor="0 0 0" emissiveColor="1 1 1" transparency="%s"/>'%(i, trans))
                 self.file_x3d.write('\n\t\t\t\t\t\t</Appearance>')
                 self.file_x3d.write('\n\t\t\t\t\t\t<Text string="%s">'%axticknames2[i])
                 self.file_x3d.write('\n\t\t\t\t\t\t\t<FontStyle family=\'"SANS"\' topToBottom="false" justify=\'%s\' size="8"/>'%axticklabjus[i])
@@ -814,7 +799,9 @@ class write_html:
     Parameters
     ----------
     filename : string
-        Name of the file to be created, should have ".html" extension.
+        Name of the file to be created, should have ".html" extension. 
+    l_isolevels : list
+        list of lists of isolevels. Must be a list even if its just one line. e.g. [[0.5,2,5]].
     tabtitle : string, optional
         Title of the tab in the web browser. The default is 'new_html_x3d'.
     pagetitle : string, optional
@@ -829,7 +816,7 @@ class write_html:
 
     """
     
-    def __init__(self, filename, units, tabtitle='new_html_x3d', pagetitle=None, description=None, ntubes=0):
+    def __init__(self, filename, units, l_isolevels, tabtitle='new_html_x3d', pagetitle=None, description=None, ntubes=0):
         #some attributes to use later
         self.grids = False
         self.gals = False
@@ -858,6 +845,30 @@ class write_html:
             self.file_html.write('\t<hr/>\n')
         if description is not None:
             self.file_html.write("\t<p>\n\t %s</p> \n"%description)
+
+        self.file_html.write(tabs(1)+'<script>\n')
+        self.file_html.write(tabs(2)+'function loading() {\n')
+
+        # self.file_html.write(tabs(3)+"const nl = [%s,%s,%s];"%())
+        # self.file_html.write(tabs(3)+"for (let nc = 0; nc < %s; nc++) {\n"%len(l_isolevels))
+        # self.file_html.write(tabs(4)+"for (let nl = 0; nl < ; nl++) {\n"%len(l_isolevels[nc]))
+        # self.file_html.write(tabs(5)+"if (nl === %s) \n"+tabs(6)+"const op = 0.4;\n"+tabs(5)+"else\n"+tabs(6)+"const op = 0.8;\n")
+        # self.file_html.write(tabs(5)+"document.getElementById('cube__'+nc+'layer'+nl).setAttribute('transparency', op);\n")
+
+        numcubes = len(l_isolevels)
+        for nc in range(numcubes):
+            isolevels = l_isolevels[nc]
+            for nl in range(len(isolevels)):
+                if nl == len(isolevels)-1:
+                    op = 0.4
+                else:
+                    op = 0.8
+                self.file_html.write(tabs(3)+"document.getElementById('cube__%slayer%s').setAttribute('transparency', '%s');\n"%(nc,nl,op))
+
+        self.file_html.write(tabs(2)+'}\n')
+        self.file_html.write(tabs(1)+'</script>\n')
+
+        # setTimeout(loading, 5000); option to execute function after time
         
     def func_layers(self, l_isolevels):
         """
@@ -875,13 +886,6 @@ class write_html:
         None.
 
         """
-        if type(l_isolevels[0]) == list or type(l_isolevels[0]) == np.ndarray:
-            self.nlayers = [len(l) for l in l_isolevels]
-            numcubes = len(self.nlayers)
-        else:
-            self.nlayers = [len(l_isolevels)]
-            numcubes = len(self.nlayers)
-            
         self.file_html.write(tabs(2)+"<script>\n")
         self.file_html.write(tabs(3)+"function hideall() {\n")
         for nc in range(numcubes):
@@ -889,7 +893,8 @@ class write_html:
                 self.file_html.write(tabs(4)+"setHI%slayer%s();\n"%(nc,i))
         self.file_html.write(tabs(3)+"}\n")
         self.file_html.write(tabs(2)+"</script>\n")
-
+        numcubes = len(l_isolevels)
+        self.nlayers = [len(l) for l in l_isolevels]
         for nc in range(numcubes):
             for i in range(self.nlayers[nc]):
                 if i != self.nlayers[nc]-1:
@@ -967,10 +972,14 @@ class write_html:
     def func_grids(self):
         self.grids = True # to use in buttons()
         self.file_html.write(tabs(2)+"<script>\n\t\tfunction setgrids()\n\t\t{\n")
-        self.file_html.write(tabs(3)+"if(document.getElementById('cube__ticklines').getAttribute('transparency')!= '0')\n")
-        self.file_html.write(tabs(4)+"document.getElementById('cube__ticklines').setAttribute('transparency', '0');\n")
-        self.file_html.write(tabs(3)+"else \n")
+        self.file_html.write(tabs(3)+"if(document.getElementById('cube__ticklines').getAttribute('transparency') == '0') {\n")
         self.file_html.write(tabs(4)+"document.getElementById('cube__ticklines').setAttribute('transparency', '1');\n")
+        self.file_html.write(tabs(3)+"} else if (document.getElementById('cube__outline').getAttribute('transparency') == '0') {\n")
+        self.file_html.write(tabs(4)+"document.getElementById('cube__outline').setAttribute('transparency', '1');\n")
+        self.file_html.write(tabs(3)+"} else {\n")
+        self.file_html.write(tabs(4)+"document.getElementById('cube__ticklines').setAttribute('transparency', '0');\n")
+        self.file_html.write(tabs(4)+"document.getElementById('cube__outline').setAttribute('transparency', '0');\n")
+        self.file_html.write(tabs(3)+"}\n")
         self.file_html.write(tabs(2)+"}\n\t\t </script>\n")
 
     def func_interactivemarkers(self,):
@@ -1124,9 +1133,9 @@ class write_html:
 
         """
         if self.hclick:
-            self.file_html.write(tabs(3)+'<inline url="%s" nameSpaceName="cube" mapDEFToID="true" onclick="handleClick(event)"/>\n'%x3dname)
+            self.file_html.write(tabs(3)+'<inline url="%s" nameSpaceName="cube" mapDEFToID="true" onclick="handleClick(event)" onload="loading()"/>\n'%x3dname)
         else:
-            self.file_html.write(tabs(3)+'<inline url="%s" nameSpaceName="cube" mapDEFToID="true" onclick=""/>\n'%x3dname)
+            self.file_html.write(tabs(3)+'<inline url="%s" nameSpaceName="cube" mapDEFToID="true" onclick="" onload="loading()"/>\n'%x3dname)
         self.file_html.write(tabs(2)+"</scene>\n\t</x3d></center>\n")
         
     def viewpoints(self, maxcoord):
@@ -1150,9 +1159,9 @@ class write_html:
         self.file_html.write("\t\t <scene>\n")
         #correct camera postition and FoV, not to clip (hide) the figure
         ma = np.max(maxcoord)
-        self.file_html.write(tabs(3)+"<OrthoViewpoint id=\"front\" bind='false' centerOfRotation='0,0,0' description='RA-Dec view' fieldOfView='[-%s,-%s,%s,%s]' isActive='false' metadata='X3DMetadataObject' orientation='0,1,0,3.141593' position='0,0,-%s' zFar='10000' zNear='0.0001' ></OrthoViewpoint>\n"%(ramax*1.4,decmax*1.4,ramax*1.4,decmax*1.4,ma*1.4))
-        self.file_html.write(tabs(3)+"<OrthoViewpoint id=\"side\" bind='false' centerOfRotation='0,0,0' description='Z - Dec view' fieldOfView='[-%s,-%s,%s,%s]' isActive='false' metadata='X3DMetadataObject' orientation='0,-1,0,1.570796' position='-%s,0,0' zFar='10000' zNear='0.0001' ></OrthoViewpoint>\n"%(vmax*1.4,decmax*1.4,vmax*1.4,decmax*1.4,ma*1.4))
-        self.file_html.write(tabs(3)+"<OrthoViewpoint id=\"side2\" bind='false' centerOfRotation='0,0,0' description='Z - RA view' fieldOfView='[-%s,-%s,%s,%s]' isActive='false' metadata='X3DMetadataObject' orientation='1,1,1,4.1888' position='0,%s,0' zFar='10000' zNear='0.0001' ></OrthoViewpoint>\n"%(vmax*1.4,ramax*1.4,vmax*1.4,ramax*1.4,ma*1.4))
+        self.file_html.write(tabs(3)+"<OrthoViewpoint id=\"front\" bind='false' centerOfRotation='0,0,0' description='RA-Dec view' fieldOfView='[%s,%s,%s,%s]' isActive='false' metadata='X3DMetadataObject' orientation='0,1,0,3.141593' position='0,0,-%s' zFar='10000' zNear='0.0001' ></OrthoViewpoint>\n"%(-ramax*1.4,-decmax*1.4,ramax*1.4,decmax*1.4,ma*1.4))
+        self.file_html.write("\t\t\t <OrthoViewpoint id=\"side\" bind='false' centerOfRotation='0,0,0' description='Z - Dec view' fieldOfView='[%s,%s,%s,%s]' isActive='false' metadata='X3DMetadataObject' orientation='0,-1,0,1.570796' position='-%s,0,0' zFar='10000' zNear='0.0001' ></OrthoViewpoint>\n"%(-vmax*1.4,-decmax*1.4,vmax*1.4,decmax*1.4,ma*1.4))
+        self.file_html.write("\t\t\t <OrthoViewpoint id=\"side2\" bind='false' centerOfRotation='0,0,0' description='Z - RA view' fieldOfView='[%s,%s,%s,%s]' isActive='false' metadata='X3DMetadataObject' orientation='1,1,1,4.1888' position='0,%s,0' zFar='10000' zNear='0.0001' ></OrthoViewpoint>\n"%(-vmax*1.4,-ramax*1.4,vmax*1.4,ramax*1.4,ma*1.4))
 
     def func_background(self):
         self.file_html.write(tabs(3)+"<script>\n")
@@ -1500,10 +1509,7 @@ class write_html:
             self.file_html.write(tabs(3)+'<button onclick="setsph();" >Spheres</button>\n')
 
         if l_isolevels is not None:
-            if type(self.nlayers) == list:
-                numcubes = len(self.nlayers)
-            else:
-                numcubes = 1
+            numcubes = len(self.nlayers)
             for nc in range(numcubes):
                 self.file_html.write(tabs(2)+'<br><br>\n')
                 if type(lineLabs) == list:
@@ -1533,10 +1539,7 @@ class write_html:
             #self.file_html.write('\n\t <div style="position:absolute;left:800px;top:140px;width:600px">\n')
             
         if colormaps is not None:
-            if type(self.nlayers) == list:
-                numcubes = len(self.nlayers)
-            else:
-                numcubes = 1
+            numcubes = len(self.nlayers)
             for nc in range(numcubes):
                 self.colormaps = colormaps
                 #self.file_html.write('\t\t <br><br>\n')
@@ -1662,10 +1665,7 @@ class write_html:
 
         """
         self.file_html.write("\t\t <!--MUST BE BELOW THE <select> ELEMENT-->\n")
-        if type(self.nlayers) == list:
-            numcubes = len(self.nlayers)
-        else:
-            numcubes = 1
+        numcubes = len(self.nlayers)
         for nc in range(numcubes):
             self.file_html.write(tabs(2)+"<script>\n")
             self.file_html.write(tabs(2)+"const cc%s = document.querySelector('#cmaps-choice%s');\n"%(nc,nc))
@@ -1674,13 +1674,22 @@ class write_html:
             self.file_html.write(tabs(3)+"const cmap = cc%s.value;\n"%nc)
             
             for (i,cmap) in enumerate(self.colormaps):
-                diffCol = create_colormap(cmap, l_isolevels[nc])
+                if cmap in ['Greys', 'Purples', 'Blues', 'Greens', 'Oranges', 'Reds',
+                      'YlOrBr', 'YlOrRd', 'OrRd', 'PuRd', 'RdPu', 'BuPu',
+                      'GnBu', 'PuBu', 'YlGnBu', 'PuBuGn', 'BuGn', 'YlGn']:
+                    start = 255/2.5
+                else:
+                    start=0
+                    
+                diffCol = create_colormap(cmap, l_isolevels[nc], start=start)
                 if i == 0:
                     self.file_html.write(tabs(3)+"if (cmap === '%s') {\n"%cmap)
                 else:
                     self.file_html.write(tabs(3)+"else if (cmap === '%s') {\n"%cmap)
                 for lev in range(len(l_isolevels[nc])):
                     self.file_html.write(tabs(3)+"document.getElementById('cube__%slayer%s').setAttribute('diffuseColor','%s')\n"%(nc,lev,diffCol[lev]))
+                    #might be only useful for opaque mode
+                    #self.file_html.write(tabs(3)+"document.getElementById('cube__%slayer%s').setAttribute('emissiveColor','%s')\n"%(nc,lev,diffCol[lev]))
                     ca = np.array(diffCol[lev].split(' ')).astype(float)*255
                     c = str(ca.astype(int))[1:-1]
                     self.file_html.write(tabs(3)+"document.getElementById('%sbut%s').style.background = 'rgb(%s)';\n"%(nc,lev,c))
@@ -1729,10 +1738,7 @@ class write_html:
             self.file_html.write(tabs(3)+"const move = inpmovesv.value;\n")
             self.file_html.write(tabs(4)+"document.getElementById('cube__image2d').setAttribute('translation', '0 0 '+(sca*move-1)*Number(document.getElementById('cube__imgCoords').getAttribute('point').slice(24,31)));\n")
         #scale layers
-        if type(self.nlayers) == list:
-            numcubes = len(self.nlayers)
-        else:
-            numcubes = 1
+        numcubes = len(self.nlayers)
         for nc in range(numcubes):
             for nlays in range(self.nlayers[nc]):
                 self.file_html.write(tabs(3)+"document.getElementById('cube__%slt%s').setAttribute('scale', '1 1 '+sca);\n"%(nc,nlays))
@@ -2171,15 +2177,11 @@ def change_magnitude(data, magnitude='rms'):
         return data/np.max(data)*100
     
 
-def create_colormap(colormap, isolevels, start=0, end=255, lightdark=True):
-    """
-    Lightdark: if True, the colormap will be reversed if the first color is darker than the last one.
-    """
+def create_colormap(colormap, isolevels, start=0, end=255, lightdark=False):
     colors = cm.get_cmap(colormap)(range(256))[:,:-1]
     if lightdark:
-    	if np.sum(colors[0]) < np.sum(colors[-1]):
+        if np.sum(colors[0]) < np.sum(colors[-1]):
             colors = colors[::-1]
-    
     cmap = []
     for i in range(len(isolevels)):
         m = (end-start)/(np.max(isolevels)-np.min(isolevels))
@@ -2213,6 +2215,7 @@ def calc_isolevels(cube):
         isolevels = [np.max(cube)/10., np.max(cube)/5., np.max(cube)/3., np.max(cube)/1.5]
     elif np.min(cube) < np.max(cube)/5.:
         isolevels = [np.min(cube), np.max(cube)/5., np.max(cube)/3., np.max(cube)/1.5]
+    return isolevels
 
 def objquery(result, coords, otype):
     """
@@ -2228,8 +2231,8 @@ def objquery(result, coords, otype):
     return result
 
 def labpos(coords):
-    ramin1, ramean1, ramax1 = coords[0]
-    decmin1, decmean1, decmax1 = coords[1]
+    ramin1, _ , ramax1 = coords[0]
+    decmin1, _ , decmax1 = coords[1]
     vmin1, vmean1, vmax1 = coords[2]
     ax = np.array([[0,decmin1*1.1,vmin1],
                    [ramax1*1.1, 0,vmin1],
