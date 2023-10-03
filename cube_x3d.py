@@ -1,10 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Thu Jan 26 16:31:34 2023
-
-@author: ixaka
-"""
-
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
@@ -361,9 +354,9 @@ class write_x3d:
 
         Parameters
         ----------
-        l_cube : 3d array
+       l_cube : list of 3d arrays
             The data cube.
-        l_isolevels : list, array
+        l_isolevels : list of 3d arrays
             An array or list with the value of each isosurface layer. 
             E.g.[2,5,9] for three layers at values 2,5 and 9 of the cube.
             Should be in increasing order.
