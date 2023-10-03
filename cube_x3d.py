@@ -347,6 +347,7 @@ class write_x3d:
     def make_layers(self, l_cubes, l_isolevels, colors, shifts=None, step_size=1):
         #Change colors for default color using create_colormap()
         #change l_cubes and l_isolevels as to accept only lists, e.g. [cube1, cube2, cube3] and or [onecube]
+        #create function to set step size automatically
         """
         Makes layers of the equal intensity and writes an x3d file
 
@@ -387,7 +388,7 @@ class write_x3d:
             
             for i in range(len(isolevels)):
                 if shifts is not None:
-                    verts, faces = marching_cubes(cube, level=isolevels[i], delta=self.delta, mins=mins, shift=shifts[nc])
+                    verts, faces = marching_cubes(cube, level=isolevels[i], delta=self.delta, mins=mins, shift=shifts[nc], step_size=step_size)
                 else:
                     verts, faces = marching_cubes(cube, level=isolevels[i], delta=self.delta, mins=mins, step_size=step_size)
                 self.file_x3d.write('\n\t\t\t<Transform DEF="%slt%s" translation="0 0 0" rotation="0 0 1 -0" scale="1 1 1">'%(nc,i))
