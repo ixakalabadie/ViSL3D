@@ -344,9 +344,10 @@ class write_x3d:
         self.file_x3d.write('\n\t\t<DirectionalLight ambientIntensity="1" intensity="0" color="1 1 1"/>')
         self.file_x3d.write('\n\t\t<Transform DEF="ROOT" translation="0 0 0">')
         
-    def make_layers(self, l_cubes, l_isolevels, colors, shifts=None):
+    def make_layers(self, l_cubes, l_isolevels, colors, shifts=None, step_size=1):
         #Change colors for default color using create_colormap()
         #change l_cubes and l_isolevels as to accept only lists, e.g. [cube1, cube2, cube3] and or [onecube]
+        #create function to set step size automatically
         """
         Makes layers of the equal intensity and writes an x3d file
 
@@ -379,9 +380,9 @@ class write_x3d:
             isolevels = l_isolevels[nc]
             for i in range(len(isolevels)):
                 if shifts is not None:
-                    verts, faces = marching_cubes(cube, level=isolevels[i], delta=self.delta, mins=mins, shift=shifts[nc])
+                    verts, faces = marching_cubes(cube, level=isolevels[i], delta=self.delta, mins=mins, shift=shifts[nc], step_size=step_size)
                 else:
-                    verts, faces = marching_cubes(cube, level=isolevels[i], delta=self.delta, mins=mins)
+                    verts, faces = marching_cubes(cube, level=isolevels[i], delta=self.delta, mins=mins, step_size=step_size)
                 self.file_x3d.write('\n\t\t\t<Transform DEF="%slt%s" translation="0 0 0" rotation="0 0 1 -0" scale="1 1 1">'%(nc,i))
                 self.file_x3d.write('\n\t\t\t\t<Shape DEF="%slayer%s_shape">'%(nc,i))
                 self.file_x3d.write('\n\t\t\t\t\t<Appearance sortKey="%s">'%(len(isolevels)-1-i))
@@ -1366,7 +1367,7 @@ class write_html:
             self.file_html.write(tabs(3)+'<button id="anim" onclick="animation()">Animation</button>')
         
         if background:
-            self.file_html.write(tabs(3)+'&nbsp <label for="back-choice"><b>Background:</b> </label>;\n')
+            self.file_html.write(tabs(3)+'&nbsp <label for="back-choice"><b>Background:</b> </label>\n')
             self.file_html.write(tabs(3)+'<input oninput="change_background()" id="back-choice" type="color" value="#999999">\n')
 
         if self.gallabs:
@@ -1996,7 +1997,7 @@ class make_all():
 
 #Some miscellaneoues functions
 
-def marching_cubes(cube, level, delta, mins, shift=(0,0,0)):
+def marching_cubes(cube, level, delta, mins, shift=(0,0,0), step_size=1):
     """
 
     Parameters
@@ -2022,7 +2023,8 @@ def marching_cubes(cube, level, delta, mins, shift=(0,0,0)):
                     #we multiply by the sign to have the coordinates
                     #in increasing order, same as cube
                             spacing = delta,
-                            allow_degenerate=False)
+                            allow_degenerate=False,
+                            step_size=step_size)
     return np.array([verts[:,0]+ramin+shift[0], verts[:,1]+decmin+shift[1], 
                      verts[:,2]+vmin+shift[2]]).T, faces
 
@@ -2102,6 +2104,14 @@ def objquery(result, coords, otype):
     result = result[result['DEC'] >= coords[1,0]]
     result = result[result['DEC'] <= coords[1,1]]
     return result
+
+def calc_step(cube, isolevels):
+    npix = np.sum(cube > np.min(isolevels))
+    if npix > 5e6:
+        step = 1
+    else:
+        step = npix*2.5e-6
+
 
 def labpos(coords):
     ramin1, _ , ramax1 = coords[0]
