@@ -578,79 +578,6 @@ class write_x3d:
         self.file_x3d.write('\n'+tabs(2)+'<OrientationInterpolator DEF="move" key="0 0.5 1" keyValue="%s 0  %s 3.14  %s 6.28"/>'%(vec,vec,vec))
         self.file_x3d.write('\n'+tabs(2)+'<Route fromNode="time" fromField ="fraction_changed" toNode="move" toField="set_fraction"></Route>')
         self.file_x3d.write('\n'+tabs(2)+'<Route fromNode="move" fromField ="value_changed" toNode="ROOT" toField="rotation"></Route>')
-
-
-    def make_markers(self, geom, points, shape, color='1 0 1', labels=None):
-        """
-        geom = 'tube', 'Sphere', 'Box', 'Cone', 'Torus', 'Arc2D', 'ArcClose2D', 'Circle2D', 'Disk2D', 'Polyline2D',
-        'Polypoint2D', 'Rectangle2D', 'TriangleSet2D'
-
-        Parameters
-        ----------
-        points : TYPE
-            points = np.array([[1,2,1],[2,2,1],[],...]). Shape = (n,3)
-        """
-        if geom == 'tube':
-            # get mean point between consecutive points
-            trans = np.array([str(np.mean((points[i],points[i+1]), axis=0))[1:-1] for i in range(len(points)-1)])
-            # get distance between consecutive points
-            diff = np.diff(points, axis=0)
-            heights = np.linalg.norm(diff,axis=1)
-            #get rotation for each tube
-            angles = np.arccos(diff[:,1]/heights)
-
-            # create x3d object
-            for i in range(self.ntubes, self.ntubes+len(points)-1):
-                self.file_x3d.write("\n"+tabs(3)+'<Transform DEF="tubtra%s" translation="%s" rotation="%.4f 0 %.4f %.4f" scale="1 1 1">\n'%(i,trans[i],diff[i,2],-diff[i,0],angles[i]))
-                self.file_x3d.write(tabs(4)+'<Shape ispickable="false">\n')
-                self.file_x3d.write(tabs(5)+'<Cylinder DEF="tube%s" height="%s" radius="%s" solid="false"/>\n'%(i,heights[i]*1.05, 5.0))
-                self.file_x3d.write(tabs(5)+'<Appearance>\n')
-                self.file_x3d.write(tabs(6)+'<Material DEF="tubmat%s" ambientIntensity="0" emissiveColor="0 0 0" diffuseColor="%s" specularColor="0 0 0" shininess="0.0078" transparency="0"/>\n'%(i, color))
-                self.file_x3d.write(tabs(5)+'</Appearance>\n')
-                self.file_x3d.write(tabs(4)+'</Shape>\n')
-                self.file_x3d.write(tabs(3)+'</Transform>\n')
-
-            self.ntubes = self.ntubes + len(points)-1
-
-        if geom == 'sphere':
-            for i in range(self.nspheres, self.nspheres+len(points)):
-                self.file_x3d.write("\n"+tabs(3)+'<Transform DEF="spheretra%s" translation="%s" scale="1 1 1">\n'%(i,str(points[i])[1:-1]))
-                self.file_x3d.write(tabs(4)+'<Shape ispickable="false">\n')
-                if hasattr(shape, "__len__") and len(shape) == len(points):
-                    self.file_x3d.write(tabs(5)+'<Sphere DEF="sphere%s" radius="%s" solid="false"/>\n'%(i,shape[i]))
-                else:
-                    self.file_x3d.write(tabs(5)+'<Sphere DEF="sphere%s" radius="%s" solid="false"/>\n'%(i,shape))
-                self.file_x3d.write(tabs(5)+'<Appearance>\n')
-                if type(color) == list:
-                    self.file_x3d.write(tabs(6)+'<Material DEF="spheremat%s" ambientIntensity="0" emissiveColor="0 0 0" diffuseColor="%s" specularColor="0 0 0" shininess="0.0078" transparency="0"/>\n'%(i, color[i]))
-                else:
-                    self.file_x3d.write(tabs(6)+'<Material DEF="spheremat%s" ambientIntensity="0" emissiveColor="0 0 0" diffuseColor="%s" specularColor="0 0 0" shininess="0.0078" transparency="0"/>\n'%(i, color))
-                self.file_x3d.write(tabs(5)+'</Appearance>\n')
-                self.file_x3d.write(tabs(4)+'</Shape>\n')
-                self.file_x3d.write(tabs(3)+'</Transform>\n')
-            self.nspheres = self.nspheres + len(points)
-        
-        if geom == 'box':
-            for i in range(self.nboxes, self.nboxes+len(points)):
-                self.file_x3d.write("\n"+tabs(3)+'<Transform DEF="boxtra%s" translation="%s" scale="1 1 1">\n'%(i,str(points[i])[1:-1]))
-                self.file_x3d.write(tabs(4)+'<Shape ispickable="false">\n')
-                if hasattr(shape, "shape") and shape.shape == points.shape:
-                    size = str(shape[i])[1:-1]
-                else:
-                    size = '%s %s %s'%(shape*2, shape*2, shape*2)
-                self.file_x3d.write(tabs(5)+'<Box DEF="box%s" size="%s" solid="false"/>\n'%(i,size))
-                self.file_x3d.write(tabs(5)+'<Appearance>\n')
-                if type(color) == list:
-                    self.file_x3d.write(tabs(6)+'<Material DEF="boxmat%s" ambientIntensity="0" emissiveColor="0 0 0" diffuseColor="%s" specularColor="0 0 0" shininess="0.0078" transparency="0"/>\n'%(i, color[i]))
-                else:
-                    self.file_x3d.write(tabs(6)+'<Material DEF="boxmat%s" ambientIntensity="0" emissiveColor="0 0 0" diffuseColor="%s" specularColor="0 0 0" shininess="0.0078" transparency="0"/>\n'%(i, color))
-                self.file_x3d.write(tabs(5)+'</Appearance>\n')
-                self.file_x3d.write(tabs(4)+'</Shape>\n')
-                self.file_x3d.write(tabs(3)+'</Transform>\n')
-            self.nboxes = self.nboxes + len(points)
-            
-            # Create other shapes
-            # Add labels
                 
         
     def make_labels(self, gals=None, axlab=None):
@@ -974,54 +901,6 @@ class write_html:
         self.file_html.write(tabs(4)+"document.getElementById('cube__outline').setAttribute('transparency', '0');\n")
         self.file_html.write(tabs(3)+"}\n")
         self.file_html.write(tabs(2)+"}\n\t\t </script>\n")
-
-    def func_interactivemarkers(self,):
-        self.write_html(tabs(3)+'<div id="divmaster" style="margin-left: 2%">\n')
-        self.write_html(tabs(4)+'<option value="none">None</option>\n')
-        self.write_html(tabs(4)+'<option value="sphere">Sphere</option>\n')
-        self.write_html(tabs(4)+'<option value="box">Box</option>\n')
-        self.write_html(tabs(4)+'<option value="tube">Tube</option>\n')
-        self.write_html(tabs(4)+'<option value="cone">Cone</option>\n')
-        self.write_html(tabs(3)+'</select>\n')
-        self.write_html(tabs(3)+'<input type="color" id="butcol0" value="#ff0000">\n')
-        self.write_html(tabs(3)+'<button id="butcreate" onclick="creategeom1()">Create</button> <br><br>\n')
-        self.write_html(tabs(3)+'\n')
-        self.write_html(tabs(3)+'\n')
-
-    
-    def func_tubes(self, ntubes):
-        self.tubes = True
-        self.file_html.write(tabs(2)+"<script>\n\t\tfunction settubes()\n\t\t{\n")
-        self.file_html.write(tabs(3)+"if(document.getElementById('cube__tubmat0').getAttribute('transparency')!= '0') {\n")
-        for i in range(ntubes):
-            self.file_html.write(tabs(4)+"document.getElementById('cube__tubmat%s').setAttribute('transparency', '0');\n"%i)
-        self.file_html.write(tabs(3)+" } else {\n")
-        for i in range(ntubes):
-            self.file_html.write(tabs(4)+"document.getElementById('cube__tubmat%s').setAttribute('transparency', '1');\n"%i)
-        self.file_html.write(tabs(3)+"}\n\t\t}\n\t\t </script>\n")
-
-    def func_markers(self, nbox=0, nsph=0):
-        if nbox != 0:
-            self.boxbut = True
-            self.file_html.write(tabs(2)+"<script>\n\t\tfunction setbox()\n\t\t{\n")
-            self.file_html.write(tabs(3)+"if(document.getElementById('cube__boxmat0').getAttribute('transparency')!= '0') {\n")
-            for i in range(nbox):
-                self.file_html.write(tabs(4)+"document.getElementById('cube__boxmat%s').setAttribute('transparency', '0');\n"%i)
-            self.file_html.write(tabs(3)+" } else {\n")
-            for i in range(nbox):
-                self.file_html.write(tabs(4)+"document.getElementById('cube__boxmat%s').setAttribute('transparency', '1');\n"%i)
-            self.file_html.write(tabs(3)+"}\n\t\t}\n\t\t </script>\n")
-
-        if nsph != 0:
-            self.sphbut = True
-            self.file_html.write(tabs(2)+"<script>\n\t\tfunction setsph()\n\t\t{\n")
-            self.file_html.write(tabs(3)+"if(document.getElementById('cube__sphmat0').getAttribute('transparency')!= '0') {\n")
-            for i in range(nbox):
-                self.file_html.write(tabs(4)+"document.getElementById('cube__sphmat%s').setAttribute('transparency', '0');\n"%i)
-            self.file_html.write(tabs(3)+" } else {\n")
-            for i in range(nbox):
-                self.file_html.write(tabs(4)+"document.getElementById('cube__sphmat%s').setAttribute('transparency', '1');\n"%i)
-            self.file_html.write(tabs(3)+"}\n\t\t}\n\t\t </script>\n")
             
     def func_axes(self, axes):
         self.axes = True
@@ -1425,6 +1304,7 @@ class write_html:
         self.file_html.write(tabs(3) + '}\n')
 
         self.file_html.write(tabs(2)+'</script>\n')
+        
 
     #TUBESTUBESTUBES
 
