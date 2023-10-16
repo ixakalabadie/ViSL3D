@@ -11,10 +11,6 @@ from skimage import measure
 from matplotlib import cm
 import astropy.units as u
 from astropy.coordinates import Angle
-import matplotlib.pyplot as plt
-        
-        
-
 
 
 class write_x3d:
@@ -1692,53 +1688,6 @@ def labpos(coords):
                   [ramax1, decmax1, vmin1*1.1], 
                   [ramin1, decmax1, vmin1*1.1]])
     return ax, axtick
-
-def preview2d(cube, vmin1=None, vmax1=None, vmin2=None, vmax2=None, norm='asinh'):
-    """
-    
-
-    Parameters
-    ----------
-    cube : 3d array
-        The data cube. Must be unitless.
-    vmin(1,2) : float, optional
-        Minimum value for the colormap. If None the minimum of the image is taken. The default is None.
-    vmax(1,2) : float, optional
-        Maximum value for the colormap. If None the maximum of the image is taken. The default is None.
-    norm : string
-        A scale name, one of 'asinh', 'function', 'functionlog', 'linear', 'log', 'logit' or 'symlog'. Default is 'asinh'.
-        For more information see `~matplotlib.colors.Normalize`.
-
-    Returns
-    -------
-    None.
-
-    """
-    nz, ny, nx = cube.shape
-    cs1 = np.sum(cube, axis=0)
-    cs2 = np.sum(cube, axis=2)
-    if vmin1 == None: vmin1 = np.min(cs1)
-    if vmax1 == None: vmax1 = np.max(cs1)
-    if vmin2 == None: vmin2 = np.min(cs2)
-    if vmax2 == None: vmax2 = np.max(cs2)
-    fig, ax = plt.subplots(nrows=2, ncols=2, figsize=(10,8))
-    ax[0,0].hist(cs1.flatten(), density=True)
-    ax[0,1].imshow(cs1, vmin=vmin1, vmax=vmax1, norm=norm) #imshow plots axes fist -> y , second -> x
-    ax[0,1].set_ylabel('DEC')
-    ax[0,1].set_xlabel('RA')
-
-    ax[0,1].set_yticks(np.arange(0,ny+1,50), major=True)
-    ax[0,1].set_xticks(np.arange(0,nx+1,50), major=True)
-    ax[0,1].grid(which='major')
-
-    ax[1,0].hist(cs2.flatten(), density=True)
-    ax[1,1].imshow(cs2.transpose(), vmin=vmin2, vmax=vmax2, norm=norm) #imshow plots axes fist -> y , second -> x
-    ax[1,1].set_ylabel('DEC')
-    ax[1,1].set_xlabel('V')
-
-    ax[1,1].set_yticks(np.arange(0,ny+1,50), major=True)
-    ax[1,1].set_xticks(np.arange(0,nz+1,50), major=True)
-    ax[1,1].grid(which='major')
     
     
 def get_imcol(position, survey, verts, unit='deg', cmap='Greys', **kwargs):
