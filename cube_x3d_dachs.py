@@ -103,9 +103,9 @@ class write_x3d:
                     verts, faces = marching_cubes(cube, level=isolevels[i], delta=self.delta, mins=mins, shift=shifts[nc], step_size=step_size)
                 else:
                     verts, faces = marching_cubes(cube, level=isolevels[i], delta=self.delta, mins=mins, step_size=step_size)
-                self.file_x3d.write('\n\t\t\t<Transform DEF="%slt%s" translation="0 0 0" rotation="0 0 1 -0" scale="1 1 1">'%(nc,i))
-                self.file_x3d.write('\n\t\t\t\t<Shape DEF="%slayer%s_shape">'%(nc,i))
-                self.file_x3d.write('\n\t\t\t\t\t<Appearance sortKey="%s">'%(len(isolevels)-1-i))
+                self.file_x3d.write(tabs(3)+'<Transform DEF="%slt%s" translation="0 0 0" rotation="0 0 1 -0" scale="1 1 1">\n'%(nc,i))
+                self.file_x3d.write(tabs(4)+'<Shape DEF="%slayer%s_shape">\n'%(nc,i))
+                self.file_x3d.write(tabs(5)+'<Appearance sortKey="%s">\n'%(len(isolevels)-1-i))
                 if self.style == 'transparent':
                     #set color and transparency of layer
                     if i == len(isolevels)-1:
@@ -124,8 +124,8 @@ class write_x3d:
                 self.file_x3d.write('\n'+tabs(5)+'<IndexedFaceSet solid="false" colorPerVertex="false" normalPerVertex="false" coordIndex="\n\t\t\t\t\t\t')
                 #write indices
                 np.savetxt(self.file_x3d, faces, fmt='%i', newline=' -1\n\t\t\t\t\t\t')
-                self.file_x3d.write('">')
-                self.file_x3d.write('\n\t\t\t\t\t\t<Coordinate DEF="%sCoordinates%s" point="\n\t\t\t\t\t\t'%(nc,i))
+                self.file_x3d.write('">\n')
+                self.file_x3d.write(tabs(6)+'<Coordinate DEF="%sCoordinates%s" point="\n\t\t\t\t\t\t'%(nc,i))
                 #write coordinates
                 np.savetxt(self.file_x3d, verts,fmt='%.3f', newline=',\n\t\t\t\t\t\t')
                 self.file_x3d.write('"/>')
@@ -465,7 +465,7 @@ class write_html:
 
     """
     
-    def __init__(self, filename, units, l_isolevels, tabtitle='new_html_x3d', pagetitle=None, description=None, style='tranparent'):
+    def __init__(self, filename, units, l_isolevels, tabtitle='new_html_x3d', pagetitle=None, description=None, style='tranparent', format='full'):
         #some attributes to use later
         self.grids = False
         self.gals = False
@@ -477,6 +477,7 @@ class write_html:
         self.anim = False
         self.intmarks = False
         self.style = style
+        self.format = format
 
         self.file_html = open(filename, 'w')
         self.file_html.write('<html>\n\t <head>\n')
@@ -486,8 +487,10 @@ class write_html:
         self.file_html.write("\t\t <link rel='stylesheet' type='text/css' href='x3dom/x3dom.css'></link>\n")
         self.file_html.write("\t\t <script type='text/javascript' src='https://code.jquery.com/jquery-3.6.3.min.js'></script>\n")
         self.file_html.write(tabs(2)+'<script src="x3dom/js-colormaps.js"></script> <!-- FOR COLORMAPS IN JS-->\n')
-        self.file_html.write("\n\t\t<style>\n"+tabs(3)+"x3d\n"+tabs(4)+"{\n"+tabs(5)+"border:2px solid darkorange;\n"+tabs(5)+"width:95%;\n"+tabs(5)+"height: 80%;\n"+tabs(3)+"}\n"+tabs(3)+"</style>\n\t</head>\n\t<body>\n")
-        
+        if format == 'minimal':
+            self.file_html.write("\n\t\t<style>\n"+tabs(3)+"x3d\n"+tabs(4)+"{\n"+tabs(5)+"border:2px solid darkorange;\n"+tabs(5)+"width:100%;\n"+tabs(5)+"height: 100%;\n"+tabs(3)+"}\n"+tabs(3)+"</style>\n\t</head>\n\t<body>\n")
+        else:
+            self.file_html.write("\n\t\t<style>\n"+tabs(3)+"x3d\n"+tabs(4)+"{\n"+tabs(5)+"border:2px solid darkorange;\n"+tabs(5)+"width:95%;\n"+tabs(5)+"height: 80%;\n"+tabs(3)+"}\n"+tabs(3)+"</style>\n\t</head>\n\t<body>\n")
         if pagetitle is not None:
             self.file_html.write('\t<h1 align="middle"> %s </h1>\n'%pagetitle)
             self.file_html.write('\t<hr/>\n')
@@ -1163,7 +1166,7 @@ class write_html:
 
             
         if scalev:
-            #self.file_html.write('\t\t <br><br>\n')
+            self.file_html.write(tabs(2)+'<br><br>\n')
             self.file_html.write(tabs(2)+'&nbsp <label for="scalev"><b>Z scale:</b> </label>\n')
             self.file_html.write(tabs(2)+'<input oninput="changescalev()" id="scalev" type="range" list="marker" min="0" max="5" step="0.001" value="1"/>\n')
             self.file_html.write(tabs(2)+'<datalist id="marker">\n')
@@ -1500,7 +1503,8 @@ class write_html:
         in an error.
 
         """
-        self.file_html.write(tablehtml)
+        if self.format != 'minimal':
+            self.file_html.write(tablehtml)
         self.file_html.write('\n\t</body>\n</html>')
         self.file_html.close()
 
@@ -1595,12 +1599,20 @@ def get_coords(ra, dec, v):
 def tabs(n):
     return '\t'*n
 
-def calc_isolevels(cube):
-    if np.min(cube) < 0:    
-        isolevels = [np.max(cube)/10., np.max(cube)/5., np.max(cube)/3., np.max(cube)/1.5]
-    elif np.min(cube) < np.max(cube)/5.:
-        isolevels = [np.min(cube), np.max(cube)/5., np.max(cube)/3., np.max(cube)/1.5]
-    return isolevels
+def calc_isolevels(cube, unit):
+    if unit == 'rms':
+        if 3 < np.max(cube)/1.5:
+            return np.linspace(3, np.max(cube)/1.5, 10).tolist()
+        else:
+            return np.linspace(1, np.max(cube), 10).tolist()
+    elif unit == 'percent':
+        return [10, 20, 30, 40, 50, 60, 70, 80, 90]
+    else:
+        if np.min(cube) < 0:    
+            isolevels = [np.max(cube)/10., np.max(cube)/5., np.max(cube)/3., np.max(cube)/1.5]
+        elif np.min(cube) < np.max(cube)/5.:
+            isolevels = [np.min(cube), np.max(cube)/5., np.max(cube)/3., np.max(cube)/1.5]
+        return isolevels
 
 def objquery(result, coords, otype):
     """
@@ -1782,3 +1794,6 @@ default_cmaps = ['magma', 'inferno', 'plasma', 'viridis', 'cividis', 'twilight',
  'gist_rainbow_r', 'gist_stern_r', 'gist_yarg_r', 'gnuplot_r', 'gnuplot2_r', 'gray_r', 'hot_r', 'hsv_r', 'jet_r', 'nipy_spectral_r', 'ocean_r', 'pink_r',
  'prism_r', 'rainbow_r', 'seismic_r', 'spring_r', 'summer_r', 'terrain_r', 'winter_r', 'Accent_r', 'Dark2_r', 'Paired_r', 'Pastel1_r', 'Pastel2_r',
  'Set1_r', 'Set2_r', 'Set3_r', 'tab10_r', 'tab20_r', 'tab20b_r', 'tab20c_r']
+
+astropy_prefixes = ['','k','m','M','u','G','n','d','c','da','h','p','T','f','a','P','E','z','y','Z','Y','r','q','R','Q']
+angular_units = ['arcsec', 'arcmin', 'deg', 'rad']
