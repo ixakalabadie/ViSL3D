@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+ <!DOCTYPE X3D PUBLIC "ISO//Web3D//DTD X3D 3.3//EN" 
+ "http://www.web3d.org/specifications/x3d-3.3.dtd">
+ <X3D profile="Immersive" version="3.3" xmlns:xsd="http://www.w3.org/2001/XMLSchema-instance" xsd:noNamespaceSchemaLocation="http://www.web3d.org/specifications/x3d-3.3.xsd">
+ <head>
+	<meta name="file" content="./cube_x3d/examples/HCG90_test_o_plane.x3d"/>
+	<meta name="generator" content="create_x3d python module"/>
+	<meta name="creator" content="Name Surname"/>
+	<meta name="title" content="HCG90"/>
+	<meta name="numberofelements" content="6 layers"/>
+	<meta name="description" content="HI data cube of HCG90"/>
+ </head>
+	<Scene doPickPass="false">
+		<Background skyColor="0.2 0.2 0.2"/>
+		<NavigationInfo type='"EXAMINE" "ANY"' speed="4" headlight="true"/>
+		<DirectionalLight ambientIntensity="1" intensity="0" color="1 1 1"/>
+		<Transform DEF="ROOT" translation="0 0 0">

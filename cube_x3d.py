@@ -349,7 +349,7 @@ class write_x3d:
         self.file_x3d.write('\n\t\t<DirectionalLight ambientIntensity="1" intensity="0" color="1 1 1"/>')
         self.file_x3d.write('\n\t\t<Transform DEF="ROOT" translation="0 0 0">')
         
-    def make_layers(self, l_cubes, l_isolevels, colors, shifts=None, step_size=1):
+    def make_layers(self, l_cubes, l_isolevels, colors, shifts=None, step_size=1, add_normals=False):
         #create function to set step size automatically
         """
         Makes layers of the equal intensity and writes an x3d file
@@ -383,9 +383,9 @@ class write_x3d:
             isolevels = l_isolevels[nc]
             for i in range(len(isolevels)):
                 if shifts is not None:
-                    verts, faces = marching_cubes(cube, level=isolevels[i], delta=self.delta, mins=mins, shift=shifts[nc], step_size=step_size)
+                    verts, faces, normals = marching_cubes(cube, level=isolevels[i], delta=self.delta, mins=mins, shift=shifts[nc], step_size=step_size)
                 else:
-                    verts, faces = marching_cubes(cube, level=isolevels[i], delta=self.delta, mins=mins, step_size=step_size)
+                    verts, faces, normals = marching_cubes(cube, level=isolevels[i], delta=self.delta, mins=mins, step_size=step_size)
                 self.file_x3d.write('\n\t\t\t<Transform DEF="%slt%s" translation="0 0 0" rotation="0 0 1 -0" scale="1 1 1">'%(nc,i))
                 self.file_x3d.write('\n\t\t\t\t<Shape DEF="%slayer%s_shape">'%(nc,i))
                 self.file_x3d.write('\n\t\t\t\t\t<Appearance sortKey="%s">'%(len(isolevels)-1-i))
@@ -403,8 +403,11 @@ class write_x3d:
                 # if i != len(isolevels)-1:
                 self.file_x3d.write('\n'+tabs(6)+'<DepthMode readOnly="true"></DepthMode>')
                 self.file_x3d.write('\n'+tabs(5)+'</Appearance>')
-                #define the layer object (normals set to false?)
-                self.file_x3d.write('\n'+tabs(5)+'<IndexedFaceSet solid="false" colorPerVertex="false" normalPerVertex="false" coordIndex="\n\t\t\t\t\t\t')
+                #define the layer object
+                if add_normals:
+                    self.file_x3d.write('\n'+tabs(5)+'<IndexedFaceSet solid="false" colorPerVertex="false" normalPerVertex="true" coordIndex="\n\t\t\t\t\t\t')
+                else:
+                    self.file_x3d.write('\n'+tabs(5)+'<IndexedFaceSet solid="false" colorPerVertex="false" normalPerVertex="false" coordIndex="\n\t\t\t\t\t\t')
                 #write indices
                 np.savetxt(self.file_x3d, faces, fmt='%i', newline=' -1\n\t\t\t\t\t\t')
                 self.file_x3d.write('">')
@@ -412,6 +415,11 @@ class write_x3d:
                 #write coordinates
                 np.savetxt(self.file_x3d, verts,fmt='%.3f', newline=',\n\t\t\t\t\t\t')
                 self.file_x3d.write('"/>')
+                if add_normals:
+                    self.file_x3d.write('\n\t\t\t\t\t\t<Normal DEF="%sNormals%s" vector="\n\t\t\t\t\t\t'%(nc,i))
+                    #write normals
+                    np.savetxt(self.file_x3d, normals,fmt='%.5f', newline=',\n\t\t\t\t\t\t')
+                    self.file_x3d.write('"/>')
                 self.file_x3d.write('\n\t\t\t\t\t</IndexedFaceSet>\n\t\t\t\t</Shape>\n\t\t\t</Transform>')
 
     def make_outline(self):
@@ -776,8 +784,6 @@ class write_html:
             self.file_html.write('\t<hr/>\n')
         if description is not None:
             self.file_html.write("\t<p>\n\t %s</p> \n"%description)
-
-        
 
         #ANOTHER WAY TO CHANGE TRANSPARENCY instead of loading()
         # self.file_html.write(tabs(3)+"const nl = [%s,%s,%s];"%())
@@ -2086,7 +2092,7 @@ def marching_cubes(cube, level, delta, mins, shift=(0,0,0), step_size=1):
     
     """
     ramin, decmin, vmin = mins
-    verts, faces, _, _ = measure.marching_cubes(cube, level = level,
+    verts, faces, normals, _ = measure.marching_cubes(cube, level = level,
                     #spacing gives the spacing in each dimension.
                     #we multiply by the sign to have the coordinates
                     #in increasing order, same as cube
@@ -2094,7 +2100,7 @@ def marching_cubes(cube, level, delta, mins, shift=(0,0,0), step_size=1):
                             allow_degenerate=False,
                             step_size=step_size)
     return np.array([verts[:,0]+ramin+shift[0], verts[:,1]+decmin+shift[1], 
-                     verts[:,2]+vmin+shift[2]]).T, faces
+                     verts[:,2]+vmin+shift[2]]).T, faces, np.array([normals[:,0], normals[:,1], normals[:,2]]).T
 
 def calc_scale(shape):
     """
