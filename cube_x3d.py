@@ -718,6 +718,8 @@ class write_x3d:
         Closes the X3D file. Not using this function at the end results in
         an error.
 
+        Fix collision when only layers are plotted (no labels)
+
         Returns
         -------
         None.
@@ -1852,6 +1854,9 @@ def change_magnitude(data, magnitude='rms'):
     
 
 def create_colormap(colormap, isolevels, start=0, end=255, lightdark=False):
+    """
+    Correct for one isolevel model
+    """
     colors = cm.get_cmap(colormap)(range(256))[:,:-1]
     if lightdark:
         if np.sum(colors[0]) < np.sum(colors[-1]):
