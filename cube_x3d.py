@@ -380,14 +380,16 @@ class write_x3d:
         """
 
         numcubes = len(l_cubes)
+        self.iso_split = []
         for nc in range(numcubes):
             cube_full = l_cubes[nc]
             isolevels = l_isolevels[nc]
+            self.iso_split.append(np.zeros((len(isolevels)), dtype=int))
             for i in range(len(isolevels)):
 
                 split = int(np.sum(cube_full>isolevels[i])/700000)+1 # calculate how many times to split the cube, 1 means the cube stays the same
-                self.iso_split = np.zeros((numcubes,len(isolevels)), dtype=int)
-                self.iso_split[nc,i] = split
+                self.iso_split[nc][i] = split
+                print(self.iso_split)
                 nx,ny,nz = cube_full.shape
 
                 for sp in range(split):
@@ -599,6 +601,7 @@ class write_x3d:
         self.file_x3d.write(tabs(5)+'</IndexedLineSet>\n')
         self.file_x3d.write(tabs(4)+'</Shape>\n')
         self.file_x3d.write(tabs(3)+'</Transform>\n')
+        self.file_x3d.write(tabs(2)+'</Transform>\n')
 
     def make_animation(self, cycleinterval=10, axis=0):
         """
@@ -618,7 +621,6 @@ class write_x3d:
     def make_labels(self, gals=None, axlab=None):
         """
         Create the labels of different elements in the figure.
-        Mandatory function to close the Transform "ROOT" element.
 
         Parameters
         ----------
@@ -767,7 +769,7 @@ class write_html:
         The default is 'full'.
         
     """
-    def __init__(self, filename, units, l_isolevels, tabtitle='new_html_x3d', pagetitle=None, description=None, style='tranparent', format='full'):
+    def __init__(self, filename, units, l_isolevels, split, tabtitle='new_html_x3d', pagetitle=None, description=None, style='tranparent', format='full'):
         #some attributes to use later
         self.grids = False
         self.gals = False
@@ -780,6 +782,7 @@ class write_html:
         self.intmarks = False
         self.style = style
         self.format = format
+        self.iso_split = split
 
         self.file_html = open(filename, 'w')
         self.file_html.write('<html>\n\t <head>\n')
@@ -817,13 +820,14 @@ class write_html:
                         op = 0.4
                     else:
                         op = 0.8
-                    self.file_html.write(tabs(3)+"document.getElementById('cube__%slayer%s').setAttribute('transparency', '%s');\n"%(nc,nl,op))
+                    for sp in range(self.iso_split[nc][nl]):
+                        self.file_html.write(tabs(3)+"document.getElementById('cube__%slayer%s_sp%s').setAttribute('transparency', '%s');\n"%(nc,nl,sp,op))
             self.file_html.write(tabs(2)+'}\n')
             self.file_html.write(tabs(1)+'</script>\n')
 
         # setTimeout(loading, 5000); option to execute function after time
         
-    def func_layers(self, l_isolevels, split):
+    def func_layers(self, l_isolevels):
         """
         Make the funcion to hide/show layers. If this is used, the buttons()
         function with isolevels should also be used to create the buttons.
@@ -851,24 +855,24 @@ class write_html:
                 if i != self.nlayers[nc]-1:
                     self.file_html.write("\t <script>\n\t \t function setHI%slayer%s()\n\t \t {\n\t \t if(document.getElementById('cube__%slayer%s_sp0').getAttribute('transparency') != '0.8') {\n"%(nc,i,nc,i))
                     self.file_html.write("\t\t document.getElementById('%sbut%s').style.border = '5px dashed black';\n"%(nc,i))
-                    for sp in range(split[nc,i]):
+                    for sp in range(self.iso_split[nc][i]):
                         self.file_html.write("\t\t document.getElementById('cube__%slayer%s_sp%s').setAttribute('transparency', '0.8');\n"%(nc,i,sp))
                         self.file_html.write("\t\t document.getElementById('cube__%slayer%s_sp%s_shape').setAttribute('ispickable', 'true');\n"%(nc,i,sp))
                     self.file_html.write("\t\t } else { \n")
                     self.file_html.write("\t\t document.getElementById('%sbut%s').style.border = 'inset black';\n"%(nc,i))
-                    for sp in range(split[nc,i]):
+                    for sp in range(self.iso_split[nc][i]):
                         self.file_html.write("\t\t document.getElementById('cube__%slayer%s_sp%s').setAttribute('transparency', '1');\n"%(nc,i,sp))
                         self.file_html.write("\t\t document.getElementById('cube__%slayer%s_sp%s_shape').setAttribute('ispickable', 'false');\n"%(nc,i,sp))
                     self.file_html.write("\t\t } \n\t\t }\n\t </script>\n")
                 else:
                     self.file_html.write("\t <script>\n\t\t function setHI%slayer%s()\n\t\t {\n\t \t if(document.getElementById('cube__%slayer%s_sp0').getAttribute('transparency') != '0.4') {\n"%(nc,i,nc,i))
                     self.file_html.write("\t\t document.getElementById('%sbut%s').style.border = '5px dashed black';\n"%(nc,i))
-                    for sp in range(split[nc,i]):
+                    for sp in range(self.iso_split[nc][i]):
                         self.file_html.write("\t\t document.getElementById('cube__%slayer%s_sp%s').setAttribute('transparency', '0.4');\n"%(nc,i,sp))
                         self.file_html.write("\t\t document.getElementById('cube__%slayer%s_sp%s_shape').setAttribute('ispickable', 'true');\n"%(nc,i,sp))
                     self.file_html.write("\t\t } else { \n")
                     self.file_html.write("\t\t document.getElementById('%sbut%s').style.border = 'inset black';\n"%(nc,i))
-                    for sp in range(split[nc,i]):
+                    for sp in range(self.iso_split[nc][i]):
                         self.file_html.write("\t\t document.getElementById('cube__%slayer%s_sp%s').setAttribute('transparency', '1');\n"%(nc,i,sp))
                         self.file_html.write("\t\t document.getElementById('cube__%slayer%s_sp%s_shape').setAttribute('ispickable', 'false');\n"%(nc,i,sp))
                     self.file_html.write("\t\t } \n\t\t }\n\t </script>\n")
@@ -1588,7 +1592,7 @@ class write_html:
             self.file_html.write(tabs(3)+"}\n")
         self.file_html.write(tabs(2)+"}\n"+tabs(2)+"</script>\n")
         
-    def func_colormaps(self, l_isolevels, split):
+    def func_colormaps(self, l_isolevels):
         """
         Make function to change the colormap of the layers.
         Must be after buttons()
@@ -1672,7 +1676,8 @@ class write_html:
             self.file_html.write(tabs(5)+"} else {\n")
             self.file_html.write(tabs(6)+"var color%s = evaluate_cmap(collevs%s[lev], cmap%s.replace('_r', ''), reverse%s);\n"%(nc,nc,nc,nc))
             self.file_html.write(tabs(5)+"}\n")
-            self.file_html.write(tabs(5)+"for (let sp = 0; sp < %s; sp++) {\n"%len(split[nc]))
+            self.file_html.write(tabs(5)+"var split%s = %s;\n"%(nc,repr(self.iso_split[nc]).replace('array(','').replace(')','')))
+            self.file_html.write(tabs(5)+"for (let sp = 0; sp < split%s[lev]; sp++) {\n"%nc)
             self.file_html.write(tabs(6)+"document.getElementById('cube__%slayer'+lev+'_sp'+sp).setAttribute('diffuseColor', color%s[0]/255+' '+color%s[1]/255+' '+color%s[2]/255);\n"%(nc,nc,nc,nc))
             self.file_html.write(tabs(5)+"}\n")
             self.file_html.write(tabs(5)+"document.getElementById('%sbut'+lev).style.background = 'rgb('+color%s[0]+' '+color%s[1]+' '+color%s[2]+')';\n"%(nc,nc,nc,nc))
@@ -1723,7 +1728,8 @@ class write_html:
         numcubes = len(self.nlayers)
         for nc in range(numcubes):
             for nlays in range(self.nlayers[nc]):
-                self.file_html.write(tabs(3)+"document.getElementById('cube__%slt%s').setAttribute('scale', '1 1 '+sca);\n"%(nc,nlays))
+                for sp in range(self.iso_split[nc][nlays]):
+                    self.file_html.write(tabs(3)+"document.getElementById('cube__%slt%s_sp%s').setAttribute('scale', '1 1 '+sca);\n"%(nc,nlays,sp))
         #scale outline
         self.file_html.write(tabs(3)+"document.getElementById('cube__ot').setAttribute('scale', '1 1 '+sca);\n")
         #move galaxies
