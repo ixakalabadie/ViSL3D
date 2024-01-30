@@ -13,7 +13,10 @@ import astropy.units as u
 from astropy.coordinates import Angle
 
 
-class main:
+class MakeAll:
+    """
+    Class to create a X3D model of iso-surfaces with 3D spectral line data.
+    """
     
     def __init__(self, path, isolevels=None, units=None, lims=None, gals=None, image2d=None):
         """
@@ -389,18 +392,20 @@ class write_x3d:
 
                 split = int(np.sum(cube_full>isolevels[i])/700000)+1 # calculate how many times to split the cube, 1 means the cube stays the same
                 self.iso_split[nc][i] = split
-                print(self.iso_split)
                 nx,ny,nz = cube_full.shape
 
                 for sp in range(split):
 
                     cube = cube_full[:,:,int(nz/split*sp):int(nz/split*(sp+1))]
                     mins = (self.diff_coords[0][0], self.diff_coords[1][0], self.diff_coords[2][0]*(1-2*sp/split))
-
-                    if shifts is not None:
-                        verts, faces, normals = marching_cubes(cube, level=isolevels[i], delta=self.delta, mins=mins, shift=shifts[nc], step_size=step_size)
-                    else:
-                        verts, faces, normals = marching_cubes(cube, level=isolevels[i], delta=self.delta, mins=mins, step_size=step_size)
+                    try:
+                        if shifts is not None:
+                            verts, faces, normals = marching_cubes(cube, level=isolevels[i], delta=self.delta, mins=mins, shift=shifts[nc], step_size=step_size)
+                        else:
+                            verts, faces, normals = marching_cubes(cube, level=isolevels[i], delta=self.delta, mins=mins, step_size=step_size)
+                    except Exception as ex:
+                        print(ex)
+                        continue
                     self.file_x3d.write('\n\t\t\t<Transform DEF="%slt%s_sp%s" translation="0 0 0" rotation="0 0 1 -0" scale="1 1 1">'%(nc,i,sp))
                     self.file_x3d.write('\n\t\t\t\t<Shape DEF="%slayer%s_sp%s_shape">'%(nc,i,sp))
                     self.file_x3d.write('\n\t\t\t\t\t<Appearance sortKey="%s">'%(len(isolevels)-1-i))
@@ -787,9 +792,9 @@ class write_html:
         self.file_html = open(filename, 'w')
         self.file_html.write('<html>\n\t <head>\n')
         self.file_html.write('\t\t <title> %s </title>\n'%tabtitle)
-        self.file_html.write("\t\t <script type='text/javascript' src='x3dom/x3dom.js'></script>\n")
+        self.file_html.write("\t\t <script type='text/javascript' src='https://www.x3dom.org/download/x3dom.js'></script>\n")
         self.file_html.write("\n\t\t <script type='text/javascript'  src='https://www.maths.nottingham.ac.uk/plp/pmadw/LaTeXMathML.js'></script>\n")
-        self.file_html.write("\t\t <link rel='stylesheet' type='text/css' href='x3dom/x3dom.css'></link>\n")
+        self.file_html.write("\t\t <link rel='stylesheet' type='text/css' href='https://www.x3dom.org/download/x3dom.css'></link>\n")
         self.file_html.write("\t\t <script type='text/javascript' src='https://code.jquery.com/jquery-3.6.3.min.js'></script>\n")
         self.file_html.write(tabs(2)+'<script src="x3dom/js-colormaps.js"></script> <!-- FOR COLORMAPS IN JS-->\n')
         if format == 'minimal':
