@@ -1532,7 +1532,7 @@ class write_html:
                 self.file_html.write(tabs(3)+"showval.textContent = roundTo(%s+(move-1)*%s, 3)+' ( '+roundTo(move*%s, 3)+' )';\n"%(real_vmax,diff_vmax,diff_vmax))
             else:
                 self.file_html.write(tabs(3)+"showval.textContent = roundTo(move*%s, 3);\n"%(diff_vmax))
-            self.file_html.write(tabs(3)+"document.getElementById('cube__image2d').setAttribute('translation', '0 0 '+(sca*move-1)*Number(document.getElementById('cube__imgCoords').getAttribute('point').slice(24,31))); }\n")
+            self.file_html.write(tabs(3)+f"document.getElementById('cube__image2d').setAttribute('translation', '0 0 '+(sca*move-1)*{diff_vmax}); }}\n")
             self.file_html.write(tabs(2)+"</script>\n")
         else:
             self.file_html.write(tabs(2)+"<script>\n")
@@ -1544,7 +1544,7 @@ class write_html:
                 self.file_html.write(tabs(3)+"showval.textContent = roundTo(%s+(move-1)*%s, 3)+' ( '+roundTo(move*%s, 3)+' )';\n"%(real_vmax,diff_vmax,diff_vmax))
             else:
                 self.file_html.write(tabs(3)+"showval.textContent = roundTo(move*%s, 3);\n"%(diff_vmax))
-            self.file_html.write(tabs(3)+"document.getElementById('cube__image2d').setAttribute('translation', '0 0 '+(move-1)*Number(document.getElementById('cube__imgCoords').getAttribute('point').slice(24,31)));\n")
+            self.file_html.write(tabs(3)+f"document.getElementById('cube__image2d').setAttribute('translation', '0 0 '+(move-1)*{diff_vmax});\n")
             self.file_html.write(tabs(2)+"}\n")
             self.file_html.write(tabs(2)+"</script>\n")
 
@@ -1728,7 +1728,7 @@ class write_html:
         self.file_html.write(tabs(3)+"const sca = inpscasv.value;\n")
         if move2d:
             self.file_html.write(tabs(3)+"const move = inpmovesv.value;\n")
-            self.file_html.write(tabs(4)+"document.getElementById('cube__image2d').setAttribute('translation', '0 0 '+(sca*move-1)*Number(document.getElementById('cube__imgCoords').getAttribute('point').slice(24,31)));\n")
+            self.file_html.write(tabs(4)+f"document.getElementById('cube__image2d').setAttribute('translation', '0 0 '+(sca*move-1)*{coords[2,2]});\n")
         #scale layers
         numcubes = len(self.nlayers)
         for nc in range(numcubes):
@@ -2007,7 +2007,7 @@ def labpos(coords):
                   [ramin1, decmax1, vmin1*1.1]])
     return ax, axtick
 
-def preview2d(cube, vmin1=None, vmax1=None, vmin2=None, vmax2=None, norm='asinh'):
+def preview2d(cube, vmin1=None, vmax1=None, vmin2=None, vmax2=None, norm='asinh', figsize=(10,8)):
     """
     
 
@@ -2016,11 +2016,14 @@ def preview2d(cube, vmin1=None, vmax1=None, vmin2=None, vmax2=None, norm='asinh'
     cube : 3d array
         The data cube. Must be unitless.
     vmin(1,2) : float, optional
-        Minimum value for the colormap. If None the minimum of the image is taken. The default is None.
+        Minimum value for the colormap. If None the minimum of the image is taken.
+        The default is None.
     vmax(1,2) : float, optional
-        Maximum value for the colormap. If None the maximum of the image is taken. The default is None.
+        Maximum value for the colormap. If None the maximum of the image is taken.
+        The default is None.
     norm : string
-        A scale name, one of 'asinh', 'function', 'functionlog', 'linear', 'log', 'logit' or 'symlog'. Default is 'asinh'.
+        A scale name, one of 'asinh', 'function', 'functionlog', 'linear', 'log', 'logit' or
+        'symlog'. Default is 'asinh'.
         For more information see `~matplotlib.colors.Normalize`.
 
     Returns
@@ -2037,25 +2040,28 @@ def preview2d(cube, vmin1=None, vmax1=None, vmin2=None, vmax2=None, norm='asinh'
     if vmax1 == None: vmax1 = np.max(cs1)
     if vmin2 == None: vmin2 = np.min(cs2)
     if vmax2 == None: vmax2 = np.max(cs2)
+
     fig, ax = plt.subplots(nrows=2, ncols=2, figsize=(10,8))
+
     ax[0,0].hist(cs1.flatten(), density=True)
-    ax[0,1].imshow(cs1, vmin=vmin1, vmax=vmax1, norm=norm) #imshow plots axes fist -> y , second -> x
-    ax[0,1].set_ylabel('DEC')
-    ax[0,1].set_xlabel('RA')
+    #imshow plots axes fist -> y , second -> x
+    ax[0, 1].imshow(cs1, vmin=vmin1, vmax=vmax1, norm=norm) 
+    ax[0, 1].set_ylabel('DEC')
+    ax[0, 1].set_xlabel('RA')
 
-    ax[0,1].set_yticks(np.arange(0,ny+1,50), major=True)
-    ax[0,1].set_xticks(np.arange(0,nx+1,50), major=True)
-    ax[0,1].grid(which='major')
+    ax[0, 1].set_yticks(np.arange(0, ny+1, 50), labels=np.arange(0, ny+1, 50), minor=False)
+    ax[0, 1].set_xticks(np.arange(0, nx+1, 50), labels=np.arange(0, nx+1, 50), minor=False)
+    ax[0, 1].grid(which='major')
 
-    ax[1,0].hist(cs2.flatten(), density=True)
-    ax[1,1].imshow(cs2.transpose(), vmin=vmin2, vmax=vmax2, norm=norm) #imshow plots axes fist -> y , second -> x
-    ax[1,1].set_ylabel('DEC')
-    ax[1,1].set_xlabel('V')
+    ax[1, 0].hist(cs2.flatten(), density=True)
+    #imshow plots axes fist -> y , second -> x
+    ax[1, 1].imshow(cs2.transpose(), vmin=vmin2, vmax=vmax2, norm=norm) 
+    ax[1, 1].set_ylabel('DEC')
+    ax[1, 1].set_xlabel('V')
 
-    ax[1,1].set_yticks(np.arange(0,ny+1,50), major=True)
-    ax[1,1].set_xticks(np.arange(0,nz+1,50), major=True)
-    ax[1,1].grid(which='major')
-    
+    ax[1, 1].set_yticks(np.arange(0, ny+1, 50), labels=np.arange(0, ny+1, 50), minor=False)
+    ax[1, 1].set_xticks(np.arange(0, nz+1, 50), labels=np.arange(0, nz+1, 50), minor=False)
+    ax[1, 1].grid(which='major')    
     
 def get_imcol(position, survey, verts, unit='deg', cmap='Greys', **kwargs):
     """
