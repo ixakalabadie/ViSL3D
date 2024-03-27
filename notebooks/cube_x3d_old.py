@@ -307,7 +307,7 @@ class write_x3d:
     filename : string
         Name of the file to be created. Should have the extension '.x3d'.
     delta : len 3 array
-        Array with the ABSOLUTE VALUE of the step in each direction of the cube.
+        Array with the step in each direction of the cube. (TIPS!)
     coords : 3x2 array
         Array with the minimum and maximum of the RA, DEC and VRAD
         in each row, in that order, of the cube.
@@ -791,9 +791,9 @@ class write_html:
 
         self.file_html = open(filename, 'w')
         self.file_html.write('<html>\n\t <head>\n')
-        self.file_html.write(tabs(2)+"<script type='text/javascript' src='x3dom/x3dom.js'></script>\n")
+        self.file_html.write(tabs(2)+"<script type='text/javascript' src='https://www.x3dom.org/download/x3dom.js'></script>\n")
         self.file_html.write(tabs(2)+"<script type='text/javascript'  src='https://www.maths.nottingham.ac.uk/plp/pmadw/LaTeXMathML.js'></script>\n")
-        self.file_html.write(tabs(2)+"<link rel='stylesheet' type='text/css' href='x3dom/x3dom.css'></link>\n")
+        self.file_html.write(tabs(2)+"<link rel='stylesheet' type='text/css' href='https://www.x3dom.org/download/x3dom.css'></link>\n")
         self.file_html.write(tabs(2)+"<script type='text/javascript' src='https://code.jquery.com/jquery-3.6.3.min.js'></script>\n")
         self.file_html.write(tabs(2)+'<script src="x3dom/js-colormaps.js"></script> <!-- FOR COLORMAPS IN JS-->\n')
         if format == 'minimal':
@@ -2045,7 +2045,7 @@ def preview2d(cube, vmin1=None, vmax1=None, vmin2=None, vmax2=None, norm='asinh'
 
     ax[0,0].hist(cs1.flatten(), density=True)
     #imshow plots axes fist -> y , second -> x
-    ax[0, 1].imshow(cs1, vmin=vmin1, vmax=vmax1, norm=norm, origin='lower') 
+    ax[0, 1].imshow(cs1, vmin=vmin1, vmax=vmax1, norm=norm) 
     ax[0, 1].set_ylabel('DEC')
     ax[0, 1].set_xlabel('RA')
 
@@ -2055,7 +2055,7 @@ def preview2d(cube, vmin1=None, vmax1=None, vmin2=None, vmax2=None, norm='asinh'
 
     ax[1, 0].hist(cs2.flatten(), density=True)
     #imshow plots axes fist -> y , second -> x
-    ax[1, 1].imshow(cs2.transpose(), vmin=vmin2, vmax=vmax2, norm=norm, origin='lower') 
+    ax[1, 1].imshow(cs2.transpose(), vmin=vmin2, vmax=vmax2, norm=norm) 
     ax[1, 1].set_ylabel('DEC')
     ax[1, 1].set_xlabel('V')
 
@@ -2068,9 +2068,6 @@ def get_imcol(position, survey, verts, unit='deg', cmap='Greys', **kwargs):
     Downloads an image from astroquery and returns the colors of the pixels using
     a certain colormap, in hexadecimal format, as required by 'write_x3d().make_image2d'.
     See astroquery.skyview.SkyView.get_images() for more information.
-
-    Having a large field of view (verts) might disalign the image with the cube.
-    This issue will be fixed in the future.
 
     Parameters
     ----------
@@ -2096,7 +2093,7 @@ def get_imcol(position, survey, verts, unit='deg', cmap='Greys', **kwargs):
     """
     from astroquery.skyview import SkyView
     from astropy.coordinates import SkyCoord
-    import matplotlib.colors as mcolors
+    import matplotlib.colors as colors
     from astropy import wcs
     
     img = SkyView.get_images(position=position, survey=survey, **kwargs)[0]
@@ -2126,7 +2123,7 @@ def get_imcol(position, survey, verts, unit='deg', cmap='Greys', **kwargs):
     colimg = cm.get_cmap(cmap)(img)[:,:,0:3]
     colimg = colimg.reshape((-1,3),order='F')
     
-    imcol = [mcolors.rgb2hex(c).replace('#','0x') for c in colimg]
+    imcol = [colors.rgb2hex(c).replace('#','0x') for c in colimg]
     if len(imcol)% 8 == 0:
         imcol = np.array(imcol).reshape(int(len(imcol)/8),8)
     
