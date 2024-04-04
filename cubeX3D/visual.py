@@ -586,7 +586,7 @@ def createHTML(cube, filename, description=None, pagetitle=None):
             file.func_image2d()
             file.func_move2dimage()
         file.func_scalev()
-        file.func_tubes()
+        file.func_markers()
         # html.func_setCenterOfRotation(centers)
         file.func_background()
         file.func_colormaps()
