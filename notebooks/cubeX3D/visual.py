@@ -48,7 +48,7 @@ def prep_one(cube, header=None, lims=None, unit=None, isolevels=None, colormap='
             header = hdul[0].header
     elif header is None:
         raise AttributeError('No header provided')
-    
+
     if len(cube.shape) < 3:
         raise ValueError('Not enough axes')
     if len(cube.shape) >= 4:
@@ -90,12 +90,12 @@ def prep_one(cube, header=None, lims=None, unit=None, isolevels=None, colormap='
             [header['CRVAL3']+delta[2]*(lims[2][0]-header['CRPIX3']),
             header['CRVAL3']+delta[2]*(lims[2][1]-header['CRPIX3'])],
             ])
-        
+
     for i in range(3):
-            if lims[i][0] < 0:
-                raise ValueError('lims out of range')
-            if lims[i][1] > cube.shape[i]:
-                raise ValueError('lims out of range')
+        if lims[i][0] < 0:
+            raise ValueError('lims out of range')
+        if lims[i][1] > cube.shape[i]:
+            raise ValueError('lims out of range')
 
     cubecoords = np.sort(cubecoords)
     cube = cube[lims[0][0]:lims[0][1],lims[1][0]:lims[1][1],lims[2][0]:lims[2][1]]
@@ -128,8 +128,10 @@ def prep_one(cube, header=None, lims=None, unit=None, isolevels=None, colormap='
         image2d = None, None
     else:
         pixels = 5000
-        verts = ((cubecoords[0][0] * u.Unit(cubeunits[1])).to('deg'), (cubecoords[0][1] * u.Unit(cubeunits[1])).to('deg'),
-                 (cubecoords[1][0] * u.Unit(cubeunits[2])).to('deg'), (cubecoords[1][1] * u.Unit(cubeunits[2])).to('deg'))
+        verts = ((cubecoords[0][0] * u.Unit(cubeunits[1])).to('deg'),
+                 (cubecoords[0][1] * u.Unit(cubeunits[1])).to('deg'),
+                 (cubecoords[1][0] * u.Unit(cubeunits[2])).to('deg'),
+                 (cubecoords[1][1] * u.Unit(cubeunits[2])).to('deg'))
         imcol, img_shape, _ = misc.get_imcol(position=header['OBJECT'], survey=image2d, verts=verts,
                 unit='deg', pixels=f'{pixels}', coordinates='J2000') # , grid=True, gridlabels=True
         image2d = imcol, img_shape
@@ -234,7 +236,7 @@ def prep_mult(cube, spectral_lims, header=None, spatial_lims=None, l_isolevels=N
         raise AttributeError('Not enough spectral limits for the number of spatial limits.')
     elif len(lims[0]) > 1 and len(spectral_lims) != len(lims[0]):
         raise AttributeError('Different number of spectral and spatial limits.')
-    
+
     if isinstance(spectral_lims[0][0], u.quantity.Quantity):
         for i in range(len(spectral_lims)):
             spectral_lims[i][0] = spectral_lims[i][0].to(u.Unit(cubeunits[3]))
@@ -252,7 +254,7 @@ def prep_mult(cube, spectral_lims, header=None, spatial_lims=None, l_isolevels=N
                 [header['CRVAL3']+header['CDELT3']*(spectral_lims[i][0]-header['CRPIX3']),
                 header['CRVAL3']+header['CDELT3']*(spectral_lims[i][1]-header['CRPIX3'])]
                 ]))
-            
+
     coords[0] = np.sort(coords[0])
     coords[1] = np.sort(coords[1])
     lims[0] = np.sort(lims[0])
@@ -275,8 +277,10 @@ def prep_mult(cube, spectral_lims, header=None, spatial_lims=None, l_isolevels=N
             j = 0
         else:
             j = i
-        l_cubes[i][lims[0][j][0][0]:lims[0][j][0][1],lims[0][j][1][0]:lims[0][j][1][1],lims[1][i][0]:lims[1][i][1]] = \
-            cube[lims[0][j][0][0]:lims[0][j][0][1],lims[0][j][1][0]:lims[0][j][1][1],lims[1][i][0]:lims[1][i][1]]
+        l_cubes[i][lims[0][j][0][0]:lims[0][j][0][1], lims[0][j][1][0]:lims[0][j][1][1],
+                   lims[1][i][0]:lims[1][i][1]] = \
+            cube[lims[0][j][0][0]:lims[0][j][0][1], lims[0][j][1][0]:lims[0][j][1][1],
+                 lims[1][i][0]:lims[1][i][1]]
         l_cubes[i][np.isnan(l_cubes[i])] = 0
 
     _, rms = norm.fit(np.hstack([cube[0 > cube].flatten(),
@@ -290,7 +294,7 @@ def prep_mult(cube, spectral_lims, header=None, spatial_lims=None, l_isolevels=N
             pass
         elif unit is not cubeunits[0]:
             l_cubes[i] = l_cubes[i]*u.Unit(cubeunits[0]).to(unit).value
-    
+
     del cube
 
     if l_isolevels is None:
@@ -408,13 +412,13 @@ def prep_overlay(cube, header=None, spectral_lims=None, lines=None, spatial_lims
                 [header['CRVAL2']+header['CDELT2']*(spatial_lims[i][1][0]-header['CRPIX2']),
                 header['CRVAL2']+header['CDELT2']*(spatial_lims[i][1][1]-header['CRPIX2'])]
                 ]))
-    
+
     if lines is not None:
         if len(lines) < 2:
             raise AttributeError('Not enough lines for overlay. Use prep_one instead.')
         elif len(spatial_lims) != 1 and len(lines) != len(spatial_lims):
             raise AttributeError('Different number of lines and spatial limits.')
-        
+
         for i, (center, width) in enumerate(lines.values()):
             center = center.to(u.Unit(cubeunits[3]))
             if isinstance(width, u.quantity.Quantity):
@@ -440,7 +444,7 @@ def prep_overlay(cube, header=None, spectral_lims=None, lines=None, spatial_lims
             raise AttributeError('Not enough spectral limits for overlay. Use prep_one instead.')
         elif len(spatial_lims) != 1 and len(spectral_lims) != len(spatial_lims):
             raise AttributeError('Different number of spectral and spatial limits.')
-        
+
         if isinstance(spectral_lims[0][0], u.quantity.Quantity):
             for i in range(len(spectral_lims)):
                 spectral_lims[i][0] = spectral_lims[i][0].to(u.Unit(cubeunits[3]))
@@ -490,7 +494,7 @@ def prep_overlay(cube, header=None, spectral_lims=None, lines=None, spatial_lims
                     cube[lims[0][j][0][0]:lims[0][j][0][1],lims[0][j][1][0]:lims[0][j][1][1],
                          lims[1][i][0]:lims[1][i][1]])
         l_cubes[i][np.isnan(l_cubes[i])] = 0
-    
+
     _, rms = norm.fit(np.hstack([cube[0 > cube].flatten(),
                             -cube[0 > cube].flatten()]))
     for i in range(len(l_cubes)):
@@ -502,7 +506,7 @@ def prep_overlay(cube, header=None, spectral_lims=None, lines=None, spatial_lims
             pass
         elif unit is not cubeunits[0]:
             l_cubes[i] = l_cubes[i]*u.Unit(cubeunits[0]).to(unit).value
-    
+
     del cube
 
     if l_isolevels is None:

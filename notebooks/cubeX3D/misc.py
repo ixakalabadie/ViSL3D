@@ -389,7 +389,7 @@ tablehtml = '\n<!--A table with navigation info for X3DOM-->\n<br/>\n<hr>\n<h3><
 axlabname1 = np.array(['R.A. [arcsec]', 'Dec. [arcsec]', 'V [km/s]',
                 'Dec. [arcsec]', 'V [km/s]', 'R.A. [arcsec]'])
 
-def get_axlabnames(mags, units):
+def get_axlabnames(mags):
     """
     Parameters:
     ----------

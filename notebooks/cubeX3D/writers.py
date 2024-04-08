@@ -30,7 +30,7 @@ class WriteX3D:
         #         self.file_x3d.write('\n\t<meta name="%s" content="%s"/>'%(met,meta[met]))
         # {cube.picking}
         self.file_x3d.write(
-            f'</head>\n\t<Scene doPickPass="False">\n' + \
+            '</head>\n\t<Scene doPickPass="False">\n' + \
                 '\t\t<Background DEF="back" skyColor="0.6 0.6 0.6"/>\n')
         self.file_x3d.write(
             misc.tabs(2)+'<NavigationInfo type=\'"EXAMINE" "ANY"\' speed="4" headlight="true"/>\n')
@@ -98,9 +98,9 @@ class WriteX3D:
                         else:
                             op = 0.8
                         self.file_x3d.write(f'\n{misc.tabs(6)}<Material DEF="{nc}layer{i}_sp{sp}" '\
-                                            + 'ambientIntensity="0" emissiveColor="0 0 0" '\
-                                            + f'diffuseColor="{self.cube.l_colors[nc][i]}" specularColor=' \
-                                            +f'"0 0 0" shininess="0.0078" transparency="{op}"/>')
+                                + 'ambientIntensity="0" emissiveColor="0 0 0" '\
+                                + f'diffuseColor="{self.cube.l_colors[nc][i]}" specularColor=' \
+                                +f'"0 0 0" shininess="0.0078" transparency="{op}"/>')
                     elif style == 'opaque':
                         #set color of layer, transparency is set in HTML
                         self.file_x3d.write(f'\n{misc.tabs(6)}<Material DEF="{nc}layer{i}_sp{sp}" ambientIntensity="0" emissiveColor="{self.cube.l_colors[nc][i]}" diffuseColor="{self.cube.l_colors[nc][i]}" specularColor="0 0 0" shininess="0.0078"/>')
@@ -367,7 +367,7 @@ class WriteX3D:
                 self.file_x3d.write(f'\n\t\t\t\t\t\t\t<FontStyle DEF="{gal}_fs" family=\'"SANS"\' topToBottom="false" justify=\'"BEGIN" "BEGIN"\' size="8"/>')
                 self.file_x3d.write('\n\t\t\t\t\t\t</Text> \n\t\t\t\t\t\t</Shape>\n\t\t\t\t\t</Billboard>\n\t\t\t\t</Transform>')
 
-        axlabnames = misc.get_axlabnames(mags=self.cube.mags, units=self.cube.units)
+        axlabnames = misc.get_axlabnames(mags=self.cube.mags)
 
         #ax labels diff
         for i in range(6):
@@ -513,7 +513,7 @@ class WriteHTML:
         #    self.file_html.write(misc.tabs(1)+'</script>\n')
 
         # setTimeout(loading, 5000); option to execute function after time
-        
+
     def func_layers(self):
         """
         Make the funcion to hide/show layers. If this is used, the buttons()
@@ -585,7 +585,7 @@ class WriteHTML:
             self.file_html.write("\t \t document.getElementById('cube__%s_cross').setAttribute('transparency', '1');\n"%gal)
             self.file_html.write("\t \t document.getElementById('cube__%s').setAttribute('transparency', '1');\n"%gal)
         self.file_html.write("\t\t }\n\t\t }\n\t\t </script>\n")
-    
+
     def func_gallab(self):
         """
         Make function to hide/show galaxy labels. If this is used, the buttons()
@@ -601,7 +601,7 @@ class WriteHTML:
         for i,gal in enumerate(self.cube.galaxies):
             self.file_html.write("\t \t document.getElementById('cube__label_%s').setAttribute('transparency', '1');\n"%gal)
         self.file_html.write("\t\t }\n\t\t }\n\t\t </script>\n")
-        
+
     def func_grids(self):
         self.file_html.write(misc.tabs(2)+"<script>\n\t\tfunction setgrids()\n\t\t{\n")
         self.file_html.write(misc.tabs(3)+"if(document.getElementById('cube__ticklines').getAttribute('transparency') == '0') {\n")
@@ -613,7 +613,7 @@ class WriteHTML:
         self.file_html.write(misc.tabs(4)+"document.getElementById('cube__outline').setAttribute('transparency', '0');\n")
         self.file_html.write(misc.tabs(3)+"}\n")
         self.file_html.write(misc.tabs(2)+"}\n\t\t </script>\n")
-            
+
     def func_axes(self):
         """
         axes : string
@@ -655,7 +655,7 @@ class WriteHTML:
         self.file_html.write(misc.tabs(4)+"document.getElementById('cube__axtick_diff'+i).setAttribute('transparency', '0');\n")
         self.file_html.write(misc.tabs(3)+"}\n")                
         self.file_html.write("\t\t }\n\t\t }\n\t\t </script>\n")
-        
+
     def func_pick(self):
         """
         Allows picking the coordinates by clicking in the figure.
@@ -715,7 +715,7 @@ class WriteHTML:
         # else:
         self.file_html.write(misc.tabs(3)+f'<inline url="{filename}" nameSpaceName="cube" mapDEFToID="true" onclick="" onload="loading()"/>\n')
         self.file_html.write(misc.tabs(2)+"</scene>\n\t</x3d></center>\n")
-        
+
     def viewpoints(self):
         """
         Define viewpoints for the X3D figure. Must go after start_x3d() and
