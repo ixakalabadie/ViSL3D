@@ -66,7 +66,7 @@ class WriteX3D:
             cube_full = self.cube.l_cubes[nc]
             isolevels = self.cube.l_isolevels[nc]
             self.cube.iso_split.append(np.zeros((len(isolevels)), dtype=int))
-            for i,lev in enumerate(isolevels):
+            for (i,lev) in enumerate(isolevels):
                 # calculate how many times to split the cube, 1 means the cube stays the same
                 split = int(np.sum(cube_full>lev)/700000)+1
                 self.cube.iso_split[nc][i] = split
@@ -470,7 +470,7 @@ class WriteHTML:
         if pagetitle is None:
             pagetitle = self.cube.name
         self.file_html = open(filename, 'w', encoding="utf-8")
-        self.file_html.write('<html>\n\t <head>\n')
+        self.file_html.write('<!DOCTYPE html>\n\t <head>\n')
         self.file_html.write(misc.tabs(2)+"<script type='text/javascript' src='x3dom/x3dom.js'></script>\n")
         self.file_html.write(misc.tabs(2)+"<script type='text/javascript'  src='https://www.maths.nottingham.ac.uk/plp/pmadw/LaTeXMathML.js'></script>\n")
         self.file_html.write(misc.tabs(2)+"<link rel='stylesheet' type='text/css' href='x3dom/x3dom.css'></link>\n")
@@ -486,6 +486,8 @@ class WriteHTML:
         self.file_html.write('\t<hr/>\n')
         if description is not None:
             self.file_html.write(f"\t<p>\n\t {description}</p> \n")
+        
+        self.file_html.write(misc.roundto)
 
         #ANOTHER WAY TO CHANGE TRANSPARENCY instead of loading()
         # self.file_html.write(misc.tabs(3)+"const nl = [%s,%s,%s];"%())
@@ -506,10 +508,9 @@ class WriteHTML:
         #             else:
         #                 op = 0.8
         #             for sp in range(self.iso_split[nc][nl]):
-        #                 self.file_html.write(misc.tabs(3)+"document.getElementById('cube__%slayer%s_sp%s').setAttribute('transparency', '%s');\n"%(nc,nl,sp,op))
-            
-            self.file_html.write(misc.tabs(2)+'}\n')
-            self.file_html.write(misc.tabs(1)+'</script>\n')
+        #                 self.file_html.write(misc.tabs(3)+"document.getElementById('cube__%slayer%s_sp%s').setAttribute('transparency', '%s');\n"%(nc,nl,sp,op))    
+        #    self.file_html.write(misc.tabs(2)+'}\n')
+        #    self.file_html.write(misc.tabs(1)+'</script>\n')
 
         # setTimeout(loading, 5000); option to execute function after time
         
@@ -635,7 +636,7 @@ class WriteHTML:
         self.file_html.write(misc.tabs(4)+"document.getElementById('cube__axtick_diff'+i).setAttribute('transparency', '1');\n")
         if self.cube.lines is None:
             self.file_html.write(misc.tabs(4)+"document.getElementById('cube__axtick_real'+i).setAttribute('transparency', '0');\n")
-        #self.file_html.write(misc.tabs(3)+"}\n")
+        self.file_html.write(misc.tabs(3)+"}\n")
         self.file_html.write(misc.tabs(2)+"}\n")
         if self.cube.lines is None:
             self.file_html.write(misc.tabs(2)+"else if (document.getElementById('cube__axlab_real1').getAttribute('transparency') == '0') {\n")
@@ -645,7 +646,7 @@ class WriteHTML:
             self.file_html.write(misc.tabs(3)+"}\n")
             self.file_html.write(misc.tabs(4)+"document.getElementById('cube__axtick_real'+i).setAttribute('transparency', '1');\n")
             self.file_html.write(misc.tabs(3)+"}\n")
-        self.file_html.write(misc.tabs(2)+"}\n")
+            self.file_html.write(misc.tabs(2)+"}\n")
         self.file_html.write(misc.tabs(2)+"else {\n")
         self.file_html.write(misc.tabs(3)+"for (i=0; i<12; i++) {\n")
         self.file_html.write(misc.tabs(3)+"if (i<6) {\n")
@@ -944,8 +945,7 @@ class WriteHTML:
         
         # Galaxies Font Size
         if self.cube.galaxies is not None:
-            self.file_html.write(misc.tabs(3)+'&nbsp <b>Font Size:</b>\n')
-            self.file_html.write(misc.tabs(3)+'&nbsp <label for="back-choice">Galaxy: </label>\n')
+            self.file_html.write(misc.tabs(3)+'&nbsp <label for="galsize-choice"><b>Galaxy size: </b></label>\n')
             self.file_html.write(misc.tabs(3)+'<input oninput="change_galsize()" id="galsize-choice" type="number" min="2" max="100" value="8", step="2">\n')
         
         nlayers = [len(l) for l in self.cube.l_isolevels]
@@ -962,8 +962,8 @@ class WriteHTML:
             for i in range(nlayers[nc]):
                 ca = np.array(self.cube.l_colors[nc][i].split(' ')).astype(float)*255
                 c = 'rgb('+str(ca.astype(int))[1:-1]+')'
+                butlabel = self.cube.l_isolevels[nc][i]
                 if (ca[0]*0.299 + ca[1]*0.587 + ca[2]*0.114) > 130:
-                    butlabel = self.cube.l_isolevels[nc][i]
                     if self.cube.l_isolevels[nc][i] > 0.01:
                         butlabel = f'{butlabel:0.2f}'
                     else:
@@ -1041,8 +1041,9 @@ class WriteHTML:
         self.file_html.write(misc.tabs(2)+"function move2d()\n\t\t{\n")
         self.file_html.write(misc.tabs(3)+"const sca = inpscam2.value;\n")
         self.file_html.write(misc.tabs(3)+"const move = inpmovem2.value;\n")
-        self.file_html.write(misc.tabs(3)+f"showval.textContent = roundTo({self.cube.coords[2,1]}+(move-1)*1000, 3);\n")
-        self.file_html.write(misc.tabs(3)+"document.getElementById('cube__image2d').setAttribute('translation', '0 0 '+(sca*move-1)*1000); }}\n")
+        self.file_html.write(misc.tabs(3)+f"showval.textContent = roundTo({self.cube.coords[2][1]}+(move-1)*1000, 3);\n")
+        self.file_html.write(misc.tabs(3)+"document.getElementById('cube__image2d').setAttribute('translation', '0 0 '+(sca*move-1)*1000);\n")
+        self.file_html.write(misc.tabs(2)+"}\n")
         self.file_html.write(misc.tabs(2)+"</script>\n")
 
     def func_galsize(self):
@@ -1056,7 +1057,6 @@ class WriteHTML:
         """
         self.file_html.write(misc.tabs(2)+"<script>\n")
         self.file_html.write(misc.tabs(3)+"const galsize = document.querySelector('#galsize-choice');\n")
-        self.file_html.write(misc.tabs(3)+"galsize.addEventListener('change', change_galsize());\n")
         self.file_html.write(misc.tabs(3)+"function change_galsize() {\n")
         self.file_html.write(misc.tabs(4)+"let gals = %s;\n"%str(list(self.cube.galaxies.keys())))
         self.file_html.write(misc.tabs(4)+"const gsval = galsize.value/8.;\n")
@@ -1225,7 +1225,7 @@ class WriteHTML:
         self.file_html.write(misc.tabs(3)+"const sca = inpscasv.value;\n")
         if self.cube.image2d is not None:
             self.file_html.write(misc.tabs(3)+"const move = inpmovesv.value;\n")
-            self.file_html.write(misc.tabs(4)+f"document.getElementById('cube__image2d').setAttribute('translation', '0 0 '+(sca*move-1)*{self.cube.coords[2,1]});\n")
+            self.file_html.write(misc.tabs(4)+f"document.getElementById('cube__image2d').setAttribute('translation', '0 0 '+(sca*move-1)*{self.cube.coords[2][1]});\n")
         #scale layers
         nlayers = [len(l) for l in self.cube.l_isolevels]
         numcubes = len(nlayers)

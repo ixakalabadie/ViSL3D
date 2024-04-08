@@ -11,7 +11,7 @@ from astropy import wcs
 from astroquery.ipac.ned import Ned
 from astroquery.skyview import SkyView
 import matplotlib.colors as mcolors
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt gives error in dachs
 from matplotlib import cm
 
 from . import np
@@ -79,12 +79,14 @@ def get_galaxies(galaxies, cubecoords, cubeunits, obj, delta, trans):
             galdec = float(gal['DEC'])*result['DEC'].unit
             galv = float(gal['Velocity'])*result['Velocity'].unit
             galra = (galra - np.mean(cubecoords[0])*u.Unit(cubeunits[1])) \
-                * np.cos(cubecoords[1,0]*u.Unit(cubeunits[2]).to('rad'))
+                * np.cos(cubecoords[1][0]*u.Unit(cubeunits[2]).to('rad'))
             galdec = galdec - np.mean(cubecoords[1])*u.Unit(cubeunits[2])
             galv = galv - np.mean(cubecoords[2])*u.Unit(cubeunits[3])
+            galra = galra/np.abs(delta[0])*trans[0]
+            galdec = galdec/np.abs(delta[1])*trans[1]
+            galv = galv/np.abs(delta[2])*trans[2]
             galdict[gal['Object Name']] = {
-                    'coord': np.array([galra/np.abs(delta[0])*trans[0],
-                            galdec/np.abs(delta[1])/trans[2], galv/np.abs(delta[1])/trans[2]]),
+                    'coord': np.array([galra.to_value(), galdec.to_value(), galv.to_value()]),
                     'col': '0 0 1'}
     elif galaxies is not None:
         galdict = {}
@@ -98,13 +100,15 @@ def get_galaxies(galaxies, cubecoords, cubeunits, obj, delta, trans):
             galdec = float(result['DEC'])*result['DEC'].unit
             galv = float(result['Velocity'])*result['Velocity'].unit
             galra = (galra - np.mean(cubecoords[0])*u.Unit(cubeunits[1])) \
-                * np.cos(cubecoords[1,0]*u.Unit(cubeunits[2]).to('rad'))
+                * np.cos(cubecoords[1][0]*u.Unit(cubeunits[2]).to('rad'))
             galdec = galdec - np.mean(cubecoords[1])*u.Unit(cubeunits[2])
             galv = galv - np.mean(cubecoords[2])*u.Unit(cubeunits[3])
+            galra = galra/np.abs(delta[0])*trans[0]
+            galdec = galdec/np.abs(delta[1])*trans[1]
+            galv = galv/np.abs(delta[2])*trans[2]
             galdict[gal] = {
-                'coord': np.array([galra/np.abs(delta[0])*trans[0],
-                            galdec/np.abs(delta[1])/trans[2], galv/np.abs(delta[1])/trans[2]]),
-                'col': '0 0 1'}
+                    'coord': np.array([galra.to_value(), galdec.to_value(), galv.to_value()]),
+                    'col': '0 0 1'}
     return galdict
 
 def create_colormap(colormap, isolevels, start=0, end=255, lightdark=False):
@@ -178,12 +182,12 @@ def objquery(result, coords, otype):
     Constrain query table to certain coordinates and object type
     """
     result = result[result['Type'] == otype]
-    result = result[result['Velocity'] >= coords[2,0]]
-    result = result[result['Velocity'] <= coords[2,1]]
-    result = result[result['RA'] >= coords[0,0]]
-    result = result[result['RA'] <= coords[0,1]]
-    result = result[result['DEC'] >= coords[1,0]]
-    result = result[result['DEC'] <= coords[1,1]]
+    result = result[result['Velocity'] >= coords[2][0]]
+    result = result[result['Velocity'] <= coords[2][1]]
+    result = result[result['RA'] >= coords[0][0]]
+    result = result[result['RA'] <= coords[0][1]]
+    result = result[result['DEC'] >= coords[1][0]]
+    result = result[result['DEC'] <= coords[1][1]]
     return result
 
 def calc_step(cube, isolevels):
@@ -226,41 +230,42 @@ def preview2d(cube, v1=None, v2=None, norm='asinh', figsize=(10,8)):
     None.
 
     """
-    nz, ny, nx = cube.shape
-    cs1 = np.sum(cube, axis=0)
-    cs2 = np.sum(cube, axis=2)
-    vmin1, vmax1 = v1
-    vmin2, vmax2 = v2
-    if vmin1 is None:
-        vmin1 = np.min(cs1)
-    if vmax1 is None:
-        vmax1 = np.max(cs1)
-    if vmin2 is None:
-        vmin2 = np.min(cs2)
-    if vmax2 is None:
-        vmax2 = np.max(cs2)
+    # nz, ny, nx = cube.shape
+    # cs1 = np.sum(cube, axis=0)
+    # cs2 = np.sum(cube, axis=2)
+    # vmin1, vmax1 = v1
+    # vmin2, vmax2 = v2
+    # if vmin1 is None:
+    #     vmin1 = np.min(cs1)
+    # if vmax1 is None:
+    #     vmax1 = np.max(cs1)
+    # if vmin2 is None:
+    #     vmin2 = np.min(cs2)
+    # if vmax2 is None:
+    #     vmax2 = np.max(cs2)
 
-    _, ax = plt.subplots(nrows=2, ncols=2, figsize=figsize)
+    # _, ax = plt.subplots(nrows=2, ncols=2, figsize=figsize)
 
-    ax[0,0].hist(cs1.flatten(), density=True)
-    #imshow plots axes fist -> y , second -> x
-    ax[0, 1].imshow(cs1, vmin=vmin1, vmax=vmax1, norm=norm, origin='lower')
-    ax[0, 1].set_ylabel('DEC')
-    ax[0, 1].set_xlabel('RA')
+    # ax[0,0].hist(cs1.flatten(), density=True)
+    # #imshow plots axes fist -> y , second -> x
+    # ax[0, 1].imshow(cs1, vmin=vmin1, vmax=vmax1, norm=norm, origin='lower')
+    # ax[0, 1].set_ylabel('DEC')
+    # ax[0, 1].set_xlabel('RA')
 
-    ax[0, 1].set_yticks(np.arange(0, ny+1, 50), labels=np.arange(0, ny+1, 50), minor=False)
-    ax[0, 1].set_xticks(np.arange(0, nx+1, 50), labels=np.arange(0, nx+1, 50), minor=False)
-    ax[0, 1].grid(which='major')
+    # ax[0, 1].set_yticks(np.arange(0, ny+1, 50), labels=np.arange(0, ny+1, 50), minor=False)
+    # ax[0, 1].set_xticks(np.arange(0, nx+1, 50), labels=np.arange(0, nx+1, 50), minor=False)
+    # ax[0, 1].grid(which='major')
 
-    ax[1, 0].hist(cs2.flatten(), density=True)
-    #imshow plots axes fist -> y , second -> x
-    ax[1, 1].imshow(cs2.transpose(), vmin=vmin2, vmax=vmax2, norm=norm, origin='lower')
-    ax[1, 1].set_ylabel('DEC')
-    ax[1, 1].set_xlabel('V')
+    # ax[1, 0].hist(cs2.flatten(), density=True)
+    # #imshow plots axes fist -> y , second -> x
+    # ax[1, 1].imshow(cs2.transpose(), vmin=vmin2, vmax=vmax2, norm=norm, origin='lower')
+    # ax[1, 1].set_ylabel('DEC')
+    # ax[1, 1].set_xlabel('V')
 
-    ax[1, 1].set_yticks(np.arange(0, ny+1, 50), labels=np.arange(0, ny+1, 50), minor=False)
-    ax[1, 1].set_xticks(np.arange(0, nz+1, 50), labels=np.arange(0, nz+1, 50), minor=False)
-    ax[1, 1].grid(which='major')
+    # ax[1, 1].set_yticks(np.arange(0, ny+1, 50), labels=np.arange(0, ny+1, 50), minor=False)
+    # ax[1, 1].set_xticks(np.arange(0, nz+1, 50), labels=np.arange(0, nz+1, 50), minor=False)
+    # ax[1, 1].grid(which='major')
+    pass
 
 def get_imcol(position, survey, verts, unit='deg', cmap='Greys', **kwargs):
     """
@@ -295,8 +300,8 @@ def get_imcol(position, survey, verts, unit='deg', cmap='Greys', **kwargs):
     """
 
     img = SkyView.get_images(position=position, survey=survey, **kwargs)[0]
-    img = img[0].data
     imw = wcs.WCS(img[0].header)
+    img = img[0].data
 
     try:
         verts = verts.to('deg')
