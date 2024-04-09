@@ -15,9 +15,15 @@ from . import u
 class WriteX3D:
     """
     Class to create a X3D model of iso-surfaces with 3D spectral line data.
-    creates an X3D file with the model.
-    """
+    Creates an X3D file with the model.
 
+    Parameters
+    ----------
+    filename : str
+        Name of the X3D file including the extension (.x3d).
+    cube : Cube
+        Object of the Cube class.
+    """
     def __init__(self, filename, cube):
         self.cube = cube
         self.file_x3d = open(filename, 'w', encoding="utf-8")
@@ -44,21 +50,11 @@ class WriteX3D:
 
         Parameters
         ----------
-        l_cube : list of 3d arrays
-            The cubes to plot. Axis must be RA, DEC and spectral axis.
-            If more than one cube, the shape of all cubes must be the same,
-            just set unknown or unwanted values to 0 (OR NAN?).
-        l_isolevels : list of arrays
-            A list of arrays with the values of each isosurface layer, one array for each cube. 
-            E.g.[2,5,9] for three layers at values 2,5 and 9 of the cube.
-            Should be in increasing order. (REAL?)
-        l_colors : list of arrays
-            RGB color for each isolevel a string ('122 233 20').
-            There must be a list of colors for each cube.
         shift : list, optional
             A list with a arrays of 3D vectors giving the shift in RA, DEC and spectral axis in
             the same units given to the cube. Similar to l_cube or l_isolevels.
-
+        add_normals : bool, optional
+            Whether to add normal vectors in the X3D model. Default is False.
         """
         numcubes = len(self.cube.l_cubes)
 
@@ -166,8 +162,11 @@ class WriteX3D:
         Parameters
         ----------
         gals : dictionary
-            DESCRIPTION.
-
+            Dictionary with galaxies to include in the model. Keys are names of galaxies and it must
+            have two more dictionaries inside with the keys 'coords' and 'col'. 'coords' must have the
+            coordinates of the galaxy (transformed to units of the cube between -1000 and 1000) and 'col' the color of each galaxy as a string. E.g. {'NGC 1234': {'coords': [-560, 790, 134], 'col': '255 0 0'}}.
+            'coord' is calculated with '[RA - mean(cubeRA)]/abs(deltaRA)*2000/nPixRA'. The whole dictionary
+            can be obtained with misc.get_galaxies().
         """        
         sphereradius = 2000/45
         crosslen = 2000/20
@@ -216,7 +215,6 @@ class WriteX3D:
             Default is None
         img_shape : tuple, optional
             Shape of the 2D image. Use None for white image. Default is None.
-
         """
 
         # coordinates of 2d image
@@ -249,8 +247,6 @@ class WriteX3D:
     def make_ticklines(self):
         """
         Create tickline objects in the X3D model.
-        Must be change to close the Transform "ROOT" somewhere else, in case this is not used.
-        Change method to end ROOT with new module structure
         """
         # coordinates of tick lines
         ticklinecoords = np.array([[-1000,0,-1000],
@@ -289,8 +285,7 @@ class WriteX3D:
     def make_animation(self, cycleinterval=10, axis=0):
         """
         Create an animation to rotate the X3D model along one axis.
-
-        Must be outside the Transform "ROOT" element (for now write after make_ticklines). 
+        Must be outside the Transform "ROOT" element. Should be called after make_ticklines(). 
         """
         vec = np.zeros(3,dtype=int)
         vec[axis] = 1
@@ -307,17 +302,12 @@ class WriteX3D:
 
         Parameters
         ----------
-        gals : dictionary, optional
-            Dictionary with the names of the galaxies as keys and another
-            dictionary inside them with: 'v': the radio velocity, 'col': the RGB color
-            and 'coord' the spatial coordinates with the same format as the rest
-            of the elements. If None galaxy labels are not created. The default is None.
-        axlab : string, optional
-            A string indicating what axis labels to include. Can be 'real' for the equatorial
-            coordinates; 'diff' for the difference from the center of the cube or
-            'both' for both options. Leave None for no axis labels.
-            The default is None.
-
+        gals : dictionary
+            Dictionary with galaxies to include in the model. Keys are names of galaxies and it must
+            have two more dictionaries inside with the keys 'coords' and 'col'. 'coords' must have the
+            coordinates of the galaxy (transformed to units of the cube between -1000 and 1000) and 'col' the color of each galaxy as a string. E.g. {'NGC 1234': {'coords': [-560, 790, 134], 'col': '255 0 0'}}.
+            'coord' is calculated with '[RA - mean(cubeRA)]/abs(deltaRA)*2000/nPixRA'. The whole dictionary
+            can be obtained with misc.get_galaxies().
         """
         self.file_x3d.write('\n\t\t<ProximitySensor DEF="PROX_LABEL" size="1.0e+06 1.0e+06 1.0e+06"/>')
         self.file_x3d.write('\n\t\t<Collision enabled="false">')
@@ -443,26 +433,14 @@ class WriteHTML:
 
     Parameters
     ----------
-    filename : string
-        Name of the file to be created, should have ".html" extension.
-    units : list
-        Strings with units of the cube. Don't have to be real units, they are used just to make labels.
-    l_isolevels : list
-        list of lists of isolevels. Must be a list even if its just one line. e.g. [[0.5,2,5]].
-    tabtitle : string, optional
-        Title of the tab in the web browser. The default is 'new_html_x3d'.
-    pagetitle : string, optional
-        Title of the web page. The default is None.
-    description : string, optional
-        Description of the figure or any other text to be included in the web page.
-        Should follow HTML format. The default is None.
-    style : string, optional
-        Style of the surfaces in the model. Can be 'transparent' or 'opaque'. The default is 'transparent'.
-    format : string, optional
-        Format of the HTML. Can be 'full' for a fully interactive web page or
-        'minimal' to just show the model with default X3DOM interactive options.
-        The default is 'full'.
-        
+    filename : str
+        Name of the HTML file including the extension (.html).
+    cube : Cube
+        Object of the Cube class.
+    description : str, optional
+        A description for the web page
+    pagetitle : str, optional
+        The title of the web page.
     """
     def __init__(self, filename, cube, description=None, pagetitle=None):
         #some attributes to use later
@@ -516,17 +494,7 @@ class WriteHTML:
 
     def func_layers(self):
         """
-        Make the funcion to hide/show layers. If this is used, the buttons()
-        function with isolevels should also be used to create the buttons.
-        The X3D file must have layers for this to work.
-
-        Parameters
-        ----------
-        l_isolevels : list
-            list of lists of isolevels. Same as for make_layers().
-        split : array
-            self.iso_split attribute from the write_x3d() class.
-
+        Make JS funcion to hide/show layers.
         """
         numcubes = len(self.cube.l_isolevels)
         nlayers = [len(l) for l in self.cube.l_isolevels]
@@ -566,14 +534,8 @@ class WriteHTML:
 
     def func_galaxies(self):
         """
-        Make function to hide/show galaxies.
-        The X3D file must have galaxies for this to work.
-
-        Parameters
-        ----------
-        gals : dictionary
-            Same dictionary as the one used in make_galaxies().
-
+        Make JS function to hide/show galaxies.
+        The X3D file must have galaxies for this to work.Must be after buttons()
         """
         for i,gal in enumerate(self.cube.galaxies):
             if i == 0:
@@ -588,9 +550,8 @@ class WriteHTML:
 
     def func_gallab(self):
         """
-        Make function to hide/show galaxy labels. If this is used, the buttons()
-        function with gallabs=True should also be used to create the buttons.
-        The X3D file must have galaxy labels for this to work.
+        Make JS function to hide/show galaxy labels.
+        The X3D file must have galaxies for this to work.
 
         """
         for i,gal in enumerate(self.cube.galaxies):
@@ -603,6 +564,9 @@ class WriteHTML:
         self.file_html.write("\t\t }\n\t\t }\n\t\t </script>\n")
 
     def func_grids(self):
+        """
+        Make JS function to hide/show grids.
+        """
         self.file_html.write(misc.tabs(2)+"<script>\n\t\tfunction setgrids()\n\t\t{\n")
         self.file_html.write(misc.tabs(3)+"if(document.getElementById('cube__ticklines').getAttribute('transparency') == '0') {\n")
         self.file_html.write(misc.tabs(4)+"document.getElementById('cube__ticklines').setAttribute('transparency', '1');\n")
@@ -616,13 +580,8 @@ class WriteHTML:
 
     def func_axes(self):
         """
-        axes : string
-            A string indicating what axis labels to include. Can be 'real' for the equatorial
-            coordinates; 'diff' for the difference from the center of the cube or
-            'both' for both options. Leave None for no axis labels.
-            Must be the same as in make_labels(). The default is None.
+        Make JS function to hide/show axes labels.
         """
-
         self.file_html.write(misc.tabs(2)+"<script>\n")
         self.file_html.write(misc.tabs(2)+"function setaxes()\n")
         self.file_html.write(misc.tabs(2)+"{\n")
@@ -663,20 +622,21 @@ class WriteHTML:
         NOT FINISHED, DON'T USE.
 
         """
-        self.file_html.write(misc.roundto) #premade string with function to round to two decimals
-        self.file_html.write(misc.tabs(1)+"<script>\n")
-        self.file_html.write(misc.tabs(3)+"const picksca = document.querySelector('#scalev');\n")
-        self.file_html.write(misc.tabs(2)+"function handleClick(event) {\n")
-        self.file_html.write(misc.tabs(3)+"const sca = picksca.value;\n")
-        self.file_html.write(misc.tabs(3)+"var coordinates = event.hitPnt;\n")
-        self.file_html.write(misc.tabs(3)+"$('#coordX').html(roundTo(coordinates[0], 2)+' %s');\n"%self.cube.units[1])
-        self.file_html.write(misc.tabs(3)+"$('#coordY').html(roundTo(coordinates[1], 2)+' %s');\n"%self.cube.units[2])
-        self.file_html.write(misc.tabs(3)+"$('#coordZ').html(roundTo(coordinates[2], 2)/sca+' %s');\n"%self.cube.units[3])
-        self.file_html.write(misc.tabs(2)+"}\n\t </script>\n")
+        # self.file_html.write(misc.roundto) #premade string with function to round to two decimals
+        # self.file_html.write(misc.tabs(1)+"<script>\n")
+        # self.file_html.write(misc.tabs(3)+"const picksca = document.querySelector('#scalev');\n")
+        # self.file_html.write(misc.tabs(2)+"function handleClick(event) {\n")
+        # self.file_html.write(misc.tabs(3)+"const sca = picksca.value;\n")
+        # self.file_html.write(misc.tabs(3)+"var coordinates = event.hitPnt;\n")
+        # self.file_html.write(misc.tabs(3)+"$('#coordX').html(roundTo(coordinates[0], 2)+' %s');\n"%self.cube.units[1])
+        # self.file_html.write(misc.tabs(3)+"$('#coordY').html(roundTo(coordinates[1], 2)+' %s');\n"%self.cube.units[2])
+        # self.file_html.write(misc.tabs(3)+"$('#coordZ').html(roundTo(coordinates[2], 2)/sca+' %s');\n"%self.cube.units[3])
+        # self.file_html.write(misc.tabs(2)+"}\n\t </script>\n")
+        pass
 
     def func_animation(self):
         """
-        Function to start/stop the animation of the X3D models.
+        Make JS function to start/stop the animation of the X3D models.
         """
         self.file_html.write('\n'+misc.tabs(1)+"<script>")
         self.file_html.write('\n'+misc.tabs(2)+"function animation() {")
@@ -694,7 +654,6 @@ class WriteHTML:
     def start_x3d(self):
         """
         Start the X3D part of the HTML. Must go before viewpoints() and close_x3d().
-
         """
         self.file_html.write(misc.tabs(1)+"<center><x3d id='cubeFixed'>\n")
 
@@ -705,9 +664,8 @@ class WriteHTML:
 
         Parameters
         ----------
-        x3dname : string
+        filename : string
             Name of the X3D file to be inserted.
-
         """
         filename = filename.split('.')[0]+'.x3d'
         # if self.hclick:
@@ -719,14 +677,7 @@ class WriteHTML:
     def viewpoints(self):
         """
         Define viewpoints for the X3D figure. Must go after start_x3d() and
-        before close_x3d(). Mandatory if the X3D does not have a Viewpoint,
-        which is the case with the one created with this module.
-
-        Parameters
-        ----------
-        maxcoord : len 3 array
-            Maximum values of RA, DEC and third axis, in that order, for the difference to the center.
-
+        before close_x3d().
         """
         self.file_html.write("\t\t <scene>\n")
         #correct camera postition and FoV, not to clip (hide) the figure
@@ -736,7 +687,7 @@ class WriteHTML:
 
     def func_background(self):
         """
-        Function to change the background color of the X3D figure.
+        Make JS function to change the background color of the X3D figure.
         Must be after buttons()
         """
         self.file_html.write(misc.tabs(3)+"<script>\n")
@@ -756,9 +707,9 @@ class WriteHTML:
 
     def func_markers(self):
         """
-        Function to create tubes for the X3D model interactively in the web page.
+        Create buttons to create markers for the X3D model interactively in the web page.
         Must be after buttons(). It is assumed that scalev is used. It will fail otherwise. 
-        To use without scalev, remove(modify parts with sca).
+        The JS functions are included by default in 'markers.js'.
         """
         self.file_html.write(misc.tabs(2) + '\n')
         self.file_html.write(misc.tabs(2)+"<div id=\"divmaster\" style=\"margin-left: 2%\">\n")
@@ -874,26 +825,8 @@ class WriteHTML:
 
         Parameters
         ----------
-        l_isolevels : list of arrays
-            A list of arrays with the values of each isosurface layer, one array for each cube. 
-            E.g.[2,5,9] for three layers at values 2,5 and 9 of the cube.
-            Should be in increasing order. (REAL?)
-        l_colors : list of arrays
-            RGB color for each isolevel a string ('122 233 20'). There must be a list of colors for each cube.
-        colormaps : list of strings
-            Matplotlib colormaps to introduce in the web page. Use plt.colormaps() for all.
-        hide2d : bool
-            Create button to hide and show the 2D image.
-        scalev : bool
-            Create button to change the scale of the spectral axis.
-        move2d : bool
-            Create button to move the 2D image along the spectral axis.
-        linelabs : False or list of strings
-            Strings with the labels to use for different cubes. If False, the labels will be 'Cube 0', 'Cube 1', etc.
         centrot : bool
             Create button to change the center of rotation.
-        background : bool
-            Create button to change the background color.
         """
         self.file_html.write(misc.tabs(1)+'<div style="width:90%">\n')
         self.file_html.write(misc.tabs(2)+'<br/>\n')
@@ -1024,15 +957,9 @@ class WriteHTML:
         
     def func_move2dimage(self):
         """
-        Function to move the 2D image along the spectral axis.
-
-        Parameters
-        ----------
-        diff_vmax : float
-            Maximum value of the spectral axis as a difference from the centre of the cube.
-        real_vmax : float
-            Maximum value of the spectral axis in the cube with respect to earth.
-            If None it will not be shown in the interface. Default is None.
+        Make JS function to move the 2D image along the spectral axis.
+        The X3D file must have a 2D image for this to work.
+        Must be after buttons()
         """
         self.file_html.write(misc.tabs(2)+"<script>\n")
         self.file_html.write(misc.tabs(2)+"const inpscam2 = document.querySelector('#scalev');\n")
@@ -1048,12 +975,9 @@ class WriteHTML:
 
     def func_galsize(self):
         """
-        Function to change the size of the galaxy markers and their labels.
-
-        Parameters
-        ----------
-        gals : dict
-            Dictionary with the names of the galaxies as keys and their coordinates as values.
+        Make JS function to change the size of the galaxy markers and their labels.
+        The X3D file must have galaxies for this to work.
+        Must be after buttons()
         """
         self.file_html.write(misc.tabs(2)+"<script>\n")
         self.file_html.write(misc.tabs(3)+"const galsize = document.querySelector('#galsize-choice');\n")
@@ -1069,7 +993,8 @@ class WriteHTML:
 
     def func_setCenterOfRotation(self, centers):
         """
-        Function to change the center of rotation.
+        Make JS function to change the center of rotation from given options.
+        Must be after buttons()
 
         Parameters
         ----------
@@ -1096,16 +1021,8 @@ class WriteHTML:
         
     def func_colormaps(self):
         """
-        Make function to change the colormap of the layers.
+        Make JS function to change the colormap of the layers.
         Must be after buttons()
-
-        Parameters
-        ----------
-        l_isolevels : list of arrays
-            A list of arrays with the values of each isosurface layer, one array for each cube. 
-            E.g.[2,5,9] for three layers at values 2,5 and 9 of the cube.
-            Should be in increasing order. (REAL?)
-
         """
         self.file_html.write("\t\t <!--MUST BE BELOW THE <select> ELEMENT-->\n")
         numcubes = len(self.cube.l_isolevels)
@@ -1195,26 +1112,8 @@ class WriteHTML:
             
     def func_scalev(self):
         """
-        Funtion to change the scale of the spectral axis.
+        Make JS funtion to change the scale of the spectral axis.
         Must be after buttons().
-
-        Parameters
-        ----------
-        coords : 3x3 array
-            Array with the coordinates of the cube as the difference from the centre.
-            In the order RA, DEC and the spectral axis.
-            Like write_x3d().diff_coords().
-        gal : dict
-            Dictionary with the coordinates of the galaxies.
-            Like the one used for make_galaxies().
-        axes : string
-            A string indicating what axis labels to include. Can be 'real' for the equatorial
-            coordinates; 'diff' for the difference from the center of the cube or
-            'both' for both options. Leave None for no axis labels.
-            Must be the same as in make_labels(). The default is 'both.
-        move2d : bool
-            Wether a 2D image is included in the web page. The default is True.
-
         """
         self.file_html.write(misc.tabs(2)+"<script>\n")
         self.file_html.write(misc.tabs(2)+"const inpscasv = document.querySelector('#scalev');\n")
@@ -1300,7 +1199,8 @@ class WriteHTML:
     
     def func_image2d(self):
         """
-        Function to show/hide the 2D image.
+        Make JS function to show/hide the 2D image.
+        The X3D file must have a 2D image for this to work.
         Must be after buttons().
         """
         # PICKING
@@ -1320,7 +1220,6 @@ class WriteHTML:
         """
         Must be used to finish and close the HTML file. Not using this function results
         in an error.
-
         """
         if self.cube.interface != 'minimal':
             self.file_html.write(misc.tablehtml)

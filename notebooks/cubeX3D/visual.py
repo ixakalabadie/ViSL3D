@@ -15,6 +15,50 @@ from . import u
 class Cube:
     """
     Class to store relevant data to create the visualisation.
+
+    Parameters
+    ----------
+    l_cubes : list
+        List of 3D arrays with the data. Even if it is only one cube it must be a list.
+    name : str
+        Name of the object.
+    coords : array
+        Array with the coordinates of the cube. It must be a sorted 3x2 array with the minimum and maximum
+        values of the spatial and spectral axes.
+    l_isolevels : list
+        List of arrays with the isosurface levels for each cube.
+    l_colors : list
+        RGB color for each isolevel as a string ('122 233 20').
+        Must have the same shape as l_isolevels.
+    units : len 4 array
+        Array of strings with the units of the data cube. The first element is the unit of the data.
+    mags : len 4 array
+        Array of strings with the magnitudes of the data cube. E.g. ['I', 'RA', 'DEC', 'V'].
+    rms : float, optional
+        RMS of the data cube.
+    resol : float, optional
+        Step size for the marching cubes algorithm. Higher value means lower resolution. Default is 1.
+    iso_split : list, optional
+        List of floats with the values to split the isosurfaces. It is not expected to be entered by the user,
+        it will be calculated automatically.
+    galaxies : dict, optional
+        Dictionary with galaxies to include in the model. Keys are names of galaxies and it must
+        have two more dictionaries inside with the keys 'coords' and 'col'. 'coords' must have the
+        coordinates of the galaxy (transformed to units of the cube between -1000 and 1000) and 'col' the color of each galaxy as a string. E.g. {'NGC 1234': {'coords': [-560, 790, 134], 'col': '255 0 0'}}.
+        'coord' is calculated with '[RA - mean(cubeRA)]/abs(deltaRA)*2000/nPixRA'. The whole dictionary
+        can be obtained with misc.get_galaxies().
+    image2d : tuple, optional
+        Tuple with the image in hexadecimal format and the shape of the image.
+        It can be calculated with the function misc.get_imcol.
+        If (None,None) a blank plane will be used.
+    lines : dict, optional
+        Dictionary with the names of spectral lines as keys and a tuple with the centre and
+        the full width of the line as value. The centre must be an astropy quantity and the width
+        can be a quantity or an integer representing the number of pixels.
+        E.g. {'NII': (6583*u.Angstrom, 50 [pixels])), 'Halpha': (6562*u.Angstrom, 10*u.Angstrom)}.
+    interface : str, optional
+        Format of the web interface. 'full' gives a fully interactive web page and 'minimal' just
+        the 3D model. Default is 'full'.
     """
     def __init__(self, l_cubes, name, coords, l_isolevels, l_colors, units, mags, rms=None,
                  resol=1, iso_split=[], galaxies=None, image2d=None, lines=None, interface='full'):
@@ -40,7 +84,36 @@ class Cube:
 def prep_one(cube, header=None, lims=None, unit=None, isolevels=None, colormap='CMRmap_r',
              image2d=None, galaxies=None):
     """
-    Prepare the Cube class for a single spectral line.
+    Prepare the Cube class for a cube with a single spectral line.
+
+    Parameters
+    ----------
+    cube : str or np.ndarray
+        Path to the FITS file or to the data cube.
+    header : astropy.io.fits.header.Header, optional
+        Header of the FITS file.
+    lims : array-like, optional
+        3x2 array with the minimum and maximum limits of the cube. If None the whole cube is used.
+        It can contain limits in astropy quantities or in pixels.
+        E.g. [[ramin, ramax], [decmin, decmax], [vmin, vmax]]. Default is None.
+    unit : str, optional
+        Unit to convert the data cube. If None the original unit is used.
+        If 'rms' data is divided by the RMS of the cube.
+        If 'percent' data is divided by the maximum value.
+    isolevels : array-like, optional
+        Array with the isosurface levels in the given units. If None it is calculated automatically.
+    colormap : str, optional
+        Name of the colormap to use. Default is 'CMRmap_r'.
+    image2d : str, optional
+        Name of the survey to query a 2D image. See survey options in https://astroquery.readthedocs.io/en/latest/skyview/skyview.html.
+        If 'blank' a blank plane is used. If None no image is created.
+    galaxies : list or str, optional
+        List with the names of galaxies to include in the model. If 'query' a NED query is made within the limits of the cube. If None no galaxies are included.
+    
+    Returns
+    -------
+    Cube
+        An object of the Cube class for a single spectral line model.
     """
     if isinstance(cube, str):
         with fits.open(cube) as hdul:
@@ -150,24 +223,41 @@ def prep_one(cube, header=None, lims=None, unit=None, isolevels=None, colormap='
 def prep_mult(cube, spectral_lims, header=None, spatial_lims=None, l_isolevels=None, unit=None,
                colormap=None, image2d=None):
     """
-    Prepare the Cube class for a multiple spectral lines.
-    Make cutout in spatial and spectral axes for full cube when given limits.
-    Else the empty cube can be very big.
+    Prepare the Cube class for a cube with multiple spectral lines.
+    Makes a subcube for each spectral line.
 
     Parameters
     ----------
     cube : str or np.ndarray
         Path to the FITS file or the data cube.
-    header : astropy.io.fits.header.Header
-        Header of the FITS file.
     spectral_lims : list
-        List of lists with the limits of the spectral axis.
+        List of lists with the limits (minimum and maximum) of the spectral axis.
         E.g. [[vmin1, vmax1], [vmin2, vmax2]].
-    spatial_lims : list
+    header : astropy.io.fits.header.Header, optional
+        Header of the FITS file.
+    spatial_lims : list, optional
         List of lists with the limits (minimum and maximum) of the spatial axes.
         E.g. [[[ramin1, ramax1], [decmin1, decmax1]], [[ramin2, ramax2], [decmin2, decmax2]]].
         Each list will correspond to the subcubes defined in spectral_lims in the same order.
+        If only one set of limits is provided it will be used for all the subcubes.
         If None the whole cube is used. Default is None.
+    l_isolevels : list, optional
+        List of arrays with the isosurface levels for each cube. If None it is calculated automatically.
+    unit : str, optional
+        Unit to convert the data cube. If None the original unit is used.
+        If 'rms' data is divided by the RMS of the cube.
+        If 'percent' data is divided by the maximum value.
+    colormap : str, optional
+        Name of the colormaps to use. Must be the same length as the number of spectral lines to model.
+        If None and the number of lines is <7 they are be chosen automatically. Default is None.
+    image2d : str, optional
+        Name of the survey to query a 2D image. See survey options in https://astroquery.readthedocs.io/en/latest/skyview/skyview.html.
+        If 'blank' a blank plane is used. If None no image is created.
+    
+    Returns
+    -------
+    Cube
+        An object of the Cube class for a model with multiple spectral lines.
     """
     if isinstance(cube, str):
         with fits.open(cube) as hdul:
@@ -336,21 +426,50 @@ def prep_mult(cube, spectral_lims, header=None, spatial_lims=None, l_isolevels=N
                 mags=cubemags, l_colors=l_colors, rms=rms, image2d=image2d, galaxies=None, 
                 l_isolevels=l_isolevels)
 
-def prep_overlay(cube, header=None, spectral_lims=None, lines=None, spatial_lims=None, l_isolevels=None, unit=None, colormap=None,
-            image2d=None):
+def prep_overlay(cube, header=None, spectral_lims=None, lines=None, spatial_lims=None,
+                 l_isolevels=None, unit=None, colormap=None, image2d=None):
     """
-    Prepare the Cube class for an overlay of spectral lines.
+    Prepare the Cube class for an overlay of spectral lines. Makes a subcube for each spectral line
+    and overlays the centre of each line in the same point.
 
     Parameters
     ----------
-
     cube : str or np.ndarray
         Path to the FITS file or the data cube.
-    lines : dict
+    header : astropy.io.fits.header.Header, optional
+        Header of the FITS file.
+    spectral_lims : list, optional
+        List of lists with the limits (minimum and maximum) of the spectral axis.
+        E.g. [[vmin1, vmax1], [vmin2, vmax2]].
+    lines : dict, optional
         Dictionary with the names of spectral lines as keys and a tuple with the centre and
         the full width of the line as value. The centre must be an astropy quantity and the width
-        can be a quantity or an integer representing the number of pixels.
+        can be a quantity or an integer representing the number of the pixel.
         E.g. {'NII': (6583*u.Angstrom, 50 [pixels])), 'Halpha': (6562*u.Angstrom, 10*u.Angstrom)}.
+        If None the centres will be the centres of the subcubes.
+    spatial_lims : list, optional
+        List of lists with the limits (minimum and maximum) of the spatial axes.
+        E.g. [[[ramin1, ramax1], [decmin1, decmax1]], [[ramin2, ramax2], [decmin2, decmax2]]].
+        Each list will correspond to the subcubes defined in spectral_lims in the same order.
+        If only one set of limits is provided it will be used for all the subcubes.
+        If None the whole cube is used. Default is None.
+    l_isolevels : list, optional
+        List of arrays with the isosurface levels for each cube. If None it is calculated automatically.
+    unit : str, optional
+        Unit to convert the data cube. If None the original unit is used.
+        If 'rms' data is divided by the RMS of the cube.
+        If 'percent' data is divided by the maximum value.
+    colormap : str, optional
+        Name of the colormaps to use. Must be the same length as the number of spectral lines to model.
+        If None and the number of lines is <7 they are be chosen automatically. Default is None.
+    image2d : str, optional
+        Name of the survey to query a 2D image. See survey options in https://astroquery.readthedocs.io/en/latest/skyview/skyview.html.
+        If 'blank' a blank plane is used. If None no image is created.
+    
+    Returns
+    -------
+    Cube
+        An object of the Cube class for an overlay of spectral lines.
     """
     if isinstance(cube, str):
         with fits.open(cube) as hdul:
@@ -550,7 +669,17 @@ def prep_overlay(cube, header=None, spectral_lims=None, lines=None, spatial_lims
 
 def createX3D(cube, filename, shifts=None):
     """
-    Create X3D file
+    Create X3D file from a Cube object.
+
+    Parameters
+    ----------
+    cube : Cube
+        Object of the Cube class.
+    filename : str
+        Name of the X3D file including the extension (.x3d).
+    shift : list, optional
+        A list with a arrays of 3D vectors giving the shift in RA, DEC and spectral axis in
+        the same units given to the cube. Similar to l_cube or l_isolevels.
     """
     file = writers.WriteX3D(filename, cube)
     file.make_layers(shifts=shifts)
@@ -566,7 +695,18 @@ def createX3D(cube, filename, shifts=None):
 
 def createHTML(cube, filename, description=None, pagetitle=None):
     """
-    Create HTML file
+    Create HTML file from a Cube object.
+
+    Parameters
+    ----------
+    cube : Cube
+        Object of the Cube class.
+    filename : str
+        Name of the HTML file including the extension (.html).
+    description : str, optional
+        A description for the web page.
+    pagetitle : str, optional
+        The title of the web page.
     """
     file = writers.WriteHTML(filename, cube, description, pagetitle)
     if cube.interface == 'minimal':
