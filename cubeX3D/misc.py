@@ -29,14 +29,11 @@ def marching_cubes(cube, level, shift=(0,0,0), step_size=1):
         Datacube.
     level : float
         Value of the isosurface.
-    delta : tuple
-        Spacing in each dimension.
-    mins : tuple
-        Minimum values of each dimension.
     shift : tuple, optional
         Shift in RA, DEC and V in same units as delta and mins. The default is (0,0,0).
     step_size : int, optional
-        Step size for the marching_cubes algorithm. Set the resolution. Default is 1. 
+        Step size for the marching_cubes algorithm. Sets the resolution. High step sizes produce
+        low resolution models. Default is 1. 
     
     Returns
     --------
@@ -54,7 +51,33 @@ def marching_cubes(cube, level, shift=(0,0,0), step_size=1):
 
 def get_galaxies(galaxies, cubecoords, cubeunits, obj, delta, trans):
     """
-    galdict['coord'] is in the same units as the cube
+    Obtain a dictionary with galaxy names, coordinates and colors to introduce in a Cube object to
+    use in writers.make_galaxies().
+
+    Parameters
+    ----------
+    galaxies : list or string
+        List with the names of galaxies to include in the model.
+        If 'query' a NED query is made within the limits of the cube.
+        If None no galaxies are included.
+    cubecoords : array-like
+        3x2 array with the coordinates of the cube in the format
+        [[ramin, ramax], [decmin, decmax], [zmin, zmax]] and in the same units as cubeunits.
+    cubeunits : array-like
+        len 4 array with the units of the cube as strings.
+    obj : string
+        Name of the object to query in NED.
+    delta : array-like
+        len 3 array with the delta values of the cube.
+    trans : array-like
+        len 3 array with the scale of each coordinate axis. It is calculated like
+        [2000/nx, 2000/ny, 2000/nz].
+    
+    Returns
+    -------
+    galdict : dict
+        Dictionary with the names of the galaxies as keys and two dictionaries with the coordinates
+        and color of the galaxy as values.
     """
     if galaxies == ['query']:
         sc = SkyCoord(cubecoords[0][0]*u.Unit(cubeunits[1]),
@@ -204,7 +227,7 @@ def calc_step(cube, isolevels):
 
 def preview2d(cube, v1=None, v2=None, norm='asinh', figsize=(10,8)):
     """
-    
+    TO DO
 
     Parameters
     ----------
@@ -389,7 +412,7 @@ tablehtml = '\n<!--A table with navigation info for X3DOM-->\n<br/>\n<hr>\n<h3><
 axlabname1 = np.array(['R.A. [arcsec]', 'Dec. [arcsec]', 'V [km/s]',
                 'Dec. [arcsec]', 'V [km/s]', 'R.A. [arcsec]'])
 
-def get_axlabnames(mags, units):
+def get_axlabnames(mags):
     """
     Parameters:
     ----------

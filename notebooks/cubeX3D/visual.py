@@ -282,7 +282,7 @@ def prep_mult(cube, spectral_lims, header=None, spatial_lims=None, l_isolevels=N
     cube = misc.transpose(cube, delta)
     nx, ny, nz = cube.shape
 
-    lims = np.array([[0][nx], [0][ny], [0][nz]], dtype=int)
+    lims = np.array([[0,nx], [0,ny], [0,nz]], dtype=int)
     cubecoords = np.array([
         [header['CRVAL1']+delta[0]*(lims[0][0]-header['CRPIX1']),
         header['CRVAL1']+delta[0]*(lims[0][1]-header['CRPIX1'])],
@@ -494,7 +494,7 @@ def prep_overlay(cube, header=None, spectral_lims=None, lines=None, spatial_lims
     cube = misc.transpose(cube, delta)
     nx, ny, nz = cube.shape
 
-    lims = np.array([[0][nx], [0][ny], [0][nz]], dtype=int)
+    lims = np.array([[0,nx], [0,ny], [0,nz]], dtype=int)
     cubecoords = np.array([
         [header['CRVAL1']+delta[0]*(lims[0][0]-header['CRPIX1']),
         header['CRVAL1']+delta[0]*(lims[0][1]-header['CRPIX1'])],
@@ -712,7 +712,7 @@ def createHTML(cube, filename, description=None, pagetitle=None):
     if cube.interface == 'minimal':
         file.start_x3d()
         file.viewpoints()
-        file.close_x3d(filename)
+        file.close_x3d(filename.split("/")[-1])
         file.close_html()
     else:
         file.func_layers()
