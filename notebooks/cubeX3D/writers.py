@@ -57,6 +57,7 @@ class WriteX3D:
             Whether to add normal vectors in the X3D model. Default is False.
         """
         numcubes = len(self.cube.l_cubes)
+        self.cube.iso_split = []
 
         for nc in range(numcubes):
             cube_full = self.cube.l_cubes[nc]
@@ -386,7 +387,7 @@ class WriteX3D:
             self.file_x3d.write('\n\t\t\t\t\t\t</Text>\n\t\t\t\t\t</Shape>\n\t\t\t\t</Transform>')
         
         # don't show other labels if overlay
-        if self.cube.lines is None:        
+        if isinstance(self.cube.lines, dict) == False:
             #ax labels real
             for i in range(6):
                 self.file_x3d.write(f'\n\t\t\t\t<Transform DEF="alt_real{i}" translation="{ax[i,0]} {ax[i,1]} {ax[i,2]}" rotation="{misc.axlabrot[i]}" scale="{labelscale} {labelscale} {labelscale}">')
@@ -459,7 +460,7 @@ class WriteHTML:
             self.file_html.write("\n\t\t<style>\n"+misc.tabs(3)+"x3d\n"+misc.tabs(4)+"{\n"+misc.tabs(5)+"border:2px solid darkorange;\n"+misc.tabs(5)+"width:100%;\n"+misc.tabs(5)+"height: 100%;\n"+misc.tabs(3)+"}\n"+misc.tabs(3)+"</style>\n\t</head>\n\t<body>\n")
         else:
             self.file_html.write(misc.tabs(2)+f'<title> {self.cube.name} </title>\n')
-            self.file_html.write("\n\t\t<style>\n"+misc.tabs(3)+"x3d\n"+misc.tabs(4)+"{\n"+misc.tabs(5)+"border:2px solid darkorange;\n"+misc.tabs(5)+"width:95%;\n"+misc.tabs(5)+"height: 80%;\n"+misc.tabs(3)+"}\n"+misc.tabs(3)+"</style>\n\t</head>\n\t<body>\n")
+            self.file_html.write("\n\t\t<style>\n"+misc.tabs(3)+"x3d\n"+misc.tabs(4)+"{\n"+misc.tabs(5)+"border:2px solid darkorange;\n"+misc.tabs(5)+"width:95%;\n"+misc.tabs(5)+"height: 70%;\n"+misc.tabs(3)+"}\n"+misc.tabs(3)+"</style>\n\t</head>\n\t<body>\n")
         self.file_html.write(f'\t<h1 align="middle"> {pagetitle} </h1>\n')
         self.file_html.write('\t<hr/>\n')
         if description is not None:
@@ -589,15 +590,15 @@ class WriteHTML:
         self.file_html.write(misc.tabs(3)+"for (i=0; i<12; i++) {\n")
         self.file_html.write(misc.tabs(3)+"if (i<6) {\n")
         self.file_html.write(misc.tabs(4)+"document.getElementById('cube__axlab_diff'+i).setAttribute('transparency', '1');\n")
-        if self.cube.lines is None:
+        if isinstance(self.cube.lines, dict) == False:
             self.file_html.write(misc.tabs(4)+"document.getElementById('cube__axlab_real'+i).setAttribute('transparency', '0');\n")
         self.file_html.write(misc.tabs(3)+"}\n")
         self.file_html.write(misc.tabs(4)+"document.getElementById('cube__axtick_diff'+i).setAttribute('transparency', '1');\n")
-        if self.cube.lines is None:
+        if isinstance(self.cube.lines, dict) == False:
             self.file_html.write(misc.tabs(4)+"document.getElementById('cube__axtick_real'+i).setAttribute('transparency', '0');\n")
         self.file_html.write(misc.tabs(3)+"}\n")
         self.file_html.write(misc.tabs(2)+"}\n")
-        if self.cube.lines is None:
+        if isinstance(self.cube.lines, dict) == False:
             self.file_html.write(misc.tabs(2)+"else if (document.getElementById('cube__axlab_real1').getAttribute('transparency') == '0') {\n")
             self.file_html.write(misc.tabs(3)+"for (i=0; i<12; i++) {\n")
             self.file_html.write(misc.tabs(3)+"if (i<6) {\n")
@@ -855,7 +856,7 @@ class WriteHTML:
             self.file_html.write(misc.tabs(3)+'<select id="rotationCenter">\n')
             self.file_html.write(misc.tabs(4)+'<option value="Origin">Origin</option>\n')
             for nc in range(len(self.cube.l_isolevels)):
-                if self.cube.lines is not None and self.cube.lines != True:
+                if isinstance(self.cube.lines, dict) or isinstance(self.cube.lines, list):
                     llab = list(self.cube.lines)[nc]
                     self.file_html.write(misc.tabs(4)+'<option value="op%s">%s</option>\n'%(nc,llab))
                 else:
@@ -886,9 +887,12 @@ class WriteHTML:
 
         for nc in range(numcubes):
             self.file_html.write(misc.tabs(2)+'<br><br>\n')
-            if self.cube.lines is not None and self.cube.lines != True:
+            if isinstance(self.cube.lines, dict):
                 llab = list(self.cube.lines)[nc]
                 llab = f'{llab} ({self.cube.lines[llab][0]})'
+                self.file_html.write(misc.tabs(2)+'&nbsp <b>%s (%s):</b>\n'%(llab,self.cube.units[0]))
+            elif isinstance(self.cube.lines, list):
+                llab = list(self.cube.lines)[nc]
                 self.file_html.write(misc.tabs(2)+'&nbsp <b>%s (%s):</b>\n'%(llab,self.cube.units[0]))
             else:
                 self.file_html.write(misc.tabs(2)+'&nbsp <b>Cube %s (%s):</b>\n'%(nc,self.cube.units[0]))
@@ -914,7 +918,7 @@ class WriteHTML:
         
         # Colormaps
         for nc in range(numcubes):
-            if self.cube.lines is not None and self.cube.lines != True:
+            if isinstance(self.cube.lines, dict) or isinstance(self.cube.lines, list):
                 llab = list(self.cube.lines)[nc]
                 self.file_html.write(misc.tabs(2)+'&nbsp <label for="cmaps-choice%s"><b>Cmap %s</b> </label>\n'%(nc,llab))
             else:
@@ -1188,10 +1192,10 @@ class WriteHTML:
         for i in range(12):
             if i < 6:
                 self.file_html.write(misc.tabs(3)+"document.getElementById('cube__alt_diff%s').setAttribute('translation', '%s %s '+sca*%s);\n"%(i, ax[i][0], ax[i][1], ax[i][2])) #str(ax[i])[1:-1]
-                if self.cube.lines is None:
+                if isinstance(self.cube.lines, dict) == False:
                     self.file_html.write(misc.tabs(3)+"document.getElementById('cube__alt_real%s').setAttribute('translation', '%s %s '+sca*%s);\n"%(i, ax[i][0], ax[i][1], ax[i][2]))
             self.file_html.write(misc.tabs(3)+"document.getElementById('cube__att_diff%s').setAttribute('translation', '%s %s '+sca*%s);\n"%(i, axtick[i][0], axtick[i][1], axtick[i][2]))
-            if self.cube.lines is None:
+            if isinstance(self.cube.lines, dict) == False:
                 self.file_html.write(misc.tabs(3)+"document.getElementById('cube__att_real%s').setAttribute('translation', '%s %s '+sca*%s);\n"%(i, axtick[i][0], axtick[i][1], axtick[i][2]))
         
         self.file_html.write(misc.tabs(2)+"}\n")

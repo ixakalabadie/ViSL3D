@@ -245,7 +245,7 @@ function newCon(ncones, selcon) {
     condiv.appendChild(ori);
     ori.setAttribute('type', 'text');
     ori.setAttribute('id', 'conori'+ncones);
-    ori.setAttribute('placeholder', "Orientation axis: e.g. '-1 0 1'");
+    ori.setAttribute('placeholder', "Axis: e.g. '-1 0 1'");
 
     return ncones;
 }
