@@ -322,10 +322,8 @@ class WriteX3D:
         vmin1, vmax1 = (self.cube.coords[2]-np.mean(self.cube.coords[2])) \
                     * u.Unit(self.cube.units[3])# .to('km/s')
 
-        ramin2, ramax2 = Angle(self.cube.coords[0] \
-                            * u.Unit(self.cube.units[1])).to_string(u.hour, precision=0)
-        decmin2, decmax2 = Angle(self.cube.coords[1] \
-                            * u.Unit(self.cube.units[2])).to_string(u.degree, precision=0)
+        ramin2, ramax2 = self.cube.coords[0] * u.Unit(self.cube.units[1])
+        decmin2, decmax2 = self.cube.coords[1] * u.Unit(self.cube.units[2])
         vmin2, vmax2 = self.cube.coords[2] * u.Unit(self.cube.units[3])
 
         # scale of labels
@@ -339,10 +337,10 @@ class WriteX3D:
                        f'{decmax1:.2f}',f'{decmin1:.2f}',f'{vmin1:.0f}',
                        f'{vmax1:.0f}',f'{ramax1:.2f}',f'{ramin1:.2f}'])
 
-        axticknames2 = np.array([ramax2, ramin2, decmax2,
-                       decmin2, f'{vmin2:.0f}', f'{vmax2:.0f}',
-                       decmax2, decmin2, f'{vmin2:.2f}',
-                       f'{vmax2:.0f}', ramax2, ramin2])
+        axticknames2 = np.array([f'{ramax2:.3f}', f'{ramin2:.3f}', f'{decmax2:.3f}',
+                       f'{decmin2:.3f}', f'{vmin2:.0f}', f'{vmax2:.0f}',
+                       f'{decmax2:.3f}', f'{decmin2:.3f}', f'{vmin2:.2f}',
+                       f'{vmax2:.0f}', f'{ramax2:.3f}', f'{ramin2:.3f}'])
 
         col = '0 0 0'
 
@@ -682,9 +680,9 @@ class WriteHTML:
         """
         self.file_html.write("\t\t <scene>\n")
         #correct camera postition and FoV, not to clip (hide) the figure
-        self.file_html.write(misc.tabs(3)+"<OrthoViewpoint id=\"front\" bind='false' centerOfRotation='0,0,0' description='RA-Dec view' fieldOfView='[%s,%s,%s,%s]' isActive='false' metadata='X3DMetadataObject' orientation='0,1,0,3.141593' position='0,0,-%s' zFar='10000' zNear='0.0001' ></OrthoViewpoint>\n"%(-1000*1.4,-1000*1.4,1000*1.4,1000*1.4,1000*1.4))
-        self.file_html.write("\t\t\t <OrthoViewpoint id=\"side\" bind='false' centerOfRotation='0,0,0' description='Z - Dec view' fieldOfView='[%s,%s,%s,%s]' isActive='false' metadata='X3DMetadataObject' orientation='0,-1,0,1.570796' position='-%s,0,0' zFar='10000' zNear='0.0001' ></OrthoViewpoint>\n"%(-1000*1.4,-1000*1.4,1000*1.4,1000*1.4,1000*1.4))
-        self.file_html.write("\t\t\t <OrthoViewpoint id=\"side2\" bind='false' centerOfRotation='0,0,0' description='Z - RA view' fieldOfView='[%s,%s,%s,%s]' isActive='false' metadata='X3DMetadataObject' orientation='1,1,1,4.1888' position='0,%s,0' zFar='10000' zNear='0.0001' ></OrthoViewpoint>\n"%(-1000*1.4,-1000*1.4,1000*1.4,1000*1.4,1000*1.4))
+        self.file_html.write(misc.tabs(3)+"<OrthoViewpoint id=\"front\" bind='false' centerOfRotation='0,0,0' description='RA-Dec view' fieldOfView='[-1400.0,-1400.0,1400.0,1400.0]' isActive='false' metadata='X3DMetadataObject' orientation='0,1,0,3.141593' position='0,0,-5500' zFar='11000' zNear='0.0001' ></OrthoViewpoint>\n")
+        self.file_html.write("\t\t\t <OrthoViewpoint id=\"side\" bind='false' centerOfRotation='0,0,0' description='Z - Dec view' fieldOfView='[-1400.0,-1400.0,1400.0,1400.0]' isActive='false' metadata='X3DMetadataObject' orientation='0,-1,0,1.570796' position='-5500,0,0' zFar='11000' zNear='0.0001' ></OrthoViewpoint>\n")
+        self.file_html.write("\t\t\t <OrthoViewpoint id=\"side2\" bind='false' centerOfRotation='0,0,0' description='Z - RA view' fieldOfView='[-1400.0,-1400.0,1400.0,1400.0]' isActive='false' metadata='X3DMetadataObject' orientation='1,1,1,4.1888' position='0,5500,0' zFar='11000' zNear='0.0001' ></OrthoViewpoint>\n")
 
     def func_background(self):
         """
@@ -786,25 +784,37 @@ class WriteHTML:
         self.file_html.write(misc.tabs(3)+"// General\n")
         self.file_html.write(misc.tabs(3)+"function newmarker() {\n")
         self.file_html.write(misc.tabs(4)+"if (marktype.value == 'sphere') {\n")
+        self.file_html.write(misc.tabs(5)+"nspheres = nspheres += 1;\n")
         self.file_html.write(misc.tabs(5)+"nspheres = newSphere(nspheres, selsph);\n")
         self.file_html.write(misc.tabs(4)+"} else if (marktype.value == 'box') {\n")
+        self.file_html.write(misc.tabs(5)+"nboxes = nboxes += 1;\n")
         self.file_html.write(misc.tabs(5)+"nboxes = newBox(nboxes, selbox);\n")
         self.file_html.write(misc.tabs(4)+"} else if (marktype.value == 'tub') {\n")
+        self.file_html.write(misc.tabs(5)+"ntubes = ntubes += 1;\n")
         self.file_html.write(misc.tabs(5)+"ntubes, tubelen = newTub(ntubes, seltub, tubelen);\n")
         self.file_html.write(misc.tabs(4)+"} else if (marktype.value == 'con') {\n")
+        self.file_html.write(misc.tabs(5)+"ncones = ncones += 1;\n")
         self.file_html.write(misc.tabs(5)+"ncones = newCon(ncones, selcon);\n")
         self.file_html.write(misc.tabs(3)+"}\n")
         self.file_html.write(misc.tabs(2)+"}\n\n")
         self.file_html.write(misc.tabs(3)+"function createmarker() {\n")
         self.file_html.write(misc.tabs(4)+"const sca = inpscasv.value;\n\n")
+        self.file_html.write(misc.tabs(4)+f"const means = {list(np.mean(self.cube.coords, axis=1))};\n")
+        delt = [np.abs(np.diff(self.cube.coords[0])/self.cube.l_cubes[0].shape[0]),
+                 np.abs(np.diff(self.cube.coords[1])/self.cube.l_cubes[0].shape[1]),
+                 np.abs(np.diff(self.cube.coords[2])/self.cube.l_cubes[0].shape[2])]
+        delt = [factor[0] for factor in delt]
+        self.file_html.write(misc.tabs(4)+f"const delt = {list(delt)};\n")
+        trans = [2000/self.cube.l_cubes[0].shape[0], 2000/self.cube.l_cubes[0].shape[1], 2000/self.cube.l_cubes[0].shape[2]]
+        self.file_html.write(misc.tabs(4)+f"const trans = {trans};\n")
         self.file_html.write(misc.tabs(4)+"if (marktype.value == 'sphere') {\n")
-        self.file_html.write(misc.tabs(5)+"sph_coords = createSphere(sca, selsph, col, sph_coords);\n")
+        self.file_html.write(misc.tabs(5)+f"sph_coords = createSphere(sca, selsph, col, sph_coords, means, delt, trans);\n")
         self.file_html.write(misc.tabs(4)+"} else if (marktype.value == 'box') {\n")
-        self.file_html.write(misc.tabs(5)+"box_coords = createBox(sca, selbox, col, box_coords);\n")
+        self.file_html.write(misc.tabs(5)+"box_coords = createBox(sca, selbox, col, box_coords, means, delt, trans);\n")
         self.file_html.write(misc.tabs(4)+"} else if (marktype.value == 'tub') {\n")
-        self.file_html.write(misc.tabs(5)+"tub_coords = createTub(sca, seltub, col, tub_coords, tubelen);\n")
+        self.file_html.write(misc.tabs(5)+"tub_coords = createTub(sca, seltub, col, tub_coords, tubelen, means, delt, trans);\n")
         self.file_html.write(misc.tabs(4)+"} else if (marktype.value == 'con') {\n")
-        self.file_html.write(misc.tabs(5)+"con_coords = createCon(sca, selcon, col, con_coords);\n")
+        self.file_html.write(misc.tabs(5)+"con_coords = createCon(sca, selcon, col, con_coords, means, delt, trans);\n")
         self.file_html.write(misc.tabs(3)+"}\n")
         self.file_html.write(misc.tabs(2)+"}\n\n")
         self.file_html.write(misc.tabs(3)+"function removemarker() {\n")

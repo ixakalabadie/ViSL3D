@@ -38,9 +38,6 @@ class Cube:
         RMS of the data cube.
     resol : float, optional
         Step size for the marching cubes algorithm. Higher value means lower resolution. Default is 1.
-    iso_split : list, optional
-        List of floats with the values to split the isosurfaces. It is not expected to be entered by the user,
-        it will be calculated automatically.
     galaxies : dict, optional
         Dictionary with galaxies to include in the model. Keys are names of galaxies and it must
         have two more dictionaries inside with the keys 'coords' and 'col'. 'coords' must have the
@@ -61,7 +58,7 @@ class Cube:
         the 3D model. Default is 'full'.
     """
     def __init__(self, l_cubes, name, coords, l_isolevels, l_colors, units, mags, rms=None,
-                 resol=1, iso_split=[], galaxies=None, image2d=None, lines=None, interface='full'):
+                 resol=1, galaxies=None, image2d=None, lines=None, interface='full'):
         self.l_cubes = l_cubes
         self.name = name
         self.coords = coords
@@ -71,7 +68,7 @@ class Cube:
         self.rms = rms
         self.l_isolevels = l_isolevels
         self.resol = resol
-        self.iso_split = iso_split
+        self.iso_split = None
         self.galaxies = galaxies
         self.image2d = image2d
         self.lines = lines
@@ -142,9 +139,10 @@ def prep_one(cube, header=None, lims=None, unit=None, isolevels=None, colormap='
         lims = np.array([[0,nx], [0,ny], [0,nz]], dtype=int)
 
     if isinstance(lims, list) and isinstance(lims[0][0], u.quantity.Quantity):
-        lims[0].to(u.Unit(cubeunits[1]))
-        lims[1].to(u.Unit(cubeunits[2]))
-        lims[2].to(u.Unit(cubeunits[3]))
+        for (i,l) in enumerate(lims):
+            for (j,_) in enumerate(l):
+                lims[i][j] = lims[i][j].to(u.Unit(cubeunits[i+1]))
+                lims[i][j] = lims[i][j].to_value()
         cubecoords = np.array(lims)
         lims = np.array([
             [np.round((cubecoords[0][0]-header['CRVAL1'])/delta[0] + header['CRPIX1']),
@@ -153,7 +151,7 @@ def prep_one(cube, header=None, lims=None, unit=None, isolevels=None, colormap='
             np.round((cubecoords[1][1]-header['CRVAL2'])/delta[1] + header['CRPIX2'])],
             [np.round((cubecoords[2][0]-header['CRVAL3'])/delta[2] + header['CRPIX3']),
             np.round((cubecoords[2][1]-header['CRVAL3'])/delta[2] + header['CRPIX3'])]
-            ])
+            ], dtype=int)
     else:
         cubecoords = np.array([
             [header['CRVAL1']+delta[0]*(lims[0][0]-header['CRPIX1']),
@@ -171,6 +169,7 @@ def prep_one(cube, header=None, lims=None, unit=None, isolevels=None, colormap='
             raise ValueError('lims out of range')
 
     cubecoords = np.sort(cubecoords)
+    lims = np.sort(lims)
     cube = cube[lims[0][0]:lims[0][1],lims[1][0]:lims[1][1],lims[2][0]:lims[2][1]]
     cube[np.isnan(cube)] = 0
 
@@ -178,20 +177,23 @@ def prep_one(cube, header=None, lims=None, unit=None, isolevels=None, colormap='
                             -cube[0 > cube].flatten()]))
     if unit == 'rms':
         cube = cube/rms #rms is in units of cubeunits[0]
+        cubeunits[0] = 'RMS'
     elif unit == 'percent':
         cube = cube/np.nanmax(cube)*100
+        cubeunits[0] = '%'
     elif unit is None:
         pass
     elif unit is not cubeunits[0]:
         cube = cube*u.Unit(cubeunits[0]).to(unit).value
+        cubeunits[0] = unit
 
     if isolevels is None:
-        isolevels = misc.calc_isolevels(cube)
+        isolevels = misc.calc_isolevels(cube, unit=unit)
     else:
         if np.min(isolevels) < np.min(cube):
-            raise ValueError('isolevels out of range')
+            raise ValueError(f'Isolevels out of range. Min is {np.min(cube)}')
         if np.max(isolevels) > np.max(cube):
-            raise ValueError('isolevels out of range')
+            raise ValueError(f'Isolevels out of range. Max is {np.max(cube)}')
 
     colors = misc.create_colormap(colormap, isolevels)
 
@@ -221,7 +223,7 @@ def prep_one(cube, header=None, lims=None, unit=None, isolevels=None, colormap='
                 l_isolevels=[isolevels])
 
 def prep_mult(cube, spectral_lims, header=None, spatial_lims=None, l_isolevels=None, unit=None,
-               colormap=None, image2d=None):
+               colormap=None, image2d=None, lines=None):
     """
     Prepare the Cube class for a cube with multiple spectral lines.
     Makes a subcube for each spectral line.
@@ -253,7 +255,10 @@ def prep_mult(cube, spectral_lims, header=None, spatial_lims=None, l_isolevels=N
     image2d : str, optional
         Name of the survey to query a 2D image. See survey options in https://astroquery.readthedocs.io/en/latest/skyview/skyview.html.
         If 'blank' a blank plane is used. If None no image is created.
-    
+    lines : array-like, optional
+        List with the names of each subcube to use as labels in the web page. Must have same length
+        as spectral_lims. Default is None.
+
     Returns
     -------
     Cube
@@ -424,7 +429,7 @@ def prep_mult(cube, spectral_lims, header=None, spatial_lims=None, l_isolevels=N
 
     return Cube(l_cubes=l_cubes, name=header['OBJECT'], coords=cubecoords, units=cubeunits,
                 mags=cubemags, l_colors=l_colors, rms=rms, image2d=image2d, galaxies=None, 
-                l_isolevels=l_isolevels)
+                l_isolevels=l_isolevels, lines=lines)
 
 def prep_overlay(cube, header=None, spectral_lims=None, lines=None, spatial_lims=None,
                  l_isolevels=None, unit=None, colormap=None, image2d=None):

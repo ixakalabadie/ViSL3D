@@ -177,15 +177,18 @@ def prep_one(cube, header=None, lims=None, unit=None, isolevels=None, colormap='
                             -cube[0 > cube].flatten()]))
     if unit == 'rms':
         cube = cube/rms #rms is in units of cubeunits[0]
+        cubeunits[0] = 'RMS'
     elif unit == 'percent':
         cube = cube/np.nanmax(cube)*100
+        cubeunits[0] = '%'
     elif unit is None:
         pass
     elif unit is not cubeunits[0]:
         cube = cube*u.Unit(cubeunits[0]).to(unit).value
+        cubeunits[0] = unit
 
     if isolevels is None:
-        isolevels = misc.calc_isolevels(cube)
+        isolevels = misc.calc_isolevels(cube, unit=unit)
     else:
         if np.min(isolevels) < np.min(cube):
             raise ValueError(f'Isolevels out of range. Min is {np.min(cube)}')
