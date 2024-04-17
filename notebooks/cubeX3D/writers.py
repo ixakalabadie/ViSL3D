@@ -317,12 +317,28 @@ class WriteX3D:
         try:
             ramin1, ramax1 = (self.cube.coords[0]-np.mean(self.cube.coords[0])) \
                     * np.cos(self.cube.coords[1,0]*u.Unit(self.cube.units[2]).to('rad')) \
-                    * u.Unit(self.cube.units[1]) #.to('arcsec')
+                    * u.Unit(self.cube.units[1])
             decmin1, decmax1 = (self.cube.coords[1]-np.mean(self.cube.coords[1])) \
-                    * u.Unit(self.cube.units[2]) #.to('arcsec')
+                    * u.Unit(self.cube.units[2])
             vmin1, vmax1 = (self.cube.coords[2]-np.mean(self.cube.coords[2])) \
-                    * u.Unit(self.cube.units[3])# .to('km/s')
-        except:
+                    * u.Unit(self.cube.units[3])
+            
+            if ramin1.unit.is_equivalent(u.arcsec) and ramax1 < 1*u.deg:
+                ramin1 = ramin1.to('arcsec')
+                ramax1 = ramax1.to('arcsec')
+            if decmin1.unit.is_equivalent(u.arcsec) and decmax1 < 1*u.deg:
+                decmin1 = decmin1.to('arcsec')
+                decmax1 = decmax1.to('arcsec')
+            if vmin1.unit.is_equivalent(u.km/u.s):
+                vmin1 = vmin1.to('km/s')
+                vmax1 = vmax1.to('km/s')
+            elif vmin1.unit.is_equivalent('m'):
+                vmin1 = vmin1.to(u.Angstrom)
+                vmax1 = vmax1.to(u.Angstrom)
+            elif vmin1.unit.is_equivalent('Hz'):
+                vmin1 = vmin1.to(u.GHz)
+                vmax1 = vmax1.to(u.GHz)
+        except Exception as ex:
             ramin1, ramax1 = (self.cube.coords[0]-np.mean(self.cube.coords[0]))
             decmin1, decmax1 = (self.cube.coords[1]-np.mean(self.cube.coords[1]))
             vmin1, vmax1 = (self.cube.coords[2]-np.mean(self.cube.coords[2]))
@@ -331,6 +347,15 @@ class WriteX3D:
             ramin2, ramax2 = (self.cube.coords[0]) * u.Unit(self.cube.units[1])
             decmin2, decmax2 = (self.cube.coords[1]) * u.Unit(self.cube.units[2])
             vmin2, vmax2 = (self.cube.coords[2]) * u.Unit(self.cube.units[3])
+            if vmin2.unit.is_equivalent(u.km/u.s):
+                vmin2 = vmin2.to('km/s')
+                vmax2 = vmax2.to('km/s')
+            elif vmin2.unit.is_equivalent('m'):
+                vmin2 = vmin2.to(u.Angstrom)
+                vmax2 = vmax2.to(u.Angstrom)
+            elif vmin2.unit.is_equivalent('Hz'):
+                vmin2 = vmin2.to(u.GHz)
+                vmax2 = vmax2.to(u.GHz)
         except:
             ramin2, ramax2 = self.cube.coords[0]
             decmin2, decmax2 = self.cube.coords[1]
@@ -343,14 +368,14 @@ class WriteX3D:
 
         #Names for the axes tick labels
         axticknames1 = np.array([f'{ramax1:.2f}',f'{ramin1:.2f}',f'{decmax1:.2f}',
-                       f'{decmin1:.2f}',f'{vmin1:.0f}',f'{vmax1:.0f}',
-                       f'{decmax1:.2f}',f'{decmin1:.2f}',f'{vmin1:.0f}',
-                       f'{vmax1:.0f}',f'{ramax1:.2f}',f'{ramin1:.2f}'])
+                       f'{decmin1:.2f}',f'{vmin1:.2f}',f'{vmax1:.2f}',
+                       f'{decmax1:.2f}',f'{decmin1:.2f}',f'{vmin1:.2f}',
+                       f'{vmax1:.2f}',f'{ramax1:.2f}',f'{ramin1:.2f}'])
 
         axticknames2 = np.array([f'{ramax2:.3f}', f'{ramin2:.3f}', f'{decmax2:.3f}',
-                       f'{decmin2:.3f}', f'{vmin2:.0f}', f'{vmax2:.0f}',
-                       f'{decmax2:.3f}', f'{decmin2:.3f}', f'{vmin2:.2f}',
-                       f'{vmax2:.0f}', f'{ramax2:.3f}', f'{ramin2:.3f}'])
+                       f'{decmin2:.3f}', f'{vmin2:.3f}', f'{vmax2:.3f}',
+                       f'{decmax2:.3f}', f'{decmin2:.3f}', f'{vmin2:.3f}',
+                       f'{vmax2:.3f}', f'{ramax2:.3f}', f'{ramin2:.3f}'])
 
         col = '0 0 0'
 
