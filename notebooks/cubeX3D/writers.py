@@ -314,17 +314,27 @@ class WriteX3D:
         self.file_x3d.write('\n\t\t<Collision enabled="false">')
         self.file_x3d.write('\n\t\t\t<Transform DEF="TRANS_LABEL">')
 
-        ramin1, ramax1 = (self.cube.coords[0]-np.mean(self.cube.coords[0])) \
+        try:
+            ramin1, ramax1 = (self.cube.coords[0]-np.mean(self.cube.coords[0])) \
                     * np.cos(self.cube.coords[1,0]*u.Unit(self.cube.units[2]).to('rad')) \
                     * u.Unit(self.cube.units[1]) #.to('arcsec')
-        decmin1, decmax1 = (self.cube.coords[1]-np.mean(self.cube.coords[1])) \
+            decmin1, decmax1 = (self.cube.coords[1]-np.mean(self.cube.coords[1])) \
                     * u.Unit(self.cube.units[2]) #.to('arcsec')
-        vmin1, vmax1 = (self.cube.coords[2]-np.mean(self.cube.coords[2])) \
+            vmin1, vmax1 = (self.cube.coords[2]-np.mean(self.cube.coords[2])) \
                     * u.Unit(self.cube.units[3])# .to('km/s')
+        except:
+            ramin1, ramax1 = (self.cube.coords[0]-np.mean(self.cube.coords[0]))
+            decmin1, decmax1 = (self.cube.coords[1]-np.mean(self.cube.coords[1]))
+            vmin1, vmax1 = (self.cube.coords[2]-np.mean(self.cube.coords[2]))
 
-        ramin2, ramax2 = self.cube.coords[0] * u.Unit(self.cube.units[1])
-        decmin2, decmax2 = self.cube.coords[1] * u.Unit(self.cube.units[2])
-        vmin2, vmax2 = self.cube.coords[2] * u.Unit(self.cube.units[3])
+        try:
+            ramin2, ramax2 = (self.cube.coords[0]) * u.Unit(self.cube.units[1])
+            decmin2, decmax2 = (self.cube.coords[1]) * u.Unit(self.cube.units[2])
+            vmin2, vmax2 = (self.cube.coords[2]) * u.Unit(self.cube.units[3])
+        except:
+            ramin2, ramax2 = self.cube.coords[0]
+            decmin2, decmax2 = self.cube.coords[1]
+            vmin2, vmax2 = self.cube.coords[2]
 
         # scale of labels
         labelscale = 20

@@ -127,13 +127,32 @@ def prep_one(cube, header=None, lims=None, unit=None, isolevels=None, colormap='
     cube = np.squeeze(cube)
 
     delta = np.array([header['CDELT1'], header['CDELT2'], header['CDELT3']])
-    cubeunits = np.array([header['BUNIT'],header['CUNIT1'], header['CUNIT2'], header['CUNIT3']])
+    cubeunits = np.array(['','','',''], dtype='<U10')
+    cubemags = np.array(['','','',''], dtype='<U10')
+    for i in range(4):
+        if i == 0:
+            try:
+                cubeunits[i] = header['BUNIT']
+                cubemags[i] = header['BTYPE']
+            except KeyError:
+                print('Warning: BUNIT or BTYPE not in header')
+                continue
+        else:
+            try:
+                cubeunits[i] = header[f'CUNIT{i}']
+                cubemags[i] = header[f'CTYPE{i}']
+            except KeyError:
+                print(f'Warning: CUNIT{i} or CTYPE{i} not in header')
+                continue
+
     if cubeunits[0] == 'JY/BEAM':
         cubeunits[0] = 'Jy/beam'
-    cubemags = np.array([header['BTYPE'],header['CTYPE1'], header['CTYPE2'], header['CTYPE3']])
 
     cube = misc.transpose(cube, delta)
     nx, ny, nz = cube.shape
+
+    if '' in cubeunits and (isinstance(lims, list) and isinstance(lims[0][0], u.quantity.Quantity)):
+        raise KeyError('Limits given with units but units not in file header. Give in pixels instead or update header.')
 
     if lims is None:
         lims = np.array([[0,nx], [0,ny], [0,nz]], dtype=int)
@@ -279,10 +298,30 @@ def prep_mult(cube, spectral_lims, header=None, spatial_lims=None, l_isolevels=N
     cube = np.squeeze(cube)
 
     delta = np.array([header['CDELT1'], header['CDELT2'], header['CDELT3']])
-    cubeunits = np.array([header['BUNIT'],header['CUNIT1'], header['CUNIT2'], header['CUNIT3']])
+    cubeunits = np.array(['','','',''], dtype='<U10')
+    cubemags = np.array(['','','',''], dtype='<U10')
+    for i in range(4):
+        if i == 0:
+            try:
+                cubeunits[i] = header['BUNIT']
+                cubemags[i] = header['BTYPE']
+            except KeyError:
+                print('Warning: BUNIT or BTYPE not in header')
+                continue
+        else:
+            try:
+                cubeunits[i] = header[f'CUNIT{i}']
+                cubemags[i] = header[f'CTYPE{i}']
+            except KeyError:
+                print(f'Warning: CUNIT{i} or CTYPE{i} not in header')
+                continue
     if cubeunits[0] == 'JY/BEAM':
         cubeunits[0] = 'Jy/beam'
-    cubemags = np.array([header['BTYPE'],header['CTYPE1'], header['CTYPE2'], header['CTYPE3']])
+    
+    if '' in cubeunits and (spatial_lims is not None and isinstance(spatial_lims[0][0][0], u.quantity.Quantity)):
+        raise KeyError('Spatial limits given with units but units not in file header. Give in pixels instead or update header.')
+    if '' in cubeunits and isinstance(spectral_lims[0][0], u.quantity.Quantity):
+        raise KeyError('Spectral limits given with units but units not in file header. Give in pixels instead or update header.')
 
     cube = misc.transpose(cube, delta)
     nx, ny, nz = cube.shape
@@ -491,10 +530,32 @@ def prep_overlay(cube, header=None, spectral_lims=None, lines=None, spatial_lims
     cube = np.squeeze(cube)
 
     delta = np.array([header['CDELT1'], header['CDELT2'], header['CDELT3']])
-    cubeunits = np.array([header['BUNIT'],header['CUNIT1'], header['CUNIT2'], header['CUNIT3']])
+    cubeunits = np.array(['','','',''], dtype='<U10')
+    cubemags = np.array(['','','',''], dtype='<U10')
+    for i in range(4):
+        if i == 0:
+            try:
+                cubeunits[i] = header['BUNIT']
+                cubemags[i] = header['BTYPE']
+            except KeyError:
+                print('Warning: BUNIT or BTYPE not in header')
+                continue
+        else:
+            try:
+                cubeunits[i] = header[f'CUNIT{i}']
+                cubemags[i] = header[f'CTYPE{i}']
+            except KeyError:
+                print(f'Warning: CUNIT{i} or CTYPE{i} not in header')
+                continue
     if cubeunits[0] == 'JY/BEAM':
         cubeunits[0] = 'Jy/beam'
-    cubemags = np.array([header['BTYPE'],header['CTYPE1'], header['CTYPE2'], header['CTYPE3']])
+
+    if '' in cubeunits and (spatial_lims is not None and isinstance(spatial_lims[0][0][0], u.quantity.Quantity)):
+        raise KeyError('Spatial limits given with units but units not in file header. Give in pixels instead or update header.')
+    if '' in cubeunits and lines is not None:
+        raise KeyError('Lines given with units but units not in file header. Fix header or give lines with spectral_lims.')
+    if '' in cubeunits and (spectral_lims is not None and isinstance(spectral_lims[0][0], u.quantity.Quantity)):
+        raise KeyError('Spectral limits given with units but units not in file header. Give in pixels instead or update header.')
 
     cube = misc.transpose(cube, delta)
     nx, ny, nz = cube.shape
