@@ -203,7 +203,7 @@ def prep_one(cube, header=None, lims=None, unit=None, isolevels=None, colormap='
     elif unit is None:
         pass
     elif unit is not cubeunits[0]:
-        cube = cube*u.Unit(cubeunits[0]).to(unit).value
+        cube = cube*u.Unit(cubeunits[0]).to(unit)
         cubeunits[0] = unit
 
     if isolevels is None:
@@ -427,7 +427,7 @@ def prep_mult(cube, spectral_lims, header=None, spatial_lims=None, l_isolevels=N
         elif unit is None:
             pass
         elif unit is not cubeunits[0]:
-            l_cubes[i] = l_cubes[i]*u.Unit(cubeunits[0]).to(unit).value
+            l_cubes[i] = l_cubes[i]*u.Unit(cubeunits[0]).to(unit)
 
     del cube
 
@@ -690,7 +690,7 @@ def prep_overlay(cube, header=None, spectral_lims=None, lines=None, spatial_lims
         elif unit is None:
             pass
         elif unit is not cubeunits[0]:
-            l_cubes[i] = l_cubes[i]*u.Unit(cubeunits[0]).to(unit).value
+            l_cubes[i] = l_cubes[i]*u.Unit(cubeunits[0]).to(unit)
 
     del cube
 
