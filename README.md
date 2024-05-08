@@ -6,7 +6,10 @@ Ixaka Labadie García<br/>
 
 ## Prerequisites
 
-1. Install a local HTTP Server. Visualisations produced by **cubeX3D** must be opened through a local server (for now) in order to be displayed. We reccomend using [Apache](https://httpd.apache.org/), which is compatible with most OS. 
+1. Install a local HTTP Server. Visualisations produced by **cubeX3D** must be opened through a local server (for now) in order to be displayed. There are a few options:
+    - [Apache](https://httpd.apache.org/) is a popular HTTP server that can be installed in most operating systems.
+    - [Python](https://www.python.org/) has a built-in HTTP server that can be used by running `python -m http.server` in the directory where the HTML and X3D files are located.
+    - [VS Code](https://code.visualstudio.com/) has a built-in HTTP server that can be used by installing the [Live Preview](https://marketplace.visualstudio.com/items?itemName=ms-vscode.live-server) extension.
 
 2. Copy the [x3dom](https://github.com/ixakalabadie/cube_x3d/tree/master/x3dom) folder into the Apache DocumentRoot directory. By default, it is `/var/www/html` in Linux, `C:\Apache24\htdocs` in Windows and `/usr/local/var/www` (or similar) in Mac. The DocumentRoot can be found and modified in the `httpd.config` file.
 

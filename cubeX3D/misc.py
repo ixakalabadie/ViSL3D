@@ -120,12 +120,17 @@ def get_galaxies(galaxies, cubecoords, cubeunits, obj, delta, trans):
             if result['DEC'].unit == 'degrees':
                 result['DEC'].unit = u.deg
             galra = float(result['RA'])*result['RA'].unit
+            if galra > 180 * u.deg:
+                galra = galra - 360*u.deg
             galdec = float(result['DEC'])*result['DEC'].unit
             galv = float(result['Velocity'])*result['Velocity'].unit
             galra = (galra - np.mean(cubecoords[0])*u.Unit(cubeunits[1])) \
                 * np.cos(cubecoords[1][0]*u.Unit(cubeunits[2]).to('rad'))
             galdec = galdec - np.mean(cubecoords[1])*u.Unit(cubeunits[2])
             galv = galv - np.mean(cubecoords[2])*u.Unit(cubeunits[3])
+            galra = galra.to(cubeunits[1])
+            galdec = galdec.to(cubeunits[2])
+            galv = galv.to(cubeunits[3])
             galra = galra/np.abs(delta[0])*trans[0]
             galdec = galdec/np.abs(delta[1])*trans[1]
             galv = galv/np.abs(delta[2])*trans[2]
@@ -293,7 +298,7 @@ def preview2d(cube, v1=None, v2=None, norm='asinh', figsize=(10,8)):
     # ax[1, 1].grid(which='major')
     pass
 
-def get_imcol(position, survey, verts, unit='deg', cmap='Greys', **kwargs):
+def get_imcol(position, survey, cmap='Greys', **kwargs):
     """
     Downloads an image from astroquery and returns the colors of the pixels using
     a certain colormap, in hexadecimal format, as required by 'write_x3d().make_image2d'.
@@ -326,25 +331,7 @@ def get_imcol(position, survey, verts, unit='deg', cmap='Greys', **kwargs):
     """
 
     img = SkyView.get_images(position=position, survey=survey, **kwargs)[0]
-    imw = wcs.WCS(img[0].header)
     img = img[0].data
-
-    try:
-        verts = verts.to('deg')
-    except AttributeError:
-        verts = verts * u.Unit(unit)
-
-    ll_ra,ll_dec = imw.world_to_pixel(SkyCoord(verts[0],verts[2]))
-    lr_ra,_ = imw.world_to_pixel(SkyCoord(verts[1],verts[2]))
-    _,ul_dec = imw.world_to_pixel(SkyCoord(verts[0],verts[3]))
-    if ll_ra < 0 or ll_dec < 0 or lr_ra < 0 or ul_dec < 0:
-        print('ERROR: The image is smaller than the cube. Increase parameter "pixels"')
-        print("Pixel indices for [ra1, dec1, ra2, dec2] = " \
-              +str([ll_ra, ll_dec, lr_ra, ul_dec])+ \
-              ". Set 'pixels' parameter higher than the difference between 1 and 2.")
-        raise ValueError
-
-    img = img[int(ll_dec):int(ul_dec), int(lr_ra):int(ll_ra)] #dec first, ra second!!
     img = img-np.min(img)
     img = (img)/np.max(img)
 

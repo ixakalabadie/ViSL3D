@@ -7,6 +7,7 @@ Created on Fri Mar 22 16:05:52 2024
 """
 from astropy.io import fits
 from scipy.stats import norm
+from astropy.coordinates import SkyCoord
 
 from . import misc, writers
 from . import np
@@ -122,34 +123,40 @@ def prep_one(cube, header=None, lims=None, unit=None, isolevels=None, colormap='
     if len(cube.shape) < 3:
         raise ValueError('Not enough axes')
     if len(cube.shape) >= 4:
-        print('Warning: Cube with polarization axis. Using first one.')
+        print('Warning: Cube with polarization axis. Using first.')
         cube = cube[0]
     cube = np.squeeze(cube)
 
     delta = np.array([header['CDELT1'], header['CDELT2'], header['CDELT3']])
     cubeunits = np.array(['','','',''], dtype='<U10')
-    cubemags = np.array(['','','',''], dtype='<U10')
+    cubemags = np.array(['unknown','unknown','unknown','unknown'], dtype='<U10')
     for i in range(4):
         if i == 0:
             try:
-                cubeunits[i] = header['BUNIT']
                 cubemags[i] = header['BTYPE']
+                cubeunits[i] = header['BUNIT']
             except KeyError:
                 print('Warning: BUNIT or BTYPE not in header')
                 continue
         else:
             try:
-                cubeunits[i] = header[f'CUNIT{i}']
                 cubemags[i] = header[f'CTYPE{i}']
+                cubeunits[i] = header[f'CUNIT{i}']
             except KeyError:
                 print(f'Warning: CUNIT{i} or CTYPE{i} not in header')
+                if i < 3:
+                    cubeunits[i] = 'deg'
+                    print(f'Warning: Using "deg" as unit for axis {i}')
+                elif i == 3:
+                    if header[f'CTYPE{i}'] == 'VOPT-F2W':
+                        cubeunits[i] = 'm/s'
+                        print(f'Warning: Using "m/s" as unit for axis {i}')
                 continue
 
     if cubeunits[0] == 'JY/BEAM':
         cubeunits[0] = 'Jy/beam'
 
-    cube = misc.transpose(cube, delta)
-    nx, ny, nz = cube.shape
+    nz, ny, nx = cube.shape
 
     if '' in cubeunits and (isinstance(lims, list) and isinstance(lims[0][0], u.quantity.Quantity)):
         raise KeyError('Limits given with units but units not in file header. Give in pixels instead or update header.')
@@ -184,12 +191,13 @@ def prep_one(cube, header=None, lims=None, unit=None, isolevels=None, colormap='
     for i in range(3):
         if lims[i][0] < 0:
             raise ValueError('lims out of range')
-        if lims[i][1] > cube.shape[i]:
+        if lims[i][1] > cube.shape[2-i]:
             raise ValueError('lims out of range')
 
     cubecoords = np.sort(cubecoords)
     lims = np.sort(lims)
-    cube = cube[lims[0][0]:lims[0][1],lims[1][0]:lims[1][1],lims[2][0]:lims[2][1]]
+    cube = cube[lims[2][0]:lims[2][1],lims[1][0]:lims[1][1],lims[0][0]:lims[0][1]]
+    cube = misc.transpose(cube, delta)
     cube[np.isnan(cube)] = 0
 
     _, rms = norm.fit(np.hstack([cube[0 > cube].flatten(),
@@ -221,13 +229,12 @@ def prep_one(cube, header=None, lims=None, unit=None, isolevels=None, colormap='
     elif image2d == 'blank':
         image2d = None, None
     else:
-        pixels = 5000
-        verts = ((cubecoords[0][0] * u.Unit(cubeunits[1])).to('deg'),
-                 (cubecoords[0][1] * u.Unit(cubeunits[1])).to('deg'),
-                 (cubecoords[1][0] * u.Unit(cubeunits[2])).to('deg'),
-                 (cubecoords[1][1] * u.Unit(cubeunits[2])).to('deg'))
-        imcol, img_shape, _ = misc.get_imcol(position=header['OBJECT'], survey=image2d, verts=verts,
-                unit='deg', pixels=f'{pixels}', coordinates='J2000') # , grid=True, gridlabels=True
+        pixels = 1000
+        co = SkyCoord(ra=np.mean(cubecoords[0])*u.Unit(cubeunits[1]), dec=np.mean(cubecoords[1])*u.Unit(cubeunits[2]))
+        co = co.to_string('hmsdms')
+        imcol, img_shape, _ = misc.get_imcol(position=co, survey=image2d,pixels=f'{pixels}',
+                coordinates='J2000', width=np.diff(cubecoords[0])[0]*u.Unit(cubeunits[1]),
+                height=np.diff(cubecoords[1])[0]*u.Unit(cubeunits[2]))
         image2d = imcol, img_shape
         
     if galaxies is not None:
@@ -293,28 +300,36 @@ def prep_mult(cube, spectral_lims, header=None, spatial_lims=None, l_isolevels=N
     if len(cube.shape) < 3:
         raise ValueError('Not enough axes')
     if len(cube.shape) >= 4:
-        print('Warning: Cube with polarization axis. Using first one.')
+        print('Warning: Cube with polarization axis. Using first.')
         cube = cube[0]
     cube = np.squeeze(cube)
 
     delta = np.array([header['CDELT1'], header['CDELT2'], header['CDELT3']])
     cubeunits = np.array(['','','',''], dtype='<U10')
-    cubemags = np.array(['','','',''], dtype='<U10')
+    cubemags = np.array(['unknown','unknown','unknown','unknown'], dtype='<U10')
     for i in range(4):
         if i == 0:
             try:
-                cubeunits[i] = header['BUNIT']
                 cubemags[i] = header['BTYPE']
+                cubeunits[i] = header['BUNIT']
             except KeyError:
                 print('Warning: BUNIT or BTYPE not in header')
                 continue
         else:
             try:
-                cubeunits[i] = header[f'CUNIT{i}']
                 cubemags[i] = header[f'CTYPE{i}']
+                cubeunits[i] = header[f'CUNIT{i}']
             except KeyError:
                 print(f'Warning: CUNIT{i} or CTYPE{i} not in header')
+                if i < 3:
+                    cubeunits[i] = 'deg'
+                    print(f'Warning: Using "deg" as unit for axis {i}')
+                elif i == 3:
+                    if header[f'CTYPE{i}'] == 'VOPT-F2W':
+                        cubeunits[i] = 'm/s'
+                        print(f'Warning: Using "m/s" as unit for axis {i}')
                 continue
+
     if cubeunits[0] == 'JY/BEAM':
         cubeunits[0] = 'Jy/beam'
     
@@ -323,8 +338,7 @@ def prep_mult(cube, spectral_lims, header=None, spatial_lims=None, l_isolevels=N
     if '' in cubeunits and isinstance(spectral_lims[0][0], u.quantity.Quantity):
         raise KeyError('Spectral limits given with units but units not in file header. Give in pixels instead or update header.')
 
-    cube = misc.transpose(cube, delta)
-    nx, ny, nz = cube.shape
+    nz, ny, nx = cube.shape
 
     lims = np.array([[0,nx], [0,ny], [0,nz]], dtype=int)
     cubecoords = np.array([
@@ -397,11 +411,11 @@ def prep_mult(cube, spectral_lims, header=None, spatial_lims=None, l_isolevels=N
     if np.min(lims[0]) < 0:
         raise ValueError('Spatial lims out of range')
     for i in range(len(lims[0])):
-        if lims[0][i][0][1] > cube.shape[0] or lims[0][i][1][1] > cube.shape[1]:
+        if lims[0][i][0][1] > cube.shape[2] or lims[0][i][1][1] > cube.shape[1]:
             raise ValueError('Spatial lims out of range')
     if np.min(lims[1]) < 0:
         raise ValueError('Spectral lims out of range')
-    if np.max(lims[1]) > cube.shape[2]:
+    if np.max(lims[1]) > cube.shape[0]:
         raise ValueError('Spectral lims out of range')
 
     l_cubes = []
@@ -411,11 +425,12 @@ def prep_mult(cube, spectral_lims, header=None, spatial_lims=None, l_isolevels=N
             j = 0
         else:
             j = i
-        l_cubes[i][lims[0][j][0][0]:lims[0][j][0][1], lims[0][j][1][0]:lims[0][j][1][1],
-                   lims[1][i][0]:lims[1][i][1]] = \
-            cube[lims[0][j][0][0]:lims[0][j][0][1], lims[0][j][1][0]:lims[0][j][1][1],
-                 lims[1][i][0]:lims[1][i][1]]
+        l_cubes[i][lims[1][i][0]:lims[1][i][1], lims[0][j][1][0]:lims[0][j][1][1],
+                   lims[0][j][0][0]:lims[0][j][0][1]] = \
+            cube[lims[1][i][0]:lims[1][i][1], lims[0][j][1][0]:lims[0][j][1][1],
+                 lims[0][j][0][0]:lims[0][j][0][1]]
         l_cubes[i][np.isnan(l_cubes[i])] = 0
+        l_cubes[i] = misc.transpose(l_cubes[i], delta)
 
     _, rms = norm.fit(np.hstack([cube[0 > cube].flatten(),
                             -cube[0 > cube].flatten()]))
@@ -459,11 +474,13 @@ def prep_mult(cube, spectral_lims, header=None, spatial_lims=None, l_isolevels=N
     elif image2d == 'blank':
         image2d = None, None
     else:
-        pixels = 5000
-        verts = ((coords[0][0][0][0] * cubeunits[1]).deg, (coords[0][0][0][1] * cubeunits[1]).deg,
-                 (coords[0][0][1][0] * cubeunits[2]).deg, (coords[0][0][1][1] * cubeunits[2]).deg)
-        imcol, img_shape, _ = misc.get_imcol(position=header['OBJECT'], survey=image2d, verts=verts,
-                unit='deg', pixels=f'{pixels}', coordinates='J2000',grid=True, gridlabels=True)
+        pixels = 1000
+        co = SkyCoord(ra=np.mean(cubecoords[0])*u.Unit(cubeunits[1]),
+                      dec=np.mean(cubecoords[1])*u.Unit(cubeunits[2]))
+        co = co.to_string('hmsdms')
+        imcol, img_shape, _ = misc.get_imcol(position=co, survey=image2d,pixels=f'{pixels}',
+                coordinates='J2000', width=np.diff(cubecoords[0])[0]*u.Unit(cubeunits[1]),
+                height=np.diff(cubecoords[1])[0]*u.Unit(cubeunits[2]))
         image2d = imcol, img_shape
 
     return Cube(l_cubes=l_cubes, name=header['OBJECT'], coords=cubecoords, units=cubeunits,
@@ -525,28 +542,36 @@ def prep_overlay(cube, header=None, spectral_lims=None, lines=None, spatial_lims
     if len(cube.shape) < 3:
         raise ValueError('Not enough axes')
     if len(cube.shape) >= 4:
-        print('Warning: Cube with polarization axis. Using first one.')
+        print('Warning: Cube with polarization axis. Using first.')
         cube = cube[0]
     cube = np.squeeze(cube)
 
     delta = np.array([header['CDELT1'], header['CDELT2'], header['CDELT3']])
     cubeunits = np.array(['','','',''], dtype='<U10')
-    cubemags = np.array(['','','',''], dtype='<U10')
+    cubemags = np.array(['unknown','unknown','unknown','unknown'], dtype='<U10')
     for i in range(4):
         if i == 0:
             try:
-                cubeunits[i] = header['BUNIT']
                 cubemags[i] = header['BTYPE']
+                cubeunits[i] = header['BUNIT']
             except KeyError:
                 print('Warning: BUNIT or BTYPE not in header')
                 continue
         else:
             try:
-                cubeunits[i] = header[f'CUNIT{i}']
                 cubemags[i] = header[f'CTYPE{i}']
+                cubeunits[i] = header[f'CUNIT{i}']
             except KeyError:
                 print(f'Warning: CUNIT{i} or CTYPE{i} not in header')
+                if i < 3:
+                    cubeunits[i] = 'deg'
+                    print(f'Warning: Using "deg" as unit for axis {i}')
+                elif i == 3:
+                    if header[f'CTYPE{i}'] == 'VOPT-F2W':
+                        cubeunits[i] = 'm/s'
+                        print(f'Warning: Using "m/s" as unit for axis {i}')
                 continue
+
     if cubeunits[0] == 'JY/BEAM':
         cubeunits[0] = 'Jy/beam'
 
@@ -557,8 +582,7 @@ def prep_overlay(cube, header=None, spectral_lims=None, lines=None, spatial_lims
     if '' in cubeunits and (spectral_lims is not None and isinstance(spectral_lims[0][0], u.quantity.Quantity)):
         raise KeyError('Spectral limits given with units but units not in file header. Give in pixels instead or update header.')
 
-    cube = misc.transpose(cube, delta)
-    nx, ny, nz = cube.shape
+    nz, ny, nx = cube.shape
 
     lims = np.array([[0,nx], [0,ny], [0,nz]], dtype=int)
     cubecoords = np.array([
@@ -656,11 +680,11 @@ def prep_overlay(cube, header=None, spectral_lims=None, lines=None, spatial_lims
     if np.min(lims[0]) < 0:
         raise ValueError('Spatial lims out of range')
     for i in range(len(lims[0])):
-        if lims[0][i][0][1] > cube.shape[0] or lims[0][i][1][1] > cube.shape[1]:
+        if lims[0][i][0][1] > cube.shape[2] or lims[0][i][1][1] > cube.shape[1]:
             raise ValueError('Spatial lims out of range')
     if np.min(lims[1]) < 0:
         raise ValueError('Spectral lims out of range')
-    if np.max(lims[1]) > cube.shape[2]:
+    if np.max(lims[1]) > cube.shape[0]:
         raise ValueError('Spectral lims out of range')
 
     shape = np.array([
@@ -676,9 +700,11 @@ def prep_overlay(cube, header=None, spectral_lims=None, lines=None, spatial_lims
         else:
             j = i
         l_cubes[i] = misc.insert_3darray(l_cubes[i],
-                    cube[lims[0][j][0][0]:lims[0][j][0][1],lims[0][j][1][0]:lims[0][j][1][1],
-                         lims[1][i][0]:lims[1][i][1]])
+                    cube[lims[1][i][0]:lims[1][i][1],lims[0][j][1][0]:lims[0][j][1][1],
+                         lims[0][j][0][0]:lims[0][j][0][1]])
         l_cubes[i][np.isnan(l_cubes[i])] = 0
+        l_cubes[i] = misc.transpose(l_cubes[i], delta)
+        
 
     _, rms = norm.fit(np.hstack([cube[0 > cube].flatten(),
                             -cube[0 > cube].flatten()]))
@@ -722,11 +748,12 @@ def prep_overlay(cube, header=None, spectral_lims=None, lines=None, spatial_lims
     elif image2d == 'blank':
         image2d = None, None
     else:
-        pixels = 5000
-        verts = ((coords[0][0][0][0] * cubeunits[1]).deg, (coords[0][0][0][1] * cubeunits[1]).deg,
-                 (coords[0][0][1][0] * cubeunits[2]).deg, (coords[0][0][1][1] * cubeunits[2]).deg)
-        imcol, img_shape, _ = misc.get_imcol(position=header['OBJECT'], survey=image2d, verts=verts,
-                unit='deg', pixels=f'{pixels}', coordinates='J2000',grid=True, gridlabels=True)
+        pixels = 1000
+        co = SkyCoord(ra=np.mean(cubecoords[0])*u.Unit(cubeunits[1]), dec=np.mean(cubecoords[1])*u.Unit(cubeunits[2]))
+        co = co.to_string('hmsdms')
+        imcol, img_shape, _ = misc.get_imcol(position=co, survey=image2d,pixels=f'{pixels}',
+                coordinates='J2000', width=np.diff(cubecoords[0])[0]*u.Unit(cubeunits[1]),
+                height=np.diff(cubecoords[1])[0]*u.Unit(cubeunits[2]))
         image2d = imcol, img_shape
 
     return Cube(l_cubes=l_cubes, name=header['OBJECT'], coords=cubecoords, units=cubeunits,
@@ -805,3 +832,5 @@ def createHTML(cube, filename, description=None, pagetitle=None):
         file.func_background()
         file.func_colormaps()
         file.close_html()
+        print('If the path leads to a local server, the visualisation can be accessed in a ' +\
+              f'web browser with "localhost/path/from/DocumentRoot/{filename.split("/")[-1]}"')

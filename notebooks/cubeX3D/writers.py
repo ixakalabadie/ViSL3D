@@ -173,30 +173,30 @@ class WriteX3D:
         crosslen = 2000/20
         #create galaxy crosses and spheres
         for i, gal in enumerate(gals.keys()):
-            #galaxy crosses
-            self.file_x3d.write(misc.tabs(3)+f'<Transform DEF="{gal}_cross_tra" ' \
-                                +'translation="0 0 0" rotation="0 0 1 -0" scale="1 1 1">\n')
-            self.file_x3d.write(misc.tabs(4)+'<Shape ispickable="false">\n')
-            self.file_x3d.write(misc.tabs(5)+'<Appearance>\n')
-            col = '0 0 0'
-            self.file_x3d.write(misc.tabs(6)+f'<Material DEF="{gal}_cross" emissiveColor="{col}" ' \
-                                + 'diffuseColor="0 0 0"/>\n')
-            self.file_x3d.write(misc.tabs(5)+'</Appearance>\n')
-            #cross indices
-            self.file_x3d.write(misc.tabs(5)+'<IndexedLineSet colorPerVertex="true" coordIndex="\n' \
-                        +misc.tabs(6)+'0 1 -1\n'+misc.tabs(6)+'2 3 -1\n'+misc.tabs(6)+'4 5 -1\n'+misc.tabs(6)+'">\n')
-            self.file_x3d.write(f'{misc.tabs(5)}<Coordinate DEF="CrossCoords{i}" point="\n{misc.tabs(6)}')
             vec = gals[gal]['coord']
-            crosscoords = np.array([[vec[0]-crosslen,vec[1],vec[2]],
-                              [vec[0]+crosslen,vec[1],vec[2]],
-                              [vec[0],vec[1]-crosslen, vec[2]],
-                              [vec[0],vec[1]+crosslen, vec[2]],
-                              [vec[0],vec[1],vec[2]-crosslen],
-                              [vec[0],vec[1],vec[2]+crosslen]])
-            #cross coordinates
-            np.savetxt(self.file_x3d, crosscoords, fmt='%.3f', newline='\n\t\t\t\t\t\t')
-            self.file_x3d.write(misc.tabs(6)+'"/>\n')
-            self.file_x3d.write(misc.tabs(3)+'</IndexedLineSet>\n\t\t\t\t</Shape>\n\t\t\t</Transform>\n')
+            # #galaxy crosses
+            # self.file_x3d.write(misc.tabs(3)+f'<Transform DEF="{gal}_cross_tra" ' \
+            #                     +'translation="0 0 0" rotation="0 0 1 -0" scale="1 1 1">\n')
+            # self.file_x3d.write(misc.tabs(4)+'<Shape ispickable="false">\n')
+            # self.file_x3d.write(misc.tabs(5)+'<Appearance>\n')
+            # col = '0 0 0'
+            # self.file_x3d.write(misc.tabs(6)+f'<Material DEF="{gal}_cross" emissiveColor="{col}" ' \
+            #                     + 'diffuseColor="0 0 0"/>\n')
+            # self.file_x3d.write(misc.tabs(5)+'</Appearance>\n')
+            # #cross indices
+            # self.file_x3d.write(misc.tabs(5)+'<IndexedLineSet colorPerVertex="true" coordIndex="\n' \
+            #             +misc.tabs(6)+'0 1 -1\n'+misc.tabs(6)+'2 3 -1\n'+misc.tabs(6)+'4 5 -1\n'+misc.tabs(6)+'">\n')
+            # self.file_x3d.write(f'{misc.tabs(5)}<Coordinate DEF="CrossCoords{i}" point="\n{misc.tabs(6)}')
+            # crosscoords = np.array([[vec[0]-crosslen,vec[1],vec[2]],
+            #                   [vec[0]+crosslen,vec[1],vec[2]],
+            #                   [vec[0],vec[1]-crosslen, vec[2]],
+            #                   [vec[0],vec[1]+crosslen, vec[2]],
+            #                   [vec[0],vec[1],vec[2]-crosslen],
+            #                   [vec[0],vec[1],vec[2]+crosslen]])
+            # #cross coordinates
+            # np.savetxt(self.file_x3d, crosscoords, fmt='%.3f', newline='\n\t\t\t\t\t\t')
+            # self.file_x3d.write(misc.tabs(6)+'"/>\n')
+            # self.file_x3d.write(misc.tabs(3)+'</IndexedLineSet>\n\t\t\t\t</Shape>\n\t\t\t</Transform>\n')
             #galaxy spheres (ADD SCALE, ROTATION, ETC.??)
             self.file_x3d.write(f'{misc.tabs(3)}<Transform DEF="{gal}_sphere_tra" translation="{vec[0]} {vec[1]} {vec[2]}">\n')
             self.file_x3d.write(f'{misc.tabs(4)}<Shape ispickable="false">\n')
@@ -490,7 +490,7 @@ class WriteHTML:
         self.file_html.write(misc.tabs(2)+'<script src="x3dom/js-colormaps.js"></script> <!-- FOR COLORMAPS IN JS-->\n')
         self.file_html.write(misc.tabs(2)+'<script type="text/javascript" src="x3dom/markers.js"></script> <!-- FOR MARKERS IN JS-->\n')
         if self.cube.interface == 'minimal':
-            self.file_html.write("\n\t\t<style>\n"+misc.tabs(3)+"x3d\n"+misc.tabs(4)+"{\n"+misc.tabs(5)+"border:2px solid darkorange;\n"+misc.tabs(5)+"width:100%;\n"+misc.tabs(5)+"height: 100%;\n"+misc.tabs(3)+"}\n"+misc.tabs(3)+"</style>\n\t</head>\n\t<body>\n")
+            self.file_html.write("\n\t\t<style>\n"+misc.tabs(3)+"x3d\n"+misc.tabs(4)+"{\n"+misc.tabs(5)+"border:2px solid darkorange;\n"+misc.tabs(5)+"width:95vw;\n"+misc.tabs(5)+"height:75vh;\n"+misc.tabs(3)+"}\n"+misc.tabs(3)+"</style>\n\t</head>\n\t<body>\n")
         else:
             self.file_html.write(misc.tabs(2)+f'<title> {self.cube.name} </title>\n')
             self.file_html.write("\n\t\t<style>\n"+misc.tabs(3)+"x3d\n"+misc.tabs(4)+"{\n"+misc.tabs(5)+"border:2px solid darkorange;\n"+misc.tabs(5)+"width:95%;\n"+misc.tabs(5)+"height: 70%;\n"+misc.tabs(3)+"}\n"+misc.tabs(3)+"</style>\n\t</head>\n\t<body>\n")
@@ -573,12 +573,12 @@ class WriteHTML:
         """
         for i,gal in enumerate(self.cube.galaxies):
             if i == 0:
-                self.file_html.write("\t \t <script>\n\t \t function setgals()\n\t \t {\n\t \t if(document.getElementById('cube__%s_cross').getAttribute('transparency')!= '0'){\n"%gal)
-            self.file_html.write("\t \t document.getElementById('cube__%s_cross').setAttribute('transparency', '0');\n"%gal)
+                self.file_html.write("\t \t <script>\n\t \t function setgals()\n\t \t {\n\t \t if(document.getElementById('cube__%s').getAttribute('transparency')!= '0'){\n"%gal)
+            # self.file_html.write("\t \t document.getElementById('cube__%s_cross').setAttribute('transparency', '0');\n"%gal)
             self.file_html.write("\t \t document.getElementById('cube__%s').setAttribute('transparency', '0');\n"%gal)
         self.file_html.write("\t \t }\n\t \t else {\n")
         for i,gal in enumerate(self.cube.galaxies):
-            self.file_html.write("\t \t document.getElementById('cube__%s_cross').setAttribute('transparency', '1');\n"%gal)
+            # self.file_html.write("\t \t document.getElementById('cube__%s_cross').setAttribute('transparency', '1');\n"%gal)
             self.file_html.write("\t \t document.getElementById('cube__%s').setAttribute('transparency', '1');\n"%gal)
         self.file_html.write("\t\t }\n\t\t }\n\t\t </script>\n")
 
@@ -911,6 +911,7 @@ class WriteHTML:
         self.file_html.write(misc.tabs(3)+'<button id="anim" onclick="animation()">Animation</button>')
         
         # Background
+        self.file_html.write('\n'+misc.tabs(2)+'<br><br>\n')
         self.file_html.write(misc.tabs(3)+'&nbsp <label for="back-choice"><b>Background:</b> </label>\n')
         self.file_html.write(misc.tabs(3)+'<input oninput="change_background()" id="back-choice" type="color" value="#999999">\n')
 
@@ -1173,7 +1174,7 @@ class WriteHTML:
         self.file_html.write(misc.tabs(3)+"const sca = inpscasv.value;\n")
         if self.cube.image2d is not None:
             self.file_html.write(misc.tabs(3)+"const move = inpmovesv.value;\n")
-            self.file_html.write(misc.tabs(4)+f"document.getElementById('cube__image2d').setAttribute('translation', '0 0 '+(sca*move-1)*{self.cube.coords[2][1]});\n")
+            self.file_html.write(misc.tabs(4)+f"document.getElementById('cube__image2d').setAttribute('translation', '0 0 '+(sca*move-1)*1000);\n")
         #scale layers
         nlayers = [len(l) for l in self.cube.l_isolevels]
         numcubes = len(nlayers)
@@ -1189,7 +1190,7 @@ class WriteHTML:
                 v = self.cube.galaxies[gal]['coord'][2]
                 a = self.cube.galaxies[gal]['coord'][0]
                 b = self.cube.galaxies[gal]['coord'][1]
-                self.file_html.write(misc.tabs(3)+"document.getElementById('cube__%s_cross_tra').setAttribute('translation', '0 0 '+(sca-1)*%s);\n"%(gal,v))
+                # self.file_html.write(misc.tabs(3)+"document.getElementById('cube__%s_cross_tra').setAttribute('translation', '0 0 '+(sca-1)*%s);\n"%(gal,v))
                 self.file_html.write(misc.tabs(3)+"document.getElementById('cube__%s_sphere_tra').setAttribute('translation', '%s %s '+sca*%s);\n"%(gal,a,b,v))
                 self.file_html.write(misc.tabs(3)+"document.getElementById('cube__glt%s').setAttribute('translation', '%s %s '+sca*%s);\n"%(n,a,b,v))
         #scale grids
