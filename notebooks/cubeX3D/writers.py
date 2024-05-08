@@ -991,7 +991,11 @@ class WriteHTML:
             #self.file_html.write('\t\t <br><br>\n')
             self.file_html.write(misc.tabs(2)+'&nbsp <label for="move2dimg"><b>2D image:</b> </label>\n')
             self.file_html.write(misc.tabs(2)+'<input oninput="move2d()" id="move2dimg" type="range" min="-1" max="1" step="0.0001" value="1"/>\n')
-            self.file_html.write(misc.tabs(2)+'<b>$Z=$</b> <output id="showvalue"></output> %s\n'%self.cube.units[3])
+            if self.cube.units[3] == 'm/s':
+                un = 'km/s'
+            else:
+                un = self.cube.units[3]
+            self.file_html.write(misc.tabs(2)+f'<b>$Z=$</b> <output id="showvalue"></output> {un}\n')
             # display chosen velocity of bar too
 
         # PICKING
