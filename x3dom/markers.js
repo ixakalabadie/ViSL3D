@@ -471,7 +471,7 @@ function createTub(sca, seltub, col, tub_coords, tubelen, means, delt, trans) {
             const rad = document.querySelector('#tubrad'+seltubnum);
             var trans = [(x0+x1)/2, (y0+y1)/2, (z0+z1)/2]
             const diff = [x1-x0, y1-y0, z1-z0]
-            const height = Math.sqrt(diff[0]**2+diff[1]**2+(sca*diff[2])**2)*1.03;
+            const height = Math.sqrt(diff[0]**2+diff[1]**2+(sca*diff[2])**2)*1.015;
             const angle = Math.acos(diff[1]/height);
             cyl_coord.push([trans,diff]);
             const newtra = document.createElement('transform');
@@ -515,7 +515,7 @@ function createTub(sca, seltub, col, tub_coords, tubelen, means, delt, trans) {
             const rad = document.querySelector('#tubrad'+seltubnum);
             var trans = [(x0+x1)/2, (y0+y1)/2, (z0+z1)/2]
             const diff = [x1-x0, y1-y0, z1-z0]
-            const height = Math.sqrt(diff[0]**2+diff[1]**2+(sca*diff[2])**2)*1.03;
+            const height = Math.sqrt(diff[0]**2+diff[1]**2+(sca*diff[2])**2)*1.015;
             const angle = Math.acos(diff[1]/height);
             cyl_coord.push([trans,diff]);
             document.getElementById('tubtra'+seltubnum+'_'+i).setAttribute('rotation', sca*diff[2]+' 0 '+(-diff[0])+' '+angle);

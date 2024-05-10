@@ -156,19 +156,12 @@ class WriteX3D:
         self.file_x3d.write('"/>')
         self.file_x3d.write('\n\t\t\t\t\t</IndexedLineSet>\n\t\t\t\t</Shape>\n\t\t\t</Transform>\n')
 
-    def make_galaxies(self, gals):
+    def make_galaxies(self):
         """
         Creates spheres and labels in the model at the location of galaxies given as input.
-
-        Parameters
-        ----------
-        gals : dictionary
-            Dictionary with galaxies to include in the model. Keys are names of galaxies and it must
-            have two more dictionaries inside with the keys 'coords' and 'col'. 'coords' must have the
-            coordinates of the galaxy (transformed to units of the cube between -1000 and 1000) and 'col' the color of each galaxy as a string. E.g. {'NGC 1234': {'coords': [-560, 790, 134], 'col': '255 0 0'}}.
-            'coord' is calculated with '[RA - mean(cubeRA)]/abs(deltaRA)*2000/nPixRA'. The whole dictionary
-            can be obtained with misc.get_galaxies().
         """        
+        gals = self.cube.galaxies
+
         sphereradius = 2000/45
         crosslen = 2000/20
         #create galaxy crosses and spheres
@@ -205,7 +198,7 @@ class WriteX3D:
             self.file_x3d.write(f'{misc.tabs(6)}<Material DEF="{gal}" ambientIntensity="0" emissiveColor="0 0 0" diffuseColor="{gals[gal]["col"]}" specularColor="0 0 0" shininess="0.0078" transparency="0"/>\n')
             self.file_x3d.write(misc.tabs(5)+'</Appearance>\n\t\t\t\t</Shape>\n\t\t\t</Transform>\n')
             
-    def make_image2d(self, imcol=None, img_shape=None):
+    def make_image2d(self):
         """
         Create a 2D image object in the X3D model.
 
@@ -217,6 +210,7 @@ class WriteX3D:
         img_shape : tuple, optional
             Shape of the 2D image. Use None for white image. Default is None.
         """
+        imcol, img_shape = self.cube.image2d
 
         # coordinates of 2d image
         coords2d = np.array([[1000,-1000,1000],
@@ -297,19 +291,12 @@ class WriteX3D:
         self.file_x3d.write('\n'+misc.tabs(2)+'<Route fromNode="move" fromField ="value_changed" toNode="ROOT" toField="rotation"></Route>')
 
 
-    def make_labels(self, gals=None):
+    def make_labels(self):
         """
         Create the labels of different elements in the figure.
-
-        Parameters
-        ----------
-        gals : dictionary
-            Dictionary with galaxies to include in the model. Keys are names of galaxies and it must
-            have two more dictionaries inside with the keys 'coords' and 'col'. 'coords' must have the
-            coordinates of the galaxy (transformed to units of the cube between -1000 and 1000) and 'col' the color of each galaxy as a string. E.g. {'NGC 1234': {'coords': [-560, 790, 134], 'col': '255 0 0'}}.
-            'coord' is calculated with '[RA - mean(cubeRA)]/abs(deltaRA)*2000/nPixRA'. The whole dictionary
-            can be obtained with misc.get_galaxies().
         """
+        gals = self.cube.galaxies
+
         self.file_x3d.write('\n\t\t<ProximitySensor DEF="PROX_LABEL" size="1.0e+06 1.0e+06 1.0e+06"/>')
         self.file_x3d.write('\n\t\t<Collision enabled="false">')
         self.file_x3d.write('\n\t\t\t<Transform DEF="TRANS_LABEL">')
@@ -448,6 +435,102 @@ class WriteX3D:
 
         self.file_x3d.write('\n\t\t\t</Transform>')
         self.file_x3d.write('\n\t\t</Collision>')
+
+    def make_markers(self, geom, points, shape, delta, trans, color, labels=None):
+        """
+        geom = 'tube', 'Sphere', 'Box', 'Cone', 'Torus', 'Arc2D', 'ArcClose2D', 'Circle2D', 'Disk2D', 'Polyline2D',
+        'Polypoint2D', 'Rectangle2D', 'TriangleSet2D'
+
+        Parameters
+        ----------
+        geom: str
+            Type of geometry to create. Options are 'tube', 'sphere', 'box', 'cone'.
+        points : list
+            List of points to create the markers. Each element of the list is a len 3 array with the coordinates of the marker (RA,DEC,Z).
+            If geom is 'tube', each element of the list is a list of len 3 arrays that define the tubes. Two points define one tube.
+        shape : list
+            List of the shape of the markers.
+            If geom is 'box', each element of the list is a len 3 array with the size of the box (x,y,z).
+            If geom is 'cone', each element of the list is a len 2 array with the radius and height of the cone.
+            Else each element of the list is a float with the radius of the marker.
+        delta : list
+            List with the delta of the cube (header[CDELT]).
+        trans : list
+            Transformation factor to the cube. It is calculated with (2000/nx, 2000/ny, 2000/nz).
+        color : list
+            List with the color of the markers. Each element is a string with RGB values.
+        """
+        delta = np.array(delta)
+        if geom == 'tube':
+            n = 0
+            for tube in points:
+                # transform points to model coordinates
+                tube = (tube - np.mean(self.cube.coords, axis=1))/delta*trans
+                # get mean point between consecutive points
+                pos = np.array([str(np.mean((tube[i],tube[i+1]), axis=0))[1:-1] for i in range(len(tube)-1)])
+                # get distance between consecutive points
+                diff = np.diff(tube, axis=0)
+                heights = np.linalg.norm(diff,axis=1)
+                #get rotation for each tube
+                angles = np.arccos(diff[:,1]/heights)
+
+                # create x3d object
+                for i in range(len(tube)-1):
+                    self.file_x3d.write("\n"+misc.tabs(3)+f'<Transform DEF="pytub{n}tra{i}" translation="{pos[i]}" rotation="{diff[i,2]:.4f} 0 {-diff[i,0]:.4f} {angles[i]:.4f}" scale="1 1 1">\n')
+                    self.file_x3d.write(misc.tabs(4)+'<Shape ispickable="false">\n')
+                    self.file_x3d.write(misc.tabs(5)+f'<Cylinder DEF="py{n}tub{i}" height="{heights[i]*1.015}" radius="{shape[n]}" solid="false"/>\n')
+                    self.file_x3d.write(misc.tabs(5)+'<Appearance>\n')
+                    self.file_x3d.write(misc.tabs(6)+f'<Material DEF="py{n}tubmat{i}" ambientIntensity="0" emissiveColor="0 0 0" diffuseColor="{color[n]}" specularColor="0 0 0" shininess="0.0078" transparency="0"/>\n')
+                    self.file_x3d.write(misc.tabs(5)+'</Appearance>\n')
+                    self.file_x3d.write(misc.tabs(4)+'</Shape>\n')
+                    self.file_x3d.write(misc.tabs(3)+'</Transform>\n')
+
+                n = n + 1
+
+        if geom == 'sphere':
+            n = 0
+            for sphere in points:
+                sphere = (sphere - np.mean(self.cube.coords, axis=1))/delta*trans
+                sphere = str(sphere)[1:-1]
+                self.file_x3d.write("\n"+misc.tabs(3)+f'<Transform DEF="pysph{n}tra" translation="{sphere}" scale="1 1 1">\n')
+                self.file_x3d.write(misc.tabs(4)+'<Shape ispickable="false">\n')
+                self.file_x3d.write(misc.tabs(5)+f'<Sphere DEF="py{n}sph" radius="{shape[n]}" solid="false"/>\n')
+                self.file_x3d.write(misc.tabs(5)+'<Appearance>\n')
+                self.file_x3d.write(misc.tabs(6)+f'<Material DEF="py{n}sphmat" ambientIntensity="0" emissiveColor="0 0 0" diffuseColor="{color[n]}" specularColor="0 0 0" shininess="0.0078" transparency="0"/>\n')
+                self.file_x3d.write(misc.tabs(5)+'</Appearance>\n')
+                self.file_x3d.write(misc.tabs(4)+'</Shape>\n')
+                self.file_x3d.write(misc.tabs(3)+'</Transform>\n')
+                n = n + 1
+        
+        if geom == 'box':
+            n = 0
+            for box in points:
+                box = (box - np.mean(self.cube.coords, axis=1))/delta*trans
+                box = str(box)[1:-1]
+                self.file_x3d.write("\n"+misc.tabs(3)+f'<Transform DEF="pybox{n}tra" translation="{box}" scale="1 1 1">\n')
+                self.file_x3d.write(misc.tabs(4)+'<Shape ispickable="false">\n')
+                self.file_x3d.write(misc.tabs(5)+f'<Box DEF="py{n}box" size="{shape[n][0]*2} {shape[n][1]*2} {shape[n][2]*2}" solid="false"/>\n')
+                self.file_x3d.write(misc.tabs(5)+'<Appearance>\n')
+                self.file_x3d.write(misc.tabs(6)+f'<Material DEF="py{n}boxmat" ambientIntensity="0" emissiveColor="0 0 0" diffuseColor="{color[n]}" specularColor="0 0 0" shininess="0.0078" transparency="0"/>\n')
+                self.file_x3d.write(misc.tabs(5)+'</Appearance>\n')
+                self.file_x3d.write(misc.tabs(4)+'</Shape>\n')
+                self.file_x3d.write(misc.tabs(3)+'</Transform>\n')
+                n = n + 1
+            
+        if geom == 'cone':
+            n = 0
+            for cone in points:
+                cone = (cone - np.mean(self.cube.coords, axis=1))/delta*trans
+                cone = str(cone)[1:-1]
+                self.file_x3d.write("\n"+misc.tabs(3)+f'<Transform DEF="pycon{n}tra" translation="{cone}" scale="1 1 1">\n')
+                self.file_x3d.write(misc.tabs(4)+'<Shape ispickable="false">\n')
+                self.file_x3d.write(misc.tabs(5)+f'<Cone DEF="py{n}con" height="{shape[n][0]}" bottomRadius="{shape[n][1]}" solid="false"/>\n')
+                self.file_x3d.write(misc.tabs(5)+'<Appearance>\n')
+                self.file_x3d.write(misc.tabs(6)+f'<Material DEF="py{n}conmat" ambientIntensity="0" emissiveColor="0 0 0" diffuseColor="{color[n]}" specularColor="0 0 0" shininess="0.0078" transparency="0"/>\n')
+                self.file_x3d.write(misc.tabs(5)+'</Appearance>\n')
+                self.file_x3d.write(misc.tabs(4)+'</Shape>\n')
+                self.file_x3d.write(misc.tabs(3)+'</Transform>\n')
+                n = n + 1
                 
     def close(self):
         """
@@ -865,7 +948,68 @@ class WriteHTML:
         self.file_html.write(misc.tabs(2)+"}\n")
         self.file_html.write(misc.tabs(2)+"</script>\n")
 
-    def buttons(self, centrot=False):
+    def func_pymarkers(self, tube=None, sphere=None, box=None, cone=None):
+        """
+        JS function to hide/show markers created with make_markers() directly to the X3D model.
+
+        Parameters
+        ----------
+        tube : list
+            List with the points parameter included in make_markers() for tubes.
+        sphere : list
+            List with the points parameter included in make_markers() for spheres.
+        box : list
+            List with the points parameter included in make_markers() for boxes.
+        cone : list
+            List with the points parameter included in make_markers() for cones.
+        """
+        self.file_html.write(misc.tabs(2)+"<script>\n")
+        if tube is not None:
+            self.file_html.write(misc.tabs(3)+"function settube() {\n")
+            self.file_html.write(misc.tabs(4)+"if(document.getElementById('cube__py0tubmat0').getAttribute('transparency') != '0') {\n")
+            for t in range(len(tube)):
+                for i in range(len(tube[t])-1):
+                    self.file_html.write(misc.tabs(5)+"document.getElementById('cube__py%stubmat%s').setAttribute('transparency', '0');\n"%(t,i))
+            self.file_html.write(misc.tabs(4)+"} else {\n")
+            for t in range(len(tube)):
+                for i in range(len(tube[t])-1):
+                    self.file_html.write(misc.tabs(5)+"document.getElementById('cube__py%stubmat%s').setAttribute('transparency', '1');\n"%(t,i))
+            self.file_html.write(misc.tabs(4)+"}\n")
+            self.file_html.write(misc.tabs(3)+"}\n")
+        if sphere is not None:
+            self.file_html.write(misc.tabs(3)+"function setsphere() {\n")
+            self.file_html.write(misc.tabs(4)+"if(document.getElementById('cube__py0sphmat').getAttribute('transparency') != '0') {\n")
+            for i in range(len(sphere)):
+                self.file_html.write(misc.tabs(5)+"document.getElementById('cube__py%ssphmat').setAttribute('transparency', '0');\n"%i)
+            self.file_html.write(misc.tabs(4)+"} else {\n")
+            for i in range(len(sphere)):
+                self.file_html.write(misc.tabs(5)+"document.getElementById('cube__py%ssphmat').setAttribute('transparency', '1');\n"%i)
+            self.file_html.write(misc.tabs(4)+"}\n")
+            self.file_html.write(misc.tabs(3)+"}\n")
+        if box is not None:
+            self.file_html.write(misc.tabs(3)+"function setbox() {\n")
+            self.file_html.write(misc.tabs(4)+"if(document.getElementById('cube__py0boxmat').getAttribute('transparency') != '0') {\n")
+            for i in range(len(box)):
+                self.file_html.write(misc.tabs(5)+"document.getElementById('cube__py%sboxmat').setAttribute('transparency', '0');\n"%i)
+            self.file_html.write(misc.tabs(4)+"} else {\n")
+            for i in range(len(box)):
+                self.file_html.write(misc.tabs(5)+"document.getElementById('cube__py%sboxmat').setAttribute('transparency', '1');\n"%i)
+            self.file_html.write(misc.tabs(4)+"}\n")
+            self.file_html.write(misc.tabs(3)+"}\n")
+        if cone is not None:
+            self.file_html.write(misc.tabs(3)+"function setcone() {\n")
+            self.file_html.write(misc.tabs(4)+"if(document.getElementById('cube__py0conmat').getAttribute('transparency') != '0') {\n")
+            for i in range(len(cone)):
+                self.file_html.write(misc.tabs(5)+"document.getElementById('cube__py%sconmat').setAttribute('transparency', '0');\n"%i)
+            self.file_html.write(misc.tabs(4)+"} else {\n")
+            for i in range(len(cone)):
+                self.file_html.write(misc.tabs(5)+"document.getElementById('cube__py%sconmat').setAttribute('transparency', '1');\n"%i)
+            self.file_html.write(misc.tabs(4)+"}\n")
+            self.file_html.write(misc.tabs(3)+"}\n")
+        self.file_html.write(misc.tabs(2)+"</script>\n")
+
+
+    def buttons(self, tube=None, sphere=None, box=None, cone=None, centrot=False):
         """
         Makes the buttons to apply different functions in the web page.
 
@@ -885,6 +1029,7 @@ class WriteHTML:
         #self.file_html.write('\t\t   <button onclick="document.getElementById(\'cubeFixed\').runtime.nextView();">Next View</button>\n')
         
         # Grids and ax labels
+        self.file_html.write('\n'+misc.tabs(2)+'<br><br>\n')
         self.file_html.write('\n'+misc.tabs(2)+'&nbsp <b>Labels:</b>\n')
         self.file_html.write(misc.tabs(3)+'<button onclick="setgrids();" >Grids</button>\n')
         self.file_html.write(misc.tabs(3)+'<button onclick="setaxes();" >Axes labels</button>\n')
@@ -909,24 +1054,18 @@ class WriteHTML:
             self.file_html.write(misc.tabs(3)+'</select>\n')
             
         self.file_html.write(misc.tabs(3)+'<button id="anim" onclick="animation()">Animation</button>')
-        
-        # Background
-        self.file_html.write('\n'+misc.tabs(2)+'<br><br>\n')
-        self.file_html.write(misc.tabs(3)+'&nbsp <label for="back-choice"><b>Background:</b> </label>\n')
-        self.file_html.write(misc.tabs(3)+'<input oninput="change_background()" id="back-choice" type="color" value="#999999">\n')
 
-        # SCALEV
-        #self.file_html.write(misc.tabs(2)+'<br><br>\n')
-        self.file_html.write(misc.tabs(2)+'&nbsp <label for="scalev"><b>Z scale:</b> </label>\n')
-        self.file_html.write(misc.tabs(2)+'<input oninput="changescalev()" id="scalev" type="range" list="marker" min="0" max="5" step="0.001" value="1"/>\n')
-        self.file_html.write(misc.tabs(2)+'<datalist id="marker">\n')
-        self.file_html.write(misc.tabs(3)+'<option value="1"></option>\n')
-        self.file_html.write(misc.tabs(2)+'</datalist>\n')
-        
-        # Galaxies Font Size
-        if self.cube.galaxies is not None:
-            self.file_html.write(misc.tabs(3)+'&nbsp <label for="galsize-choice"><b>Galaxy size: </b></label>\n')
-            self.file_html.write(misc.tabs(3)+'<input oninput="change_galsize()" id="galsize-choice" type="number" min="2" max="100" value="8", step="2">\n')
+        if tube is not None or sphere is not None or box is not None or cone is not None:
+            self.file_html.write(misc.tabs(2)+'<br><br>\n')
+            self.file_html.write(misc.tabs(2)+'&nbsp <b>Markers:</b>\n')
+            if tube is not None:
+                self.file_html.write(misc.tabs(3)+'<button onclick="settube();">Tubes</button>\n')
+            if sphere is not None:
+                self.file_html.write(misc.tabs(3)+'<button onclick="setsphere();">Spheres</button>\n')
+            if box is not None:
+                self.file_html.write(misc.tabs(3)+'<button onclick="setbox();">Boxes</button>\n')
+            if cone is not None:
+                self.file_html.write(misc.tabs(3)+'<button onclick="setcone();">Cones</button>\n')
         
         nlayers = [len(l) for l in self.cube.l_isolevels]
         numcubes = len(nlayers)
@@ -985,13 +1124,34 @@ class WriteHTML:
             self.file_html.write(misc.tabs(3) + '<option value="power">power</option>\n')
             self.file_html.write(misc.tabs(3) + '<option value="asinh">asinh</option>\n')
             self.file_html.write(misc.tabs(2) + '</select>\n')
-            self.file_html.write(misc.tabs(2)+'<br><br>\n')
+
+        # Background
+        self.file_html.write('\n'+misc.tabs(2)+'<br><br>\n')
+        self.file_html.write(misc.tabs(3)+'&nbsp <label for="back-choice"><b>Background:</b> </label>\n')
+        self.file_html.write(misc.tabs(3)+'<input oninput="change_background()" id="back-choice" type="color" value="#999999">\n')
+
+        # SCALEV
+        #self.file_html.write(misc.tabs(2)+'<br><br>\n')
+        self.file_html.write(misc.tabs(2)+'&nbsp <label for="scalev"><b>Z scale:</b> </label>\n')
+        self.file_html.write(misc.tabs(2)+'<input oninput="changescalev()" id="scalev" type="range" list="marker" min="0" max="5" step="0.001" value="1"/>\n')
+        self.file_html.write(misc.tabs(2)+'<datalist id="marker">\n')
+        self.file_html.write(misc.tabs(3)+'<option value="1"></option>\n')
+        self.file_html.write(misc.tabs(2)+'</datalist>\n')
+        
+        # Galaxies Font Size
+        if self.cube.galaxies is not None:
+            self.file_html.write(misc.tabs(3)+'&nbsp <label for="galsize-choice"><b>Galaxy size: </b></label>\n')
+            self.file_html.write(misc.tabs(3)+'<input oninput="change_galsize()" id="galsize-choice" type="number" min="2" max="100" value="8", step="2">\n')
             
         if self.cube.image2d is not None:
             #self.file_html.write('\t\t <br><br>\n')
             self.file_html.write(misc.tabs(2)+'&nbsp <label for="move2dimg"><b>2D image:</b> </label>\n')
             self.file_html.write(misc.tabs(2)+'<input oninput="move2d()" id="move2dimg" type="range" min="-1" max="1" step="0.0001" value="1"/>\n')
-            self.file_html.write(misc.tabs(2)+'<b>$Z=$</b> <output id="showvalue"></output> %s\n'%self.cube.units[3])
+            if self.cube.units[3] == 'm/s':
+                un = 'km/s'
+            else:
+                un = self.cube.units[3]
+            self.file_html.write(misc.tabs(2)+f'<b>$Z=$</b> <output id="showvalue"></output> {un}\n')
             # display chosen velocity of bar too
 
         # PICKING
@@ -1160,10 +1320,15 @@ class WriteHTML:
             self.file_html.write(misc.tabs(2)+"</script>\n")
             
             
-    def func_scalev(self):
+    def func_scalev(self, sphere=None, box=None, cone=None, tube=None, delta=None, trans=None):
         """
         Make JS funtion to change the scale of the spectral axis.
         Must be after buttons().
+
+        Parameters
+        ----------
+        sphere : list
+            List of the coordinates of the spheres. Same as for make_markers().
         """
         self.file_html.write(misc.tabs(2)+"<script>\n")
         self.file_html.write(misc.tabs(2)+"const inpscasv = document.querySelector('#scalev');\n")
@@ -1224,13 +1389,50 @@ class WriteHTML:
         self.file_html.write(misc.tabs(3)+"const tubInd = document.getElementById('new-tub')[s].value.slice(3);\n")
         self.file_html.write(misc.tabs(3)+"for (i=1; i<tubelen[tubInd-1]; i++) {\n")
         self.file_html.write(misc.tabs(4)+"document.getElementById('tubtra'+tubInd+'_'+i).setAttribute('translation', tub_coords[tubInd-1][i-1][0][0]+' '+tub_coords[tubInd-1][i-1][0][1]+' '+sca*tub_coords[tubInd-1][i-1][0][2]);\n")
-        self.file_html.write(misc.tabs(4)+"const norm = Math.sqrt(tub_coords[tubInd-1][i-1][1][0]**2+tub_coords[tubInd-1][i-1][1][1]**2+(tub_coords[tubInd-1][i-1][1][2]*sca)**2)*1.03;\n")
+        self.file_html.write(misc.tabs(4)+"const norm = Math.sqrt(tub_coords[tubInd-1][i-1][1][0]**2+tub_coords[tubInd-1][i-1][1][1]**2+(tub_coords[tubInd-1][i-1][1][2]*sca)**2)*1.015;\n")
         self.file_html.write(misc.tabs(4)+"const angle = Math.acos(tub_coords[tubInd-1][i-1][1][1]/norm);\n")
         self.file_html.write(misc.tabs(4)+"document.getElementById('tubtra'+tubInd+'_'+i).setAttribute('rotation', tub_coords[tubInd-1][i-1][1][2]*sca+' 0 '+(-tub_coords[tubInd-1][i-1][1][0])+' '+angle);\n")
         self.file_html.write(misc.tabs(4)+"document.getElementById('tub'+tubInd+'_'+i).setAttribute('height', norm);\n")
         self.file_html.write(misc.tabs(3)+"}\n")
         self.file_html.write(misc.tabs(2)+"}\n")
         self.file_html.write(misc.tabs(1)+"}\n")
+
+        # scale python markers
+        delta = np.array(delta)
+        if sphere is not None:
+            n = 0
+            for s in range(len(sphere)):
+                sphere[s] = (sphere[s] - np.mean(self.cube.coords, axis=1))/delta*trans
+                self.file_html.write(misc.tabs(2)+f"document.getElementById('cube__pysph{n}tra').setAttribute('translation', '{sphere[s][0]} {sphere[s][1]} '+sca*{sphere[s][2]});\n")
+                n = n + 1
+        if box is not None:
+            n = 0
+            for b in range(len(box)):
+                box[b] = (box[b] - np.mean(self.cube.coords, axis=1))/delta*trans
+                self.file_html.write(misc.tabs(2)+f"document.getElementById('cube__pybox{n}tra').setAttribute('translation', '{box[b][0]} {box[b][1]} '+sca*{box[b][2]});\n")
+                n = n + 1
+        if cone is not None:
+            n = 0
+            for c in range(len(cone)):
+                cone[c] = (cone[c] - np.mean(self.cube.coords, axis=1))/delta*trans
+                self.file_html.write(misc.tabs(2)+f"document.getElementById('cube__pycon{n}tra').setAttribute('translation', '{cone[c][0]} {cone[c][1]} '+sca*{cone[c][2]});\n")
+                n = n + 1
+        # missing orientation change for cones
+        if tube is not None:
+            n = 0
+            for t in tube:
+                t = (t - np.mean(self.cube.coords, axis=1))/delta*trans
+                pos = np.array([np.mean((t[i],t[i+1]), axis=0) for i in range(len(t)-1)])
+                diff = np.diff(t, axis=0)
+
+                for i in range(len(t)-1):
+                    self.file_html.write(misc.tabs(2)+f"const diff{n}_{i} = [{diff[i][0]},{diff[i][1]},{diff[i][2]}];\n")
+                    self.file_html.write(misc.tabs(2)+f"const height{n}_{i} = Math.sqrt(diff{n}_{i}[0]**2+diff{n}_{i}[1]**2+(sca*diff{n}_{i}[2])**2)*1.015;\n")
+                    self.file_html.write(misc.tabs(2)+f"const angle{n}_{i} = Math.acos(diff{n}_{i}[1]/height{n}_{i});\n")
+                    self.file_html.write(misc.tabs(2)+f"document.getElementById('cube__pytub{n}tra{i}').setAttribute('translation', '{pos[i][0]} {pos[i][1]} '+sca*{pos[i][2]});\n")
+                    self.file_html.write(misc.tabs(2)+f"document.getElementById('cube__py{n}tub{i}').setAttribute('height', height{n}_{i}.toString());\n")
+                    self.file_html.write(misc.tabs(2)+f"document.getElementById('cube__pytub{n}tra{i}').setAttribute('rotation', sca*diff{n}_{i}[2]+' 0 '+(-diff{n}_{i}[0])+' '+angle{n}_{i});\n")
+                n = n +1
 
         #scale axes
         ax, axtick = misc.labpos

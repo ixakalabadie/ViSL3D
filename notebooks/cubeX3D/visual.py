@@ -59,7 +59,7 @@ class Cube:
         the 3D model. Default is 'full'.
     """
     def __init__(self, l_cubes, name, coords, l_isolevels, l_colors, units, mags, rms=None,
-                 resol=1, galaxies=None, image2d=None, lines=None, interface='full'):
+                 delta=None, resol=1, galaxies=None, image2d=None, lines=None, interface='full'):
         self.l_cubes = l_cubes
         self.name = name
         self.coords = coords
@@ -74,6 +74,7 @@ class Cube:
         self.image2d = image2d
         self.lines = lines
         self.interface = interface
+        self.delta = delta
 
     def __str__(self):
         s = f'Cube object for {self.name}' #\n\tCoordinates: {self.coords}\n\tUnits: {self.units}\n\tMagnitudes: {self.mags}\n\tRMS: {self.rms}\n\tResolution: {self.resol}\n\tInterface: {self.interface}'
@@ -245,8 +246,8 @@ def prep_one(cube, header=None, lims=None, unit=None, isolevels=None, colormap='
         galdict = None
 
     return Cube(l_cubes=[cube], name=header['OBJECT'], coords=cubecoords, units=cubeunits,
-                mags=cubemags, l_colors=[colors], rms=rms, image2d=image2d, galaxies=galdict, 
-                l_isolevels=[isolevels])
+                mags=cubemags, delta=delta, l_colors=[colors], rms=rms, image2d=image2d,
+                galaxies=galdict, l_isolevels=[isolevels])
 
 def prep_mult(cube, spectral_lims, header=None, spatial_lims=None, l_isolevels=None, unit=None,
                colormap=None, image2d=None, lines=None):
@@ -485,7 +486,7 @@ def prep_mult(cube, spectral_lims, header=None, spatial_lims=None, l_isolevels=N
 
     return Cube(l_cubes=l_cubes, name=header['OBJECT'], coords=cubecoords, units=cubeunits,
                 mags=cubemags, l_colors=l_colors, rms=rms, image2d=image2d, galaxies=None, 
-                l_isolevels=l_isolevels, lines=lines)
+                l_isolevels=l_isolevels, lines=lines, delta=delta)
 
 def prep_overlay(cube, header=None, spectral_lims=None, lines=None, spatial_lims=None,
                  l_isolevels=None, unit=None, colormap=None, image2d=None):
@@ -758,7 +759,7 @@ def prep_overlay(cube, header=None, spectral_lims=None, lines=None, spatial_lims
 
     return Cube(l_cubes=l_cubes, name=header['OBJECT'], coords=cubecoords, units=cubeunits,
                 mags=cubemags, l_colors=l_colors, rms=rms, image2d=image2d, galaxies=None, 
-                l_isolevels=l_isolevels, lines=lines)
+                l_isolevels=l_isolevels, lines=lines, delta=delta)
 
 def createX3D(cube, filename, shifts=None):
     """
@@ -778,12 +779,12 @@ def createX3D(cube, filename, shifts=None):
     file.make_layers(shifts=shifts)
     file.make_outline()
     if cube.galaxies is not None:
-        file.make_galaxies(cube.galaxies)
+        file.make_galaxies()
     if cube.image2d is not None:
-        file.make_image2d(cube.image2d[0], cube.image2d[1])
+        file.make_image2d()
     file.make_ticklines()
     file.make_animation()
-    file.make_labels(cube.galaxies)
+    file.make_labels()
     file.close()
 
 def createHTML(cube, filename, description=None, pagetitle=None):
