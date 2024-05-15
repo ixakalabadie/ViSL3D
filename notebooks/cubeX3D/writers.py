@@ -1178,7 +1178,8 @@ class WriteHTML:
         self.file_html.write(misc.tabs(2)+"function move2d()\n\t\t{\n")
         self.file_html.write(misc.tabs(3)+"const sca = inpscam2.value;\n")
         self.file_html.write(misc.tabs(3)+"const move = inpmovem2.value;\n")
-        self.file_html.write(misc.tabs(3)+f"showval.textContent = roundTo({self.cube.coords[2][1]}+(move-1)*1000, 3);\n")
+        self.file_html.write(misc.tabs(3)+f"showval.textContent = roundTo({self.cube.coords[2][1]}"+\
+                             f"+(move-1)*{self.cube.l_cubes[0].shape[2]}*{np.abs(self.cube.delta[2])}/2, 3);\n")
         self.file_html.write(misc.tabs(3)+"document.getElementById('cube__image2d').setAttribute('translation', '0 0 '+(sca*move-1)*1000);\n")
         self.file_html.write(misc.tabs(2)+"}\n")
         self.file_html.write(misc.tabs(2)+"</script>\n")

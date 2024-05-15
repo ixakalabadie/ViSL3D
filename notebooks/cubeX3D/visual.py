@@ -116,8 +116,11 @@ def prep_one(cube, header=None, lims=None, unit=None, isolevels=None, colormap='
     """
     if isinstance(cube, str):
         with fits.open(cube) as hdul:
-            cube = hdul[0].data # this is pol, v, dec, ra
-            header = hdul[0].header
+            for l in range(len(hdul)):
+                cube = hdul[l].data # this is pol, v, dec, ra
+                header = hdul[l].header
+                if cube is not None and len(cube.shape) >= 3:
+                    break
     elif header is None:
         raise AttributeError('No header provided')
 
@@ -128,14 +131,17 @@ def prep_one(cube, header=None, lims=None, unit=None, isolevels=None, colormap='
         cube = cube[0]
     cube = np.squeeze(cube)
 
-    delta = np.array([header['CDELT1'], header['CDELT2'], header['CDELT3']])
+    try:
+        delta = np.array([header['CDELT1'], header['CDELT2'], header['CDELT3']])
+    except KeyError:
+        delta = np.array([header['CD1_1'], header['CD2_2'], header['CD3_3']])
     cubeunits = np.array(['','','',''], dtype='<U10')
     cubemags = np.array(['unknown','unknown','unknown','unknown'], dtype='<U10')
     for i in range(4):
         if i == 0:
             try:
-                cubemags[i] = header['BTYPE']
                 cubeunits[i] = header['BUNIT']
+                cubemags[i] = header['BTYPE']
             except KeyError:
                 print('Warning: BUNIT or BTYPE not in header')
                 continue
@@ -293,8 +299,11 @@ def prep_mult(cube, spectral_lims, header=None, spatial_lims=None, l_isolevels=N
     """
     if isinstance(cube, str):
         with fits.open(cube) as hdul:
-            cube = hdul[0].data # this is pol, v, dec, ra
-            header = hdul[0].header
+            for l in range(len(hdul)):
+                cube = hdul[l].data # this is pol, v, dec, ra
+                header = hdul[l].header
+                if cube is not None and len(cube.shape) >= 3:
+                    break
     elif header is None:
         raise AttributeError('No header provided')
     
@@ -305,14 +314,17 @@ def prep_mult(cube, spectral_lims, header=None, spatial_lims=None, l_isolevels=N
         cube = cube[0]
     cube = np.squeeze(cube)
 
-    delta = np.array([header['CDELT1'], header['CDELT2'], header['CDELT3']])
+    try:
+        delta = np.array([header['CDELT1'], header['CDELT2'], header['CDELT3']])
+    except KeyError:
+        delta = np.array([header['CD1_1'], header['CD2_2'], header['CD3_3']])
     cubeunits = np.array(['','','',''], dtype='<U10')
     cubemags = np.array(['unknown','unknown','unknown','unknown'], dtype='<U10')
     for i in range(4):
         if i == 0:
             try:
-                cubemags[i] = header['BTYPE']
                 cubeunits[i] = header['BUNIT']
+                cubemags[i] = header['BTYPE']
             except KeyError:
                 print('Warning: BUNIT or BTYPE not in header')
                 continue
@@ -535,8 +547,11 @@ def prep_overlay(cube, header=None, spectral_lims=None, lines=None, spatial_lims
     """
     if isinstance(cube, str):
         with fits.open(cube) as hdul:
-            cube = hdul[0].data # this is pol, v, dec, ra
-            header = hdul[0].header
+            for l in range(len(hdul)):
+                cube = hdul[l].data # this is pol, v, dec, ra
+                header = hdul[l].header
+                if cube is not None and len(cube.shape) >= 3:
+                    break
     elif header is None:
         raise AttributeError('No header provided')
     
@@ -547,14 +562,17 @@ def prep_overlay(cube, header=None, spectral_lims=None, lines=None, spatial_lims
         cube = cube[0]
     cube = np.squeeze(cube)
 
-    delta = np.array([header['CDELT1'], header['CDELT2'], header['CDELT3']])
+    try:
+        delta = np.array([header['CDELT1'], header['CDELT2'], header['CDELT3']])
+    except KeyError:
+        delta = np.array([header['CD1_1'], header['CD2_2'], header['CD3_3']])
     cubeunits = np.array(['','','',''], dtype='<U10')
     cubemags = np.array(['unknown','unknown','unknown','unknown'], dtype='<U10')
     for i in range(4):
         if i == 0:
             try:
-                cubemags[i] = header['BTYPE']
                 cubeunits[i] = header['BUNIT']
+                cubemags[i] = header['BTYPE']
             except KeyError:
                 print('Warning: BUNIT or BTYPE not in header')
                 continue
