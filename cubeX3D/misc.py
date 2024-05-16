@@ -7,7 +7,6 @@ Created on Fri Mar 22 13:57:23 2024
 """
 from skimage import measure
 from astropy.coordinates import SkyCoord
-from astropy import wcs
 from astroquery.ipac.ned import Ned
 from astroquery.skyview import SkyView
 import matplotlib.colors as mcolors
@@ -298,7 +297,7 @@ def preview2d(cube, v1=None, v2=None, norm='asinh', figsize=(10,8)):
     # ax[1, 1].grid(which='major')
     pass
 
-def get_imcol(position, survey, cmap='Greys', **kwargs):
+def get_imcol(image=None, position=None, survey=None, cmap='Greys', **kwargs):
     """
     Downloads an image from astroquery and returns the colors of the pixels using
     a certain colormap, in hexadecimal format, as required by 'write_x3d().make_image2d'.
@@ -309,12 +308,17 @@ def get_imcol(position, survey, cmap='Greys', **kwargs):
 
     Parameters
     ----------
-    position : string or SkyCoord
+    image : 2D or 3D array, optional
+        Image data in RGB format between 0 and 1 (3D). The RGB column must be last.
+        If 2D, the image will be converted automatically.
+        The image will cover the full FoV of the created cube model (after applying limits).
+        Example for 3D array:
+            image = np.array([img1, img2, img3])
+            image = np.transpose(img, axes=(1,2,0)) # shape=(3,ny,nx)->(ny,nx,3)
+    position : string or SkyCoord, optional
         Name of an object or it position coordinates.
-    survey : string
+    survey : string, optional
         Survey from which to make the query. See astroquery.skyview.SkyView.list_surveys().
-    verts : array
-        Minimum RA, maximum RA, minimum DEC and maximum DEC of the data cube, in that order.
     **kwargs : 
         Other parameters for astroquery.skyview.SkyView.get_images(). Useful parameters
         are 'unit', 'pixels' and 'coordinates'.
@@ -329,20 +333,26 @@ def get_imcol(position, survey, cmap='Greys', **kwargs):
         Image data.
 
     """
-
-    img = SkyView.get_images(position=position, survey=survey, **kwargs)[0]
-    img = img[0].data
-    img = img-np.min(img)
-    img = (img)/np.max(img)
-
-    colimg = cm.get_cmap(cmap)(img)[:,:,0:3]
-    colimg = colimg.reshape((-1,3),order='F')
+    if image is None:
+        image = SkyView.get_images(position=position, survey=survey, **kwargs)[0]
+        image = image[0].data
+        image = image-np.min(image)
+        image = (image)/np.max(image)
+        colimg = cm.get_cmap(cmap)(image)[:,:,0:3] # convert to RBG remove alpha channel
+        colimg = colimg.reshape((-1,3),order='F') # flatten the array
+    elif image.ndim == 2:
+        image = image-np.min(image)
+        image = (image)/np.max(image)
+        colimg = cm.get_cmap(cmap)(image)[:,:,0:3] # convert to RBG remove alpha channel
+        colimg = colimg.reshape((-1,3),order='F')
+    elif image.ndim == 3:
+        colimg = image.reshape((-1,3),order='F')
 
     imcol = [mcolors.rgb2hex(c).replace('#','0x') for c in colimg]
     if len(imcol)% 8 == 0:
         imcol = np.array(imcol).reshape(int(len(imcol)/8),8)
 
-    return imcol, img.shape, img
+    return imcol, image.shape[:2], image
 
 def transpose(array, delta):
     """

@@ -81,7 +81,7 @@ class Cube:
         return s
 
 def prep_one(cube, header=None, lims=None, unit=None, isolevels=None, colormap='CMRmap_r',
-             image2d=None, galaxies=None):
+             image2d=None, im2dcolor='Greys', galaxies=None):
     """
     Prepare the Cube class for a cube with a single spectral line.
 
@@ -103,9 +103,14 @@ def prep_one(cube, header=None, lims=None, unit=None, isolevels=None, colormap='
         Array with the isosurface levels in the given units. If None it is calculated automatically.
     colormap : str, optional
         Name of the colormap to use. Default is 'CMRmap_r'.
-    image2d : str, optional
+    image2d : str or 2D or 3D array, optional
         Name of the survey to query a 2D image. See survey options in https://astroquery.readthedocs.io/en/latest/skyview/skyview.html.
         If 'blank' a blank plane is used. If None no image is created.
+        If 2D or 3D array, the mage data in RGB format between 0 and 1 (3D). The RGB column must be last.
+        If 2D, the image will be converted automatically.
+        The image will cover the full FoV of the created cube model (after applying limits).
+    im2dcolor : str, optional
+        Name of the colormap to use for the 2D image. Default is 'Greys'.
     galaxies : list or str, optional
         List with the names of galaxies to include in the model. If 'query' a NED query is made within the limits of the cube. If None no galaxies are included.
     
@@ -233,15 +238,18 @@ def prep_one(cube, header=None, lims=None, unit=None, isolevels=None, colormap='
 
     if image2d is None:
         pass
-    elif image2d == 'blank':
+    elif isinstance(image2d, str) and image2d == 'blank':
         image2d = None, None
+    elif not isinstance(image2d, str):
+        imcol, img_shape, _ = misc.get_imcol(image = image2d, cmap=im2dcolor)
+        image2d = imcol, img_shape
     else:
         pixels = 1000
         co = SkyCoord(ra=np.mean(cubecoords[0])*u.Unit(cubeunits[1]), dec=np.mean(cubecoords[1])*u.Unit(cubeunits[2]))
         co = co.to_string('hmsdms')
         imcol, img_shape, _ = misc.get_imcol(position=co, survey=image2d,pixels=f'{pixels}',
                 coordinates='J2000', width=np.diff(cubecoords[0])[0]*u.Unit(cubeunits[1]),
-                height=np.diff(cubecoords[1])[0]*u.Unit(cubeunits[2]))
+                height=np.diff(cubecoords[1])[0]*u.Unit(cubeunits[2]), cmap=im2dcolor)
         image2d = imcol, img_shape
         
     if galaxies is not None:
@@ -256,7 +264,7 @@ def prep_one(cube, header=None, lims=None, unit=None, isolevels=None, colormap='
                 galaxies=galdict, l_isolevels=[isolevels])
 
 def prep_mult(cube, spectral_lims, header=None, spatial_lims=None, l_isolevels=None, unit=None,
-               colormap=None, image2d=None, lines=None):
+               colormap=None, image2d=None, im2dcolor='Greys', lines=None):
     """
     Prepare the Cube class for a cube with multiple spectral lines.
     Makes a subcube for each spectral line.
@@ -285,9 +293,14 @@ def prep_mult(cube, spectral_lims, header=None, spatial_lims=None, l_isolevels=N
     colormap : str, optional
         Name of the colormaps to use. Must be the same length as the number of spectral lines to model.
         If None and the number of lines is <7 they are be chosen automatically. Default is None.
-    image2d : str, optional
+    image2d : str or 2D or 3D array, optional
         Name of the survey to query a 2D image. See survey options in https://astroquery.readthedocs.io/en/latest/skyview/skyview.html.
         If 'blank' a blank plane is used. If None no image is created.
+        If 2D or 3D array, the mage data in RGB format between 0 and 1 (3D). The RGB column must be last.
+        If 2D, the image will be converted automatically.
+        The image will cover the full FoV of the created cube model (after applying limits).
+    im2dcolor : str, optional
+        Name of the colormap to use for the 2D image. Default is 'Greys'.
     lines : array-like, optional
         List with the names of each subcube to use as labels in the web page. Must have same length
         as spectral_lims. Default is None.
@@ -484,8 +497,11 @@ def prep_mult(cube, spectral_lims, header=None, spatial_lims=None, l_isolevels=N
 
     if image2d is None:
         pass
-    elif image2d == 'blank':
+    elif isinstance(image2d, str) and image2d == 'blank':
         image2d = None, None
+    elif not isinstance(image2d, str):
+        imcol, img_shape, _ = misc.get_imcol(image = image2d, cmap=im2dcolor)
+        image2d = imcol, img_shape
     else:
         pixels = 1000
         co = SkyCoord(ra=np.mean(cubecoords[0])*u.Unit(cubeunits[1]),
@@ -493,7 +509,7 @@ def prep_mult(cube, spectral_lims, header=None, spatial_lims=None, l_isolevels=N
         co = co.to_string('hmsdms')
         imcol, img_shape, _ = misc.get_imcol(position=co, survey=image2d,pixels=f'{pixels}',
                 coordinates='J2000', width=np.diff(cubecoords[0])[0]*u.Unit(cubeunits[1]),
-                height=np.diff(cubecoords[1])[0]*u.Unit(cubeunits[2]))
+                height=np.diff(cubecoords[1])[0]*u.Unit(cubeunits[2]), cmap=im2dcolor)
         image2d = imcol, img_shape
 
     return Cube(l_cubes=l_cubes, name=header['OBJECT'], coords=cubecoords, units=cubeunits,
@@ -501,7 +517,7 @@ def prep_mult(cube, spectral_lims, header=None, spatial_lims=None, l_isolevels=N
                 l_isolevels=l_isolevels, lines=lines, delta=delta)
 
 def prep_overlay(cube, header=None, spectral_lims=None, lines=None, spatial_lims=None,
-                 l_isolevels=None, unit=None, colormap=None, image2d=None):
+                 l_isolevels=None, unit=None, colormap=None, image2d=None, im2dcolor='Greys'):
     """
     Prepare the Cube class for an overlay of spectral lines. Makes a subcube for each spectral line
     and overlays the centre of each line in the same point.
@@ -536,9 +552,14 @@ def prep_overlay(cube, header=None, spectral_lims=None, lines=None, spatial_lims
     colormap : str, optional
         Name of the colormaps to use. Must be the same length as the number of spectral lines to model.
         If None and the number of lines is <7 they are be chosen automatically. Default is None.
-    image2d : str, optional
+    image2d : str or 2D or 3D array, optional
         Name of the survey to query a 2D image. See survey options in https://astroquery.readthedocs.io/en/latest/skyview/skyview.html.
         If 'blank' a blank plane is used. If None no image is created.
+        If 2D or 3D array, the mage data in RGB format between 0 and 1 (3D). The RGB column must be last.
+        If 2D, the image will be converted automatically.
+        The image will cover the full FoV of the created cube model (after applying limits).
+    im2dcolor : str, optional
+        Name of the colormap to use for the 2D image. Default is 'Greys'.
     
     Returns
     -------
@@ -764,15 +785,18 @@ def prep_overlay(cube, header=None, spectral_lims=None, lines=None, spatial_lims
 
     if image2d is None:
         pass
-    elif image2d == 'blank':
+    elif isinstance(image2d, str) and image2d == 'blank':
         image2d = None, None
+    elif not isinstance(image2d, str):
+        imcol, img_shape, _ = misc.get_imcol(image = image2d, cmap=im2dcolor)
+        image2d = imcol, img_shape
     else:
         pixels = 1000
         co = SkyCoord(ra=np.mean(cubecoords[0])*u.Unit(cubeunits[1]), dec=np.mean(cubecoords[1])*u.Unit(cubeunits[2]))
         co = co.to_string('hmsdms')
         imcol, img_shape, _ = misc.get_imcol(position=co, survey=image2d,pixels=f'{pixels}',
                 coordinates='J2000', width=np.diff(cubecoords[0])[0]*u.Unit(cubeunits[1]),
-                height=np.diff(cubecoords[1])[0]*u.Unit(cubeunits[2]))
+                height=np.diff(cubecoords[1])[0]*u.Unit(cubeunits[2]), cmap=im2dcolor)
         image2d = imcol, img_shape
 
     return Cube(l_cubes=l_cubes, name=header['OBJECT'], coords=cubecoords, units=cubeunits,
