@@ -791,16 +791,29 @@ class WriteHTML:
         self.file_html.write(misc.tabs(3)+f'<inline url="{filename}" nameSpaceName="cube" mapDEFToID="true" onclick="" onload="loading()"/>\n')
         self.file_html.write(misc.tabs(2)+"</scene>\n\t</x3d></center>\n")
 
-    def viewpoints(self):
+    def viewpoints(self, point=None):
         """
         Define viewpoints for the X3D figure. Must go after start_x3d() and
         before close_x3d().
+
+        Parameters
+        ----------
+        point : list, optional
+            List of points to define viewpoints. The point will be used to create a vector from the origin.
+            For example, [1,0,0] will create a viewpoint looking at the positive x-axis. The y axis is inverted.
         """
-        self.file_html.write("\t\t <scene>\n")
+        self.file_html.write(misc.tabs(2)+"<scene>\n")
         #correct camera postition and FoV, not to clip (hide) the figure
         self.file_html.write(misc.tabs(3)+"<OrthoViewpoint id=\"front\" bind='false' centerOfRotation='0,0,0' description='RA-Dec view' fieldOfView='[-1400.0,-1400.0,1400.0,1400.0]' isActive='false' metadata='X3DMetadataObject' orientation='0,1,0,3.141593' position='0,0,-5500' zFar='11000' zNear='0.0001' ></OrthoViewpoint>\n")
-        self.file_html.write("\t\t\t <OrthoViewpoint id=\"side\" bind='false' centerOfRotation='0,0,0' description='Z - Dec view' fieldOfView='[-1400.0,-1400.0,1400.0,1400.0]' isActive='false' metadata='X3DMetadataObject' orientation='0,-1,0,1.570796' position='-5500,0,0' zFar='11000' zNear='0.0001' ></OrthoViewpoint>\n")
-        self.file_html.write("\t\t\t <OrthoViewpoint id=\"side2\" bind='false' centerOfRotation='0,0,0' description='Z - RA view' fieldOfView='[-1400.0,-1400.0,1400.0,1400.0]' isActive='false' metadata='X3DMetadataObject' orientation='1,1,1,4.1888' position='0,5500,0' zFar='11000' zNear='0.0001' ></OrthoViewpoint>\n")
+        self.file_html.write(misc.tabs(3)+"<OrthoViewpoint id=\"side\" bind='false' centerOfRotation='0,0,0' description='Z - Dec view' fieldOfView='[-1400.0,-1400.0,1400.0,1400.0]' isActive='false' metadata='X3DMetadataObject' orientation='0,-1,0,1.570796' position='-5500,0,0' zFar='11000' zNear='0.0001' ></OrthoViewpoint>\n")
+        self.file_html.write(misc.tabs(3)+"<OrthoViewpoint id=\"side2\" bind='false' centerOfRotation='0,0,0' description='Z - RA view' fieldOfView='[-1400.0,-1400.0,1400.0,1400.0]' isActive='false' metadata='X3DMetadataObject' orientation='1,1,1,4.1888' position='0,5500,0' zFar='11000' zNear='0.0001' ></OrthoViewpoint>\n")
+        if point is not None:
+            for i,po in enumerate(point):
+                ori = misc.calc_axis_angle(po)
+                pos = misc.calc_camera_position(ori)*5500
+                self.file_html.write(misc.tabs(3)+f"<OrthoViewpoint id='vp{i}' bind='false' centerOfRotation='0,0,0' " \
+                    +f"description='vp{i}' fieldOfView='[-1400.0,-1400.0,1400.0,1400.0]' isActive='false' " \
+                    +f"orientation='{str(ori)[1:-1]}' position='{str(pos)[1:-1]}' zFar='11000' zNear='0.0001' ></OrthoViewpoint>\n")
 
     def func_background(self):
         """
@@ -1009,12 +1022,22 @@ class WriteHTML:
         self.file_html.write(misc.tabs(2)+"</script>\n")
 
 
-    def buttons(self, tube=None, sphere=None, box=None, cone=None, centrot=False):
+    def buttons(self, viewpoint=None, tube=None, sphere=None, box=None, cone=None, centrot=False):
         """
         Makes the buttons to apply different functions in the web page.
 
         Parameters
         ----------
+        viewpoint : list
+            List of names for the viewpoints. Viewpoints must be created in "viewpoints()".
+        tube : list
+            List with the points parameter included in make_markers() for tubes.
+        sphere : list
+            List with the points parameter included in make_markers() for spheres.
+        box : list
+            List with the points parameter included in make_markers() for boxes.
+        cone : list
+            List with the points parameter included in make_markers() for cones.
         centrot : bool
             Create button to change the center of rotation.
         """
@@ -1025,6 +1048,10 @@ class WriteHTML:
         self.file_html.write(misc.tabs(3)+"<button onclick=\"document.getElementById('cubeFixed').runtime.resetView();\">Reset View</button>\n")
         for i in range(3): # 3 w/o perspective, 4 with
             self.file_html.write(misc.tabs(3)+"<button onclick=\"document.getElementById('%s').setAttribute('set_bind','true');\"> %s </button>\n"%(misc.side[i], misc.nam[i]))
+        if viewpoint is not None:
+            for i,name in enumerate(viewpoint):
+                self.file_html.write(misc.tabs(3)+f"<button onclick=\"document.getElementById('vp{i}').setAttribute('set_bind','true');\"> {name} </button>\n")
+
         #unccoment next line for next view button
         #self.file_html.write('\t\t   <button onclick="document.getElementById(\'cubeFixed\').runtime.nextView();">Next View</button>\n')
         
@@ -1085,11 +1112,11 @@ class WriteHTML:
                 ca = np.array(self.cube.l_colors[nc][i].split(' ')).astype(float)*255
                 c = 'rgb('+str(ca.astype(int))[1:-1]+')'
                 butlabel = self.cube.l_isolevels[nc][i]
+                if self.cube.l_isolevels[nc][i] > 0.01:
+                    butlabel = f'{butlabel:0.3f}'
+                else:
+                    butlabel = f'{butlabel:0.6f}'
                 if (ca[0]*0.299 + ca[1]*0.587 + ca[2]*0.114) > 130:
-                    if self.cube.l_isolevels[nc][i] > 0.01:
-                        butlabel = f'{butlabel:0.2f}'
-                    else:
-                        butlabel = f'{butlabel:0.5f}'
                     self.file_html.write(misc.tabs(3)+'<button id="%sbut%s" onclick="setHI%slayer%s();" style="font-size:20px ; border:5px dashed black ; background:%s ; color:black"><b>%s</b></button>\n'%(nc,i,nc,i,c,butlabel))
                 else:
                     self.file_html.write(misc.tabs(3)+'<button id="%sbut%s" onclick="setHI%slayer%s();" style="font-size:20px ; border:5px dashed black ; background:%s ; color:white"><b>%s</b></button>\n'%(nc,i,nc,i,c,butlabel))
@@ -1328,8 +1355,18 @@ class WriteHTML:
 
         Parameters
         ----------
+        tube : list
+            List with the points parameter included in make_markers() for tubes.
         sphere : list
-            List of the coordinates of the spheres. Same as for make_markers().
+            List with the points parameter included in make_markers() for spheres.
+        box : list
+            List with the points parameter included in make_markers() for boxes.
+        cone : list
+            List with the points parameter included in make_markers() for cones.
+        delta : list
+            List with the delta of the cube (header[CDELT]).
+        trans : list
+            Transformation factor to the cube. It is calculated with (2000/nx, 2000/ny, 2000/nz).
         """
         self.file_html.write(misc.tabs(2)+"<script>\n")
         self.file_html.write(misc.tabs(2)+"const inpscasv = document.querySelector('#scalev');\n")

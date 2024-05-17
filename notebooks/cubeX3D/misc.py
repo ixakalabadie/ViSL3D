@@ -360,6 +360,54 @@ def transpose(array, delta):
     """
     return np.transpose(array, (2,1,0))[::int(np.sign(delta[0])),
                                         ::int(np.sign(delta[1])),::int(np.sign(delta[2]))]
+def calc_camera_position(vector):
+    axis = np.array(vector[:3])
+    angle = vector[3]
+
+    # Calculate sine and cosine of the angle
+    c = np.cos(angle)
+    s = np.sin(angle)
+    t = 1 - c
+
+    # Normalize axis
+    length = np.linalg.norm(axis)
+    if length != 0:
+        axis = axis/length
+
+    # Calculate rotation matrix elements
+    m00 = c + axis[0] * axis[0] * t
+    m11 = c + axis[1] * axis[1] * t
+    m22 = c + axis[2] * axis[2] * t
+    tmp1 = axis[0] * axis[1] * t
+    tmp2 = axis[2] * s
+    m01 = tmp1 + tmp2
+    m10 = tmp1 - tmp2
+    tmp1 = axis[0] * axis[2] * t
+    tmp2 = axis[1] * s
+    m02 = tmp1 - tmp2
+    m20 = tmp1 + tmp2
+    tmp1 = axis[1] * axis[2] * t
+    tmp2 = axis[0] * s
+    m12 = tmp1 + tmp2
+    m21 = tmp1 - tmp2
+
+    # Apply rotation matrix to default camera position
+    camera = -np.dot(np.array([0, 0, -1]), np.array([[m00, m01, m02], [m10, m11, m12], [m20, m21, m22]]))
+
+    return np.round(camera,6)
+
+def calc_axis_angle(point):
+    # Calculate the vector from the origin to the given point
+    vector_to_point = np.array(point)
+    
+    # Normalize the vector to obtain the axis of rotation
+    axis = vector_to_point / np.linalg.norm(vector_to_point)
+    
+    # Determine the angle of rotation
+    # Here, we'll choose the angle to rotate the axis of rotation to align with the z-axis
+    angle = np.arctan2(axis[1], axis[0])  # Angle between the x-axis and the vector
+    
+    return np.array([axis[0],axis[1],axis[2], angle])
 
 # Some attributes for the classes and functions
 
