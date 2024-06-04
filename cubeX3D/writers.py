@@ -756,8 +756,9 @@ class WriteHTML:
         Make JS function to start/stop the animation of the X3D models.
         """
         self.file_html.write('\n'+misc.tabs(1)+"<script>")
+        self.file_html.write('\n'+misc.tabs(2)+"var active = false;")
         self.file_html.write('\n'+misc.tabs(2)+"function animation() {")
-        self.file_html.write('\n'+misc.tabs(3)+"if (document.getElementById('cube__time').getAttribute('elapsedTime') == '0') {")
+        self.file_html.write('\n'+misc.tabs(3)+"if (act == false) {")
         self.file_html.write('\n'+misc.tabs(4)+"document.getElementById('cube__time').setAttribute('startTime', document.getElementById('cube__time').getAttribute('time'));")
         self.file_html.write('\n'+misc.tabs(4)+"document.getElementById('cube__time').setAttribute('isPaused', 'false');")
         self.file_html.write('\n'+misc.tabs(3)+"} else if (document.getElementById('cube__time').getAttribute('isPaused') == 'false') {")
