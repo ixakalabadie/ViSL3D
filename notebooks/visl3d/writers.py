@@ -242,6 +242,8 @@ class WriteX3D:
     def make_ticklines(self):
         """
         Create tickline objects in the X3D model.
+
+        Closes the Transform "ROOT" element. Must be called somewhere after make_layers() and before make_labels().
         """
         # coordinates of tick lines
         ticklinecoords = np.array([[-1000,0,-1000],
@@ -275,7 +277,6 @@ class WriteX3D:
         self.file_x3d.write(misc.tabs(5)+'</IndexedLineSet>\n')
         self.file_x3d.write(misc.tabs(4)+'</Shape>\n')
         self.file_x3d.write(misc.tabs(3)+'</Transform>\n')
-        self.file_x3d.write(misc.tabs(2)+'</Transform>\n')
 
     def make_animation(self, cycleinterval=10, axis=0):
         """
@@ -299,7 +300,6 @@ class WriteX3D:
 
         self.file_x3d.write('\n\t\t<ProximitySensor DEF="PROX_LABEL" size="1.0e+06 1.0e+06 1.0e+06"/>')
         self.file_x3d.write('\n\t\t<Collision enabled="false">')
-        self.file_x3d.write('\n\t\t\t<Transform DEF="TRANS_LABEL">')
 
         try:
             ramin1, ramax1 = (self.cube.coords[0]-np.mean(self.cube.coords[0])) \
@@ -433,13 +433,12 @@ class WriteX3D:
                 self.file_x3d.write(f'\n\t\t\t\t\t\t\t<FontStyle family=\'"SANS"\' topToBottom="false" justify=\'{misc.axticklabjus[i]}\' size="8"/>')
                 self.file_x3d.write('\n\t\t\t\t\t\t</Text>\n\t\t\t\t\t</Shape>\n\t\t\t\t</Transform>')
 
-        self.file_x3d.write('\n\t\t\t</Transform>')
         self.file_x3d.write('\n\t\t</Collision>')
 
     def make_markers(self, geom, points, shape, delta, trans, color, labels=None):
         """
-        geom = 'tube', 'Sphere', 'Box', 'Cone', 'Torus', 'Arc2D', 'ArcClose2D', 'Circle2D', 'Disk2D', 'Polyline2D',
-        'Polypoint2D', 'Rectangle2D', 'TriangleSet2D'
+        Create markers in the X3D model.
+        Must be called before make_ticklines().
 
         Parameters
         ----------
@@ -538,8 +537,7 @@ class WriteX3D:
         an error.
         """
         #ending, close all
-        self.file_x3d.write('\n\t\t<ROUTE fromNode="PROX_LABEL" fromField="position_changed" toNode="TRANS_LABEL" toField="set_translation"/>')
-        self.file_x3d.write('\n\t\t<ROUTE fromNode="PROX_LABEL" fromField="orientation_changed" toNode="TRANS_LABEL" toField="set_rotation"/>')
+        self.file_x3d.write('\n\t\t</Transform>')
         self.file_x3d.write('\n\t</Scene>')
         self.file_x3d.write('\n</X3D>')
         self.file_x3d.close()
@@ -758,9 +756,10 @@ class WriteHTML:
         self.file_html.write('\n'+misc.tabs(1)+"<script>")
         self.file_html.write('\n'+misc.tabs(2)+"var active = false;")
         self.file_html.write('\n'+misc.tabs(2)+"function animation() {")
-        self.file_html.write('\n'+misc.tabs(3)+"if (act == false) {")
+        self.file_html.write('\n'+misc.tabs(3)+"if (active == false) {")
         self.file_html.write('\n'+misc.tabs(4)+"document.getElementById('cube__time').setAttribute('startTime', document.getElementById('cube__time').getAttribute('time'));")
         self.file_html.write('\n'+misc.tabs(4)+"document.getElementById('cube__time').setAttribute('isPaused', 'false');")
+        self.file_html.write('\n'+misc.tabs(4)+"active = true;")
         self.file_html.write('\n'+misc.tabs(3)+"} else if (document.getElementById('cube__time').getAttribute('isPaused') == 'false') {")
         self.file_html.write('\n'+misc.tabs(4)+"document.getElementById('cube__time').setAttribute('loop', 'false');")
         self.file_html.write('\n'+misc.tabs(4)+"document.getElementById('cube__time').setAttribute('isPaused', 'true')")
