@@ -197,6 +197,19 @@ class WriteX3D:
             self.file_x3d.write(f'{misc.tabs(5)}<Appearance>\n')
             self.file_x3d.write(f'{misc.tabs(6)}<Material DEF="{gal}" ambientIntensity="0" emissiveColor="0 0 0" diffuseColor="{gals[gal]["col"]}" specularColor="0 0 0" shininess="0.0078" transparency="0"/>\n')
             self.file_x3d.write(misc.tabs(5)+'</Appearance>\n\t\t\t\t</Shape>\n\t\t\t</Transform>\n')
+
+            self.file_x3d.write(misc.tabs(4)+f'<Transform DEF="glt{i}" translation="{gals[gal]["coord"][0]} {gals[gal]["coord"][1]} {gals[gal]["coord"][2]}" rotation="0 1 0 3.14" scale="20 20 20">\n') # labelscale = 20
+            self.file_x3d.write(misc.tabs(5)+'<Billboard axisOfRotation="0,0,0"  bboxCenter="0,0,0">\n')
+            self.file_x3d.write(misc.tabs(6)+'<Shape ispickable="false">\n')
+            self.file_x3d.write(misc.tabs(6)+'<Appearance>\n')
+            self.file_x3d.write(misc.tabs(6)+f'<Material DEF="label_{gal}" diffuseColor="0 0 0" emissiveColor="0 0 0"/>\n')
+            self.file_x3d.write(misc.tabs(6)+'</Appearance>\n')
+            self.file_x3d.write(misc.tabs(6)+f'<Text string="{gal}">\n')
+            self.file_x3d.write(misc.tabs(7)+f'<FontStyle DEF="{gal}_fs" family=\'"SANS"\' topToBottom="false" justify=\'"BEGIN" "BEGIN"\' size="8"/>\n')
+            self.file_x3d.write(misc.tabs(6)+'</Text>\n')
+            self.file_x3d.write(misc.tabs(6)+'</Shape>\n')
+            self.file_x3d.write(misc.tabs(5)+'</Billboard>\n')
+            self.file_x3d.write(misc.tabs(4)+'</Transform>\n')
             
     def make_image2d(self):
         """
@@ -242,6 +255,8 @@ class WriteX3D:
     def make_ticklines(self):
         """
         Create tickline objects in the X3D model.
+
+        Closes the Transform "ROOT" element. Must be called somewhere after make_layers() and before make_labels().
         """
         # coordinates of tick lines
         ticklinecoords = np.array([[-1000,0,-1000],
@@ -275,7 +290,6 @@ class WriteX3D:
         self.file_x3d.write(misc.tabs(5)+'</IndexedLineSet>\n')
         self.file_x3d.write(misc.tabs(4)+'</Shape>\n')
         self.file_x3d.write(misc.tabs(3)+'</Transform>\n')
-        self.file_x3d.write(misc.tabs(2)+'</Transform>\n')
 
     def make_animation(self, cycleinterval=10, axis=0):
         """
@@ -299,7 +313,6 @@ class WriteX3D:
 
         self.file_x3d.write('\n\t\t<ProximitySensor DEF="PROX_LABEL" size="1.0e+06 1.0e+06 1.0e+06"/>')
         self.file_x3d.write('\n\t\t<Collision enabled="false">')
-        self.file_x3d.write('\n\t\t\t<Transform DEF="TRANS_LABEL">')
 
         try:
             ramin1, ramax1 = (self.cube.coords[0]-np.mean(self.cube.coords[0])) \
@@ -366,18 +379,6 @@ class WriteX3D:
 
         col = '0 0 0'
 
-        #galaxy labels
-        if gals:
-            for (i,gal) in enumerate(gals.keys()):
-                self.file_x3d.write(f'\n\t\t\t\t<Transform DEF="glt{i}" translation="{gals[gal]["coord"][0]} {gals[gal]["coord"][1]} {gals[gal]["coord"][2]}" rotation="0 1 0 3.14" scale="{labelscale} {labelscale} {labelscale}">')
-                self.file_x3d.write('\n\t\t\t\t\t<Billboard axisOfRotation="0,0,0"  bboxCenter="0,0,0">')
-                self.file_x3d.write('\n\t\t\t\t\t\t<Shape ispickable="false">\n\t\t\t\t\t\t<Appearance>')
-                self.file_x3d.write(f'\n\t\t\t\t\t\t<Material DEF="label_{gal}" diffuseColor="0 0 0" emissiveColor="{col}"/>')
-                self.file_x3d.write('\n\t\t\t\t\t\t</Appearance>')
-                self.file_x3d.write(f'\n\t\t\t\t\t\t<Text string="{gal}">')
-                self.file_x3d.write(f'\n\t\t\t\t\t\t\t<FontStyle DEF="{gal}_fs" family=\'"SANS"\' topToBottom="false" justify=\'"BEGIN" "BEGIN"\' size="8"/>')
-                self.file_x3d.write('\n\t\t\t\t\t\t</Text> \n\t\t\t\t\t\t</Shape>\n\t\t\t\t\t</Billboard>\n\t\t\t\t</Transform>')
-
         axlabnames = misc.get_axlabnames(mags=self.cube.mags)
 
         #ax labels diff
@@ -433,13 +434,12 @@ class WriteX3D:
                 self.file_x3d.write(f'\n\t\t\t\t\t\t\t<FontStyle family=\'"SANS"\' topToBottom="false" justify=\'{misc.axticklabjus[i]}\' size="8"/>')
                 self.file_x3d.write('\n\t\t\t\t\t\t</Text>\n\t\t\t\t\t</Shape>\n\t\t\t\t</Transform>')
 
-        self.file_x3d.write('\n\t\t\t</Transform>')
         self.file_x3d.write('\n\t\t</Collision>')
 
     def make_markers(self, geom, points, shape, delta, trans, color, labels=None):
         """
-        geom = 'tube', 'Sphere', 'Box', 'Cone', 'Torus', 'Arc2D', 'ArcClose2D', 'Circle2D', 'Disk2D', 'Polyline2D',
-        'Polypoint2D', 'Rectangle2D', 'TriangleSet2D'
+        Create markers in the X3D model.
+        Must be called before make_ticklines().
 
         Parameters
         ----------
@@ -484,6 +484,19 @@ class WriteX3D:
                     self.file_x3d.write(misc.tabs(5)+'</Appearance>\n')
                     self.file_x3d.write(misc.tabs(4)+'</Shape>\n')
                     self.file_x3d.write(misc.tabs(3)+'</Transform>\n')
+                
+                self.file_x3d.write(misc.tabs(4)+f'<Transform DEF="label_pytubtra{n}" translation="{pos[0]}" rotation="0 1 0 3.14" scale="20 20 20">\n') # labelscale = 20
+                self.file_x3d.write(misc.tabs(5)+'<Billboard axisOfRotation="0,0,0"  bboxCenter="0,0,0">\n')
+                self.file_x3d.write(misc.tabs(6)+'<Shape ispickable="false">\n')
+                self.file_x3d.write(misc.tabs(6)+'<Appearance>\n')
+                self.file_x3d.write(misc.tabs(6)+f'<Material DEF="label_pytub{n}" diffuseColor="0 0 0" emissiveColor="0 0 0"/>\n')
+                self.file_x3d.write(misc.tabs(6)+'</Appearance>\n')
+                self.file_x3d.write(misc.tabs(6)+f'<Text string="{labels[n]}">\n')
+                self.file_x3d.write(misc.tabs(7)+f'<FontStyle family=\'"SANS"\' topToBottom="false" justify=\'"BEGIN" "BEGIN"\' size="8"/>\n')
+                self.file_x3d.write(misc.tabs(6)+'</Text>\n')
+                self.file_x3d.write(misc.tabs(6)+'</Shape>\n')
+                self.file_x3d.write(misc.tabs(5)+'</Billboard>\n')
+                self.file_x3d.write(misc.tabs(4)+'</Transform>\n')
 
                 n = n + 1
 
@@ -500,6 +513,20 @@ class WriteX3D:
                 self.file_x3d.write(misc.tabs(5)+'</Appearance>\n')
                 self.file_x3d.write(misc.tabs(4)+'</Shape>\n')
                 self.file_x3d.write(misc.tabs(3)+'</Transform>\n')
+
+                self.file_x3d.write(misc.tabs(4)+f'<Transform DEF="label_pysphtra{n}" translation="{sphere}" rotation="0 1 0 3.14" scale="20 20 20">\n') # labelscale = 20
+                self.file_x3d.write(misc.tabs(5)+'<Billboard axisOfRotation="0,0,0"  bboxCenter="0,0,0">\n')
+                self.file_x3d.write(misc.tabs(6)+'<Shape ispickable="false">\n')
+                self.file_x3d.write(misc.tabs(6)+'<Appearance>\n')
+                self.file_x3d.write(misc.tabs(6)+f'<Material DEF="label_pysph{n}" diffuseColor="0 0 0" emissiveColor="0 0 0"/>\n')
+                self.file_x3d.write(misc.tabs(6)+'</Appearance>\n')
+                self.file_x3d.write(misc.tabs(6)+f'<Text string="{labels[n]}">\n')
+                self.file_x3d.write(misc.tabs(7)+f'<FontStyle family=\'"SANS"\' topToBottom="false" justify=\'"BEGIN" "BEGIN"\' size="8"/>\n')
+                self.file_x3d.write(misc.tabs(6)+'</Text>\n')
+                self.file_x3d.write(misc.tabs(6)+'</Shape>\n')
+                self.file_x3d.write(misc.tabs(5)+'</Billboard>\n')
+                self.file_x3d.write(misc.tabs(4)+'</Transform>\n')
+
                 n = n + 1
         
         if geom == 'box':
@@ -515,6 +542,20 @@ class WriteX3D:
                 self.file_x3d.write(misc.tabs(5)+'</Appearance>\n')
                 self.file_x3d.write(misc.tabs(4)+'</Shape>\n')
                 self.file_x3d.write(misc.tabs(3)+'</Transform>\n')
+
+                self.file_x3d.write(misc.tabs(4)+f'<Transform DEF="label_pyboxtra{n}" translation="{box}" rotation="0 1 0 3.14" scale="20 20 20">\n') # labelscale = 20
+                self.file_x3d.write(misc.tabs(5)+'<Billboard axisOfRotation="0,0,0"  bboxCenter="0,0,0">\n')
+                self.file_x3d.write(misc.tabs(6)+'<Shape ispickable="false">\n')
+                self.file_x3d.write(misc.tabs(6)+'<Appearance>\n')
+                self.file_x3d.write(misc.tabs(6)+f'<Material DEF="label_pybox{n}" diffuseColor="0 0 0" emissiveColor="0 0 0"/>\n')
+                self.file_x3d.write(misc.tabs(6)+'</Appearance>\n')
+                self.file_x3d.write(misc.tabs(6)+f'<Text string="{labels[n]}">\n')
+                self.file_x3d.write(misc.tabs(7)+f'<FontStyle family=\'"SANS"\' topToBottom="false" justify=\'"BEGIN" "BEGIN"\' size="8"/>\n')
+                self.file_x3d.write(misc.tabs(6)+'</Text>\n')
+                self.file_x3d.write(misc.tabs(6)+'</Shape>\n')
+                self.file_x3d.write(misc.tabs(5)+'</Billboard>\n')
+                self.file_x3d.write(misc.tabs(4)+'</Transform>\n')
+
                 n = n + 1
             
         if geom == 'cone':
@@ -530,6 +571,20 @@ class WriteX3D:
                 self.file_x3d.write(misc.tabs(5)+'</Appearance>\n')
                 self.file_x3d.write(misc.tabs(4)+'</Shape>\n')
                 self.file_x3d.write(misc.tabs(3)+'</Transform>\n')
+
+                self.file_x3d.write(misc.tabs(4)+f'<Transform DEF="label_pycontra{n}" translation="{cone}" rotation="0 1 0 3.14" scale="20 20 20">\n') # labelscale = 20
+                self.file_x3d.write(misc.tabs(5)+'<Billboard axisOfRotation="0,0,0"  bboxCenter="0,0,0">\n')
+                self.file_x3d.write(misc.tabs(6)+'<Shape ispickable="false">\n')
+                self.file_x3d.write(misc.tabs(6)+'<Appearance>\n')
+                self.file_x3d.write(misc.tabs(6)+f'<Material DEF="label_pycon{n}" diffuseColor="0 0 0" emissiveColor="0 0 0"/>\n')
+                self.file_x3d.write(misc.tabs(6)+'</Appearance>\n')
+                self.file_x3d.write(misc.tabs(6)+f'<Text string="{labels[n]}">\n')
+                self.file_x3d.write(misc.tabs(7)+f'<FontStyle family=\'"SANS"\' topToBottom="false" justify=\'"BEGIN" "BEGIN"\' size="8"/>\n')
+                self.file_x3d.write(misc.tabs(6)+'</Text>\n')
+                self.file_x3d.write(misc.tabs(6)+'</Shape>\n')
+                self.file_x3d.write(misc.tabs(5)+'</Billboard>\n')
+                self.file_x3d.write(misc.tabs(4)+'</Transform>\n')
+
                 n = n + 1
                 
     def close(self):
@@ -538,8 +593,7 @@ class WriteX3D:
         an error.
         """
         #ending, close all
-        self.file_x3d.write('\n\t\t<ROUTE fromNode="PROX_LABEL" fromField="position_changed" toNode="TRANS_LABEL" toField="set_translation"/>')
-        self.file_x3d.write('\n\t\t<ROUTE fromNode="PROX_LABEL" fromField="orientation_changed" toNode="TRANS_LABEL" toField="set_rotation"/>')
+        self.file_x3d.write('\n\t\t</Transform>')
         self.file_x3d.write('\n\t</Scene>')
         self.file_x3d.write('\n</X3D>')
         self.file_x3d.close()
@@ -651,8 +705,9 @@ class WriteHTML:
 
     def func_galaxies(self):
         """
-        Make JS function to hide/show galaxies.
-        The X3D file must have galaxies for this to work.Must be after buttons()
+        Make JS function to hide/show galaxies and their labels.
+        The X3D file must have galaxies for this to work.
+        Must be after buttons()
         """
         for i,gal in enumerate(self.cube.galaxies):
             if i == 0:
@@ -665,12 +720,6 @@ class WriteHTML:
             self.file_html.write("\t \t document.getElementById('cube__%s').setAttribute('transparency', '1');\n"%gal)
         self.file_html.write("\t\t }\n\t\t }\n\t\t </script>\n")
 
-    def func_gallab(self):
-        """
-        Make JS function to hide/show galaxy labels.
-        The X3D file must have galaxies for this to work.
-
-        """
         for i,gal in enumerate(self.cube.galaxies):
             if i == 0:
                 self.file_html.write("\t\t <script>\n\t \t function setgallabels()\n\t \t {\n\t \t if(document.getElementById('cube__label_%s').getAttribute('transparency')!= '0'){\n"%gal)
@@ -679,6 +728,7 @@ class WriteHTML:
         for i,gal in enumerate(self.cube.galaxies):
             self.file_html.write("\t \t document.getElementById('cube__label_%s').setAttribute('transparency', '1');\n"%gal)
         self.file_html.write("\t\t }\n\t\t }\n\t\t </script>\n")
+            
 
     def func_grids(self):
         """
@@ -758,9 +808,10 @@ class WriteHTML:
         self.file_html.write('\n'+misc.tabs(1)+"<script>")
         self.file_html.write('\n'+misc.tabs(2)+"var active = false;")
         self.file_html.write('\n'+misc.tabs(2)+"function animation() {")
-        self.file_html.write('\n'+misc.tabs(3)+"if (act == false) {")
+        self.file_html.write('\n'+misc.tabs(3)+"if (active == false) {")
         self.file_html.write('\n'+misc.tabs(4)+"document.getElementById('cube__time').setAttribute('startTime', document.getElementById('cube__time').getAttribute('time'));")
         self.file_html.write('\n'+misc.tabs(4)+"document.getElementById('cube__time').setAttribute('isPaused', 'false');")
+        self.file_html.write('\n'+misc.tabs(4)+"active = true;")
         self.file_html.write('\n'+misc.tabs(3)+"} else if (document.getElementById('cube__time').getAttribute('isPaused') == 'false') {")
         self.file_html.write('\n'+misc.tabs(4)+"document.getElementById('cube__time').setAttribute('loop', 'false');")
         self.file_html.write('\n'+misc.tabs(4)+"document.getElementById('cube__time').setAttribute('isPaused', 'true')")
@@ -857,7 +908,8 @@ class WriteHTML:
         self.file_html.write(misc.tabs(3)+"<input type=\"color\" id=\"butcol\" value=\"#ff0000\">\n")
         self.file_html.write(misc.tabs(3)+"<button id=\"butnew\" onclick=\"newmarker()\">New</button>\n")
         self.file_html.write(misc.tabs(3)+"<button id=\"butcreate\" onclick=\"createmarker()\">Create</button>\n")
-        self.file_html.write(misc.tabs(3)+"<button id=\"butremove\" onclick=\"removemarker()\">Remove</button> <br><br>\n")
+        self.file_html.write(misc.tabs(3)+"<button id=\"butremove\" onclick=\"removemarker()\">Remove</button>\n")
+        self.file_html.write(misc.tabs(3)+"<button id=\"buthide\" onclick=\"hidemarker()\">Hide/Show</button> <br><br>\n")
         self.file_html.write(misc.tabs(2)+"</div>\n")
         self.file_html.write(misc.tabs(2)+"<!-- create various layouts for different objects -->\n")
         self.file_html.write(misc.tabs(2)+"<div id=\"spherediv\" style=\"display:none ; margin-left: 2%\">\n")
@@ -960,6 +1012,18 @@ class WriteHTML:
         self.file_html.write(misc.tabs(5)+"removeCon(selcon);\n")
         self.file_html.write(misc.tabs(3)+"}\n")
         self.file_html.write(misc.tabs(2)+"}\n")
+        # hidemarker
+        self.file_html.write(misc.tabs(3)+"function hidemarker() {\n")
+        self.file_html.write(misc.tabs(4)+"if (marktype.value == 'sphere') {\n")
+        self.file_html.write(misc.tabs(5)+"hideSphere(selsph);\n")
+        self.file_html.write(misc.tabs(4)+"} else if (marktype.value == 'box') {\n")
+        self.file_html.write(misc.tabs(5)+"hideBox(selbox);\n")
+        self.file_html.write(misc.tabs(4)+"} else if (marktype.value == 'tub') {\n")
+        self.file_html.write(misc.tabs(5)+"hideTub(seltub, tubelen);\n")
+        self.file_html.write(misc.tabs(4)+"} else if (marktype.value == 'con') {\n")
+        self.file_html.write(misc.tabs(5)+"hideCon(selcon);\n")
+        self.file_html.write(misc.tabs(3)+"}\n")
+        self.file_html.write(misc.tabs(2)+"}\n")
         self.file_html.write(misc.tabs(2)+"</script>\n")
 
     def func_pymarkers(self, tube=None, sphere=None, box=None, cone=None):
@@ -984,10 +1048,12 @@ class WriteHTML:
             for t in range(len(tube)):
                 for i in range(len(tube[t])-1):
                     self.file_html.write(misc.tabs(5)+"document.getElementById('cube__py%stubmat%s').setAttribute('transparency', '0');\n"%(t,i))
+                self.file_html.write(misc.tabs(5)+"document.getElementById('cube__label_pytub%s').setAttribute('transparency', '0');\n"%t)
             self.file_html.write(misc.tabs(4)+"} else {\n")
             for t in range(len(tube)):
                 for i in range(len(tube[t])-1):
                     self.file_html.write(misc.tabs(5)+"document.getElementById('cube__py%stubmat%s').setAttribute('transparency', '1');\n"%(t,i))
+                self.file_html.write(misc.tabs(5)+"document.getElementById('cube__label_pytub%s').setAttribute('transparency', '1');\n"%t)
             self.file_html.write(misc.tabs(4)+"}\n")
             self.file_html.write(misc.tabs(3)+"}\n")
         if sphere is not None:
@@ -995,9 +1061,11 @@ class WriteHTML:
             self.file_html.write(misc.tabs(4)+"if(document.getElementById('cube__py0sphmat').getAttribute('transparency') != '0') {\n")
             for i in range(len(sphere)):
                 self.file_html.write(misc.tabs(5)+"document.getElementById('cube__py%ssphmat').setAttribute('transparency', '0');\n"%i)
+                self.file_html.write(misc.tabs(5)+"document.getElementById('cube__label_pysph%s').setAttribute('transparency', '0');\n"%i)
             self.file_html.write(misc.tabs(4)+"} else {\n")
             for i in range(len(sphere)):
                 self.file_html.write(misc.tabs(5)+"document.getElementById('cube__py%ssphmat').setAttribute('transparency', '1');\n"%i)
+                self.file_html.write(misc.tabs(5)+"document.getElementById('cube__label_pysph%s').setAttribute('transparency', '1');\n"%i)
             self.file_html.write(misc.tabs(4)+"}\n")
             self.file_html.write(misc.tabs(3)+"}\n")
         if box is not None:
@@ -1005,9 +1073,11 @@ class WriteHTML:
             self.file_html.write(misc.tabs(4)+"if(document.getElementById('cube__py0boxmat').getAttribute('transparency') != '0') {\n")
             for i in range(len(box)):
                 self.file_html.write(misc.tabs(5)+"document.getElementById('cube__py%sboxmat').setAttribute('transparency', '0');\n"%i)
+                self.file_html.write(misc.tabs(5)+"document.getElementById('cube__label_pybox%s').setAttribute('transparency', '0');\n"%i)
             self.file_html.write(misc.tabs(4)+"} else {\n")
             for i in range(len(box)):
                 self.file_html.write(misc.tabs(5)+"document.getElementById('cube__py%sboxmat').setAttribute('transparency', '1');\n"%i)
+                self.file_html.write(misc.tabs(5)+"document.getElementById('cube__label_pybox%s').setAttribute('transparency', '1');\n"%i)
             self.file_html.write(misc.tabs(4)+"}\n")
             self.file_html.write(misc.tabs(3)+"}\n")
         if cone is not None:
@@ -1015,9 +1085,11 @@ class WriteHTML:
             self.file_html.write(misc.tabs(4)+"if(document.getElementById('cube__py0conmat').getAttribute('transparency') != '0') {\n")
             for i in range(len(cone)):
                 self.file_html.write(misc.tabs(5)+"document.getElementById('cube__py%sconmat').setAttribute('transparency', '0');\n"%i)
+                self.file_html.write(misc.tabs(5)+"document.getElementById('cube__label_pycon%s').setAttribute('transparency', '0');\n"%i)
             self.file_html.write(misc.tabs(4)+"} else {\n")
             for i in range(len(cone)):
                 self.file_html.write(misc.tabs(5)+"document.getElementById('cube__py%sconmat').setAttribute('transparency', '1');\n"%i)
+                self.file_html.write(misc.tabs(5)+"document.getElementById('cube__label_pycon%s').setAttribute('transparency', '1');\n"%i)
             self.file_html.write(misc.tabs(4)+"}\n")
             self.file_html.write(misc.tabs(3)+"}\n")
         self.file_html.write(misc.tabs(2)+"</script>\n")
@@ -1401,28 +1473,32 @@ class WriteHTML:
         self.file_html.write("\t\t\t document.getElementById('cube__tlt').setAttribute('scale', '1 1 '+sca);\n")
 
         #scale markers
+        # spheres
         self.file_html.write(misc.tabs(1)+"if (document.getElementById('new-sphere')[0].value != 'none') {\n")
         self.file_html.write(misc.tabs(2)+"for (s=0; s<document.getElementById('new-sphere').length; s++) {\n")
         self.file_html.write(misc.tabs(3)+"const sphInd = document.getElementById('new-sphere')[s].value.slice(3);\n")
         self.file_html.write(misc.tabs(3)+"document.getElementById('sphtra'+sphInd).setAttribute('translation', sph_coords[sphInd-1][0]+' '+sph_coords[sphInd-1][1]+' '+sca*sph_coords[sphInd-1][2]);\n")
+        self.file_html.write(misc.tabs(3)+"document.getElementById('sphlabtra'+sphInd).setAttribute('translation', sph_coords[sphInd-1][0]+' '+sph_coords[sphInd-1][1]+' '+sca*sph_coords[sphInd-1][2]);\n")
         self.file_html.write(misc.tabs(2)+"}\n")
         self.file_html.write(misc.tabs(1)+"}\n")
-
+        # boxes
         self.file_html.write(misc.tabs(1)+"if (document.getElementById('new-box')[0].value != 'none') {\n")
         self.file_html.write(misc.tabs(2)+"for (s=0; s<document.getElementById('new-box').length; s++) {\n")
         self.file_html.write(misc.tabs(3)+"const boxInd = document.getElementById('new-box')[s].value.slice(3);\n")
         self.file_html.write(misc.tabs(3)+"document.getElementById('boxtra'+boxInd).setAttribute('translation', box_coords[boxInd-1][0]+' '+box_coords[boxInd-1][1]+' '+sca*box_coords[boxInd-1][2]);\n")
+        self.file_html.write(misc.tabs(3)+"document.getElementById('boxlabtra'+boxInd).setAttribute('translation', box_coords[boxInd-1][0]+' '+box_coords[boxInd-1][1]+' '+sca*box_coords[boxInd-1][2]);\n")
         self.file_html.write(misc.tabs(2)+"}\n")
         self.file_html.write(misc.tabs(1)+"}\n")
-
+        # cones
         self.file_html.write(misc.tabs(1)+"if (document.getElementById('new-con')[0].value != 'none') {\n")
         self.file_html.write(misc.tabs(2)+"for (s=0; s<document.getElementById('new-con').length; s++) {\n")
         self.file_html.write(misc.tabs(3)+"const conInd = document.getElementById('new-con')[s].value.slice(3);\n")
         self.file_html.write(misc.tabs(3)+"document.getElementById('contra'+conInd).setAttribute('translation', con_coords[conInd-1][0]+' '+con_coords[conInd-1][1]+' '+sca*con_coords[conInd-1][2]);\n")
+        self.file_html.write(misc.tabs(3)+"document.getElementById('conlabtra'+conInd).setAttribute('translation', con_coords[conInd-1][0]+' '+con_coords[conInd-1][1]+' '+sca*con_coords[conInd-1][2]);\n")
         self.file_html.write(misc.tabs(3)+"// missing orientation change (don't implement?)\n")
         self.file_html.write(misc.tabs(2)+"}\n")
         self.file_html.write(misc.tabs(1)+"}\n")
-
+        # tubes
         self.file_html.write(misc.tabs(1)+"if (document.getElementById('new-tub')[0].value != 'none') {\n")
         self.file_html.write(misc.tabs(2)+"for (s=0; s<document.getElementById('new-tub').length; s++) {\n")
         self.file_html.write(misc.tabs(3)+"const tubInd = document.getElementById('new-tub')[s].value.slice(3);\n")
@@ -1433,6 +1509,7 @@ class WriteHTML:
         self.file_html.write(misc.tabs(4)+"document.getElementById('tubtra'+tubInd+'_'+i).setAttribute('rotation', tub_coords[tubInd-1][i-1][1][2]*sca+' 0 '+(-tub_coords[tubInd-1][i-1][1][0])+' '+angle);\n")
         self.file_html.write(misc.tabs(4)+"document.getElementById('tub'+tubInd+'_'+i).setAttribute('height', norm);\n")
         self.file_html.write(misc.tabs(3)+"}\n")
+        self.file_html.write(misc.tabs(3)+"document.getElementById('tublabtra'+tubInd).setAttribute('translation', tub_coords[tubInd-1][0][0][0]+' '+tub_coords[tubInd-1][0][0][1]+' '+sca*tub_coords[tubInd-1][0][0][2]);\n")
         self.file_html.write(misc.tabs(2)+"}\n")
         self.file_html.write(misc.tabs(1)+"}\n")
 
@@ -1443,18 +1520,21 @@ class WriteHTML:
             for s in range(len(sphere)):
                 sphere[s] = (sphere[s] - np.mean(self.cube.coords, axis=1))/delta*trans
                 self.file_html.write(misc.tabs(2)+f"document.getElementById('cube__pysph{n}tra').setAttribute('translation', '{sphere[s][0]} {sphere[s][1]} '+sca*{sphere[s][2]});\n")
+                self.file_html.write(misc.tabs(2)+f"document.getElementById('cube__label_pysphtra{n}').setAttribute('translation', '{sphere[s][0]} {sphere[s][1]} '+sca*{sphere[s][2]});\n")
                 n = n + 1
         if box is not None:
             n = 0
             for b in range(len(box)):
                 box[b] = (box[b] - np.mean(self.cube.coords, axis=1))/delta*trans
                 self.file_html.write(misc.tabs(2)+f"document.getElementById('cube__pybox{n}tra').setAttribute('translation', '{box[b][0]} {box[b][1]} '+sca*{box[b][2]});\n")
+                self.file_html.write(misc.tabs(2)+f"document.getElementById('cube__label_pyboxtra{n}').setAttribute('translation', '{box[b][0]} {box[b][1]} '+sca*{box[b][2]});\n")
                 n = n + 1
         if cone is not None:
             n = 0
             for c in range(len(cone)):
                 cone[c] = (cone[c] - np.mean(self.cube.coords, axis=1))/delta*trans
                 self.file_html.write(misc.tabs(2)+f"document.getElementById('cube__pycon{n}tra').setAttribute('translation', '{cone[c][0]} {cone[c][1]} '+sca*{cone[c][2]});\n")
+                self.file_html.write(misc.tabs(2)+f"document.getElementById('cube__label_pycontra{n}').setAttribute('translation', '{cone[c][0]} {cone[c][1]} '+sca*{cone[c][2]});\n")
                 n = n + 1
         # missing orientation change for cones
         if tube is not None:
@@ -1471,6 +1551,7 @@ class WriteHTML:
                     self.file_html.write(misc.tabs(2)+f"document.getElementById('cube__pytub{n}tra{i}').setAttribute('translation', '{pos[i][0]} {pos[i][1]} '+sca*{pos[i][2]});\n")
                     self.file_html.write(misc.tabs(2)+f"document.getElementById('cube__py{n}tub{i}').setAttribute('height', height{n}_{i}.toString());\n")
                     self.file_html.write(misc.tabs(2)+f"document.getElementById('cube__pytub{n}tra{i}').setAttribute('rotation', sca*diff{n}_{i}[2]+' 0 '+(-diff{n}_{i}[0])+' '+angle{n}_{i});\n")
+                self.file_html.write(misc.tabs(2)+f"document.getElementById('cube__label_pytubtra{n}').setAttribute('translation', '{pos[0][0]} {pos[0][1]} '+sca*{pos[0][2]});\n")
                 n = n +1
 
         #scale axes

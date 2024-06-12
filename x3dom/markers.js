@@ -22,6 +22,7 @@ function makelabel(objtype, x, y, z, sca, lab, num) {
     labtra.setAttribute('scale', '20 20 20');
     labbill.setAttribute('axisOfRotation', '0 0 0');
     labmat.setAttribute('diffuseColor', '0 0 0');
+    labmat.setAttribute('id', objtype+'labmat'+num);
     labtext.setAttribute('string', lab);
     labfont.setAttribute('family', 'SANS');
     labfont.setAttribute('topToBottom', 'false');
@@ -149,6 +150,17 @@ function removeSphere(selsph) {
     }
 }
 
+function hideSphere(selsph) {
+    const selsphnum = selsph.value.slice(3);
+    if (document.getElementById('sphmat'+selsphnum).getAttribute('transparency') == '0') {
+        document.getElementById('sphmat'+selsphnum).setAttribute('transparency', '1');
+        document.getElementById('sphlabmat'+selsphnum).setAttribute('transparency', '1');
+    } else {
+        document.getElementById('sphmat'+selsphnum).setAttribute('transparency', '0');
+        document.getElementById('sphlabmat'+selsphnum).setAttribute('transparency', '0');
+    }
+}
+
 // Boxes
 function newBox(nboxes, selbox) {
     if (selbox.value != 'none') {
@@ -252,6 +264,17 @@ function removeBox(selbox) {
                 document.getElementById(next).style.display = 'inline-block';
             }
         }
+    }
+}
+
+function hideBox(selbox) {
+    const selboxnum = selbox.value.slice(3);
+    if (document.getElementById('boxmat'+selboxnum).getAttribute('transparency') == '0') {
+        document.getElementById('boxmat'+selboxnum).setAttribute('transparency', '1');
+        document.getElementById('boxlabmat'+selboxnum).setAttribute('transparency', '1');
+    } else {
+        document.getElementById('boxmat'+selboxnum).setAttribute('transparency', '0');
+        document.getElementById('boxlabmat'+selboxnum).setAttribute('transparency', '0');
     }
 }
 
@@ -380,6 +403,17 @@ function removeCon(selcon) {
                 document.getElementById(next).style.display = 'inline-block';
             }
         }
+    }
+}
+
+function hideCon(selcon) {
+    const selconnum = selcon.value.slice(3);
+    if (document.getElementById('conmat'+selconnum).getAttribute('transparency') == '0') {
+        document.getElementById('conmat'+selconnum).setAttribute('transparency', '1');
+        document.getElementById('conlabmat'+selconnum).setAttribute('transparency', '1');
+    } else {
+        document.getElementById('conmat'+selconnum).setAttribute('transparency', '0');
+        document.getElementById('conlabmat'+selconnum).setAttribute('transparency', '0');
     }
 }
 
@@ -547,6 +581,19 @@ function removeTub(seltub, tubelen) {
                 const next = document.getElementById("new-tub")[0].value;
                 document.getElementById(next).style.display = 'inline-block';
             }
+        }
+    }
+}
+
+function hideTub(seltub, tubelen) {
+    const seltubnum = seltub.value.slice(3);
+    for (i=1; i<tubelen[seltubnum-1]; i++) {
+        if (document.getElementById('tubmat'+seltubnum+'_'+i).getAttribute('transparency') == '0') {
+            document.getElementById('tubmat'+seltubnum+'_'+i).setAttribute('transparency', '1');
+            document.getElementById('tublabmat'+seltubnum).setAttribute('transparency', '1');
+        } else {
+            document.getElementById('tubmat'+seltubnum+'_'+i).setAttribute('transparency', '0');
+            document.getElementById('tublabmat'+seltubnum).setAttribute('transparency', '0');
         }
     }
 }

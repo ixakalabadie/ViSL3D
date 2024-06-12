@@ -854,7 +854,6 @@ def createHTML(cube, filename, description=None, pagetitle=None):
         file.func_layers()
         if cube.galaxies is not None:
             file.func_galaxies()
-            file.func_gallab()
         file.func_grids()
         file.func_axes()
         # file.func_pick
