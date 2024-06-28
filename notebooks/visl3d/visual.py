@@ -257,7 +257,7 @@ def prep_one(cube, header=None, lims=None, unit=None, isolevels=None, colormap='
         galdict = None
 
     return Cube(l_cubes=[cube], name=header['OBJECT'], coords=cubecoords, units=cubeunits,
-                mags=cubemags, delta=delta, cmaps=colormap, rms=rms, image2d=image2d,
+                mags=cubemags, delta=delta, cmaps=[colormap], rms=rms, image2d=image2d,
                 galaxies=galdict, l_isolevels=[isolevels])
 
 def prep_mult(cube, spectral_lims, header=None, spatial_lims=None, l_isolevels=None, unit=None,

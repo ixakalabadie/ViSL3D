@@ -86,22 +86,11 @@ class WriteX3D:
                     self.file_x3d.write(f'\n\t\t\t<Transform DEF="{nc}lt{i}_sp{sp}" ' \
                                         +' translation="0 0 0" rotation="0 0 1 -0" scale="1 1 1">')
                     self.file_x3d.write(f'\n\t\t\t\t<Shape DEF="{nc}layer{i}_sp{sp}_shape">')
-                    self.file_x3d.write(f'\n\t\t\t\t\t<Appearance sortKey="{len(isolevels)-1-i}">')
-
-                    style = 'transparent'
-                    if style == 'transparent':
-                        #set color and transparency of layer
-                        if i == len(isolevels)-1:
-                            op = 0.4
-                        else:
-                            op = 0.8
-                        self.file_x3d.write(f'\n{misc.tabs(6)}<Material DEF="{nc}layer{i}_sp{sp}" '\
-                                + 'ambientIntensity="0" emissiveColor="0 0 0" '\
-                                + f'diffuseColor="{rgbcolors[i]}" specularColor=' \
-                                +f'"0 0 0" shininess="0.0078" transparency="{op}"/>')
-                    elif style == 'opaque':
-                        #set color of layer, transparency is set in HTML
-                        self.file_x3d.write(f'\n{misc.tabs(6)}<Material DEF="{nc}layer{i}_sp{sp}" ambientIntensity="0" emissiveColor="{rgbcolors[i]}" diffuseColor="{rgbcolors[i]}" specularColor="0 0 0" shininess="0.0078"/>')
+                    self.file_x3d.write(f'\n\t\t\t\t\t<Appearance DEF="{nc}layer{i}_sp{sp}_appe" sortType="transparent" sortKey="{len(isolevels)-1-i}">')
+                    self.file_x3d.write(f'\n{misc.tabs(6)}<Material DEF="{nc}layer{i}_sp{sp}" '\
+                            + 'ambientIntensity="0" emissiveColor="0 0 0" '\
+                            + f'diffuseColor="{rgbcolors[i]}" specularColor=' \
+                            +f'"0 0 0" shininess="0.0078" transparency="0.8"/>')
                     #correct color with depthmode (ALSO FOR LAST LAYER?)
                     # if i != len(isolevels)-1:
                     self.file_x3d.write('\n'+misc.tabs(6)+'<DepthMode readOnly="true"></DepthMode>')
@@ -678,33 +667,38 @@ class WriteHTML:
             for i in range(nlayers[nc]):
                 self.file_html.write(f'{misc.tabs(4)}setHI{nc}layer{i}();\n')
             self.file_html.write(misc.tabs(3)+"}\n")
+
+        self.file_html.write(misc.tabs(3)+"function changeopa() {\n")
+        self.file_html.write(misc.tabs(4)+f'const nlayers = {nlayers};\n')
+        self.file_html.write(misc.tabs(4)+'if (document.getElementById("cube__0layer0_sp0_appe").getAttribute("sortType") == "opaque") {\n')
+        self.file_html.write(misc.tabs(5)+'for (let nc = 0; nc < %s; nc++) {\n'%numcubes)
+        self.file_html.write(misc.tabs(6)+'for (let i = 0; i < nlayers[nc]; i++) {\n')
+        self.file_html.write(misc.tabs(7)+f'document.getElementById("cube__"+nc+"layer"+i+"_sp0_appe").setAttribute("sortType", "transparent");\n')
+        self.file_html.write(misc.tabs(6)+"}\n")
+        self.file_html.write(misc.tabs(5)+"}\n")
+        self.file_html.write(misc.tabs(4)+'} else {\n')
+        self.file_html.write(misc.tabs(5)+'for (let nc = 0; nc < %s; nc++) {\n'%numcubes)
+        self.file_html.write(misc.tabs(6)+'for (let i = 0; i < nlayers[nc]; i++) {\n')
+        self.file_html.write(misc.tabs(7)+f'document.getElementById("cube__"+nc+"layer"+i+"_sp0_appe").setAttribute("sortType", "opaque");\n')
+        self.file_html.write(misc.tabs(6)+"}\n")
+        self.file_html.write(misc.tabs(5)+"}\n")
+        self.file_html.write(misc.tabs(4)+"}\n")
+        self.file_html.write(misc.tabs(3)+"}\n")
         self.file_html.write(misc.tabs(2)+"</script>\n")
+
         for nc in range(numcubes):
             for i in range(nlayers[nc]):
-                if i != nlayers[nc]-1:
-                    self.file_html.write("\t <script>\n\t \t function setHI%slayer%s()\n\t \t {\n\t \t if(document.getElementById('cube__%slayer%s_sp0').getAttribute('transparency') != '0.8') {\n"%(nc,i,nc,i))
-                    self.file_html.write(f"\t\t document.getElementById('{nc}but{i}').style.border = '5px dashed black';\n")
-                    for sp in range(self.cube.iso_split[nc][i]):
-                        self.file_html.write(f"\t\t document.getElementById('cube__{nc}layer{i}_sp{sp}').setAttribute('transparency', '0.8');\n")
-                        self.file_html.write(f"\t\t document.getElementById('cube__{nc}layer{i}_sp{sp}_shape').setAttribute('ispickable', 'true');\n")
-                    self.file_html.write("\t\t } else { \n")
-                    self.file_html.write(f"\t\t document.getElementById('{nc}but{i}').style.border = 'inset black';\n")
-                    for sp in range(self.cube.iso_split[nc][i]):
-                        self.file_html.write(f"\t\t document.getElementById('cube__{nc}layer{i}_sp{sp}').setAttribute('transparency', '1');\n")
-                        self.file_html.write(f"\t\t document.getElementById('cube__{nc}layer{i}_sp{sp}_shape').setAttribute('ispickable', 'false');\n")
-                    self.file_html.write("\t\t } \n\t\t }\n\t </script>\n")
-                else:
-                    self.file_html.write("\t <script>\n\t\t function setHI%slayer%s()\n\t\t {\n\t \t if(document.getElementById('cube__%slayer%s_sp0').getAttribute('transparency') != '0.4') {\n"%(nc,i,nc,i))
-                    self.file_html.write("\t\t document.getElementById('%sbut%s').style.border = '5px dashed black';\n"%(nc,i))
-                    for sp in range(self.cube.iso_split[nc][i]):
-                        self.file_html.write("\t\t document.getElementById('cube__%slayer%s_sp%s').setAttribute('transparency', '0.4');\n"%(nc,i,sp))
-                        self.file_html.write("\t\t document.getElementById('cube__%slayer%s_sp%s_shape').setAttribute('ispickable', 'true');\n"%(nc,i,sp))
-                    self.file_html.write("\t\t } else { \n")
-                    self.file_html.write("\t\t document.getElementById('%sbut%s').style.border = 'inset black';\n"%(nc,i))
-                    for sp in range(self.cube.iso_split[nc][i]):
-                        self.file_html.write("\t\t document.getElementById('cube__%slayer%s_sp%s').setAttribute('transparency', '1');\n"%(nc,i,sp))
-                        self.file_html.write("\t\t document.getElementById('cube__%slayer%s_sp%s_shape').setAttribute('ispickable', 'false');\n"%(nc,i,sp))
-                    self.file_html.write("\t\t } \n\t\t }\n\t </script>\n")
+                self.file_html.write("\t <script>\n\t \t function setHI%slayer%s()\n\t \t {\n\t \t if(document.getElementById('cube__%slayer%s_sp0').getAttribute('transparency') != '0.8') {\n"%(nc,i,nc,i))
+                self.file_html.write(f"\t\t document.getElementById('{nc}but{i}').style.border = '5px dashed black';\n")
+                for sp in range(self.cube.iso_split[nc][i]):
+                    self.file_html.write(f"\t\t document.getElementById('cube__{nc}layer{i}_sp{sp}').setAttribute('transparency', '0.8');\n")
+                    self.file_html.write(f"\t\t document.getElementById('cube__{nc}layer{i}_sp{sp}_shape').setAttribute('ispickable', 'true');\n")
+                self.file_html.write("\t\t } else { \n")
+                self.file_html.write(f"\t\t document.getElementById('{nc}but{i}').style.border = 'inset black';\n")
+                for sp in range(self.cube.iso_split[nc][i]):
+                    self.file_html.write(f"\t\t document.getElementById('cube__{nc}layer{i}_sp{sp}').setAttribute('transparency', '1');\n")
+                    self.file_html.write(f"\t\t document.getElementById('cube__{nc}layer{i}_sp{sp}_shape').setAttribute('ispickable', 'false');\n")
+                self.file_html.write("\t\t } \n\t\t }\n\t </script>\n")
 
     def func_galaxies(self):
         """
@@ -1198,7 +1192,6 @@ class WriteHTML:
                 else:
                     self.file_html.write(misc.tabs(3)+'<button id="%sbut%s" onclick="setHI%slayer%s();" style="font-size:20px ; border:5px dashed black ; background:%s ; color:white"><b>%s</b></button>\n'%(nc,i,nc,i,c,butlabel))
             self.file_html.write(misc.tabs(3)+f'&nbsp <button id="all" onclick="hideall{nc}()"><b>Invert</b></button>')
-
                     
         # to separate buttons in two parts
         #if self.grids or self.gals or self.gallabs or self.axes or self.hclick or colormaps is not None:
@@ -1231,8 +1224,11 @@ class WriteHTML:
             self.file_html.write(misc.tabs(3) + '<option value="asinh">asinh</option>\n')
             self.file_html.write(misc.tabs(2) + '</select>\n')
 
-        # Background
+        # Opacity
         self.file_html.write('\n'+misc.tabs(2)+'<br><br>\n')
+        self.file_html.write(misc.tabs(3)+f'&nbsp <button id="all" onclick="changeopa()"><b>Opacity</b></button>')
+
+        # Background
         self.file_html.write(misc.tabs(3)+'&nbsp <label for="back-choice"><b>Background:</b> </label>\n')
         self.file_html.write(misc.tabs(3)+'<input oninput="change_background()" id="back-choice" type="color" value="#999999">\n')
 
