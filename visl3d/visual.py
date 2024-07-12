@@ -728,9 +728,10 @@ def prep_overlay(cube, header=None, spectral_lims=None, lines=None, spatial_lims
         raise ValueError('Spectral lims out of range')
 
     shape = np.array([
-        np.squeeze(np.max(np.diff(lims[0]),axis=0)[0]),
+        np.max(np.diff(lims[1]),axis=None),
         np.squeeze(np.max(np.diff(lims[0]),axis=0)[1]),
-        np.max(np.diff(lims[1]),axis=None)], dtype=int)
+        np.squeeze(np.max(np.diff(lims[0]),axis=0)[0])
+        ], dtype=int)
 
     l_cubes = []
     for i in range(len(lims[1])):
