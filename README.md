@@ -1,10 +1,10 @@
 # ViSL3D
 Ixaka Labadie García<br/>
-12/04/2024
+16/07/2024
 ---
 `ViSL3D` is a Python package that creates X3D and HTML files to visualize datacubes from astrophysics in 3D in an interactive way. We use [X3D](https://www.web3d.org/x3d/what-x3d) and [x3dom](https://www.web3d.org/x3d/what-x3d) to represent figures in 3D and to integrate them into an HTML. The models have been made taking the x3d-pathway (Vogt et al. 2016) as a starting point. The current code was made for radio data, although it can be used with other types of 3D data.
 
-## Prerequisites
+## Installation
 
 1. Install a local HTTP Server. Visualisations produced by **ViSL3D** must be opened through a local server in order to be displayed. There are a few options:
     - [Apache](https://httpd.apache.org/) is a popular HTTP server that can be installed in most operating systems.
@@ -13,15 +13,18 @@ Ixaka Labadie García<br/>
 
 2. Copy the [x3dom](https://github.com/ixakalabadie/ViSL3D/tree/master/x3dom) folder into the Apache DocumentRoot directory. By default, it is `/var/www/html` in Linux, `C:\Apache24\htdocs` in Windows and `/usr/local/var/www` (or similar) in Mac. The DocumentRoot can be found and modified in the `httpd.config` file.
 
-3. Create a Python environment with the following packages:
-    - [NumPy](https://numpy.org/)
-    - [Scikit-image](https://scikit-image.org/)
-    - [Matplotlib](https://matplotlib.org/)
-    - [Astropy](https://www.astropy.org/)
-    - [Astroquery](https://github.com/astropy/astroquery)
-    - [Scipy](https://scipy.org/)
+3. Install `ViSL3D`:
+    - With `pip` (recommended)<br>
+    ```pip install visl3d```
 
-4. Add [ViSL3D](https://github.com/ixakalabadie/ViSL3D/tree/master/visl3d) to PYTHONPATH (this can be done simply by having it in the same folder as the Python notebook or script).
+    - Or create a Python environment with the following packages:
+        - [NumPy](https://numpy.org/)
+        - [Scikit-image](https://scikit-image.org/)
+        - [Matplotlib](https://matplotlib.org/)
+        - [Astropy](https://www.astropy.org/)
+        - [Astroquery](https://github.com/astropy/astroquery)
+        - [Scipy](https://scipy.org/)<br><br>
+        And downlad and add [ViSL3D](https://github.com/ixakalabadie/ViSL3D/tree/master/visl3d) to PYTHONPATH (this can be done simply by having it in the same folder as the Python notebook or script).
 
 ## How to use
 
