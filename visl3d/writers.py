@@ -63,6 +63,7 @@ class WriteX3D:
             cube_full = self.cube.l_cubes[nc]
             isolevels = self.cube.l_isolevels[nc]
             self.cube.iso_split.append(np.zeros((len(isolevels)), dtype=int))
+            rgbcolors = misc.create_colormap(self.cube.cmaps[nc], isolevels)
             for (i,lev) in enumerate(isolevels):
                 # calculate how many times to split the cube, 1 means the cube stays the same
                 split = int(np.sum(cube_full>lev)/700000)+1
@@ -85,22 +86,8 @@ class WriteX3D:
                     self.file_x3d.write(f'\n\t\t\t<Transform DEF="{nc}lt{i}_sp{sp}" ' \
                                         +' translation="0 0 0" rotation="0 0 1 -0" scale="1 1 1">')
                     self.file_x3d.write(f'\n\t\t\t\t<Shape DEF="{nc}layer{i}_sp{sp}_shape">')
-                    self.file_x3d.write(f'\n\t\t\t\t\t<Appearance sortKey="{len(isolevels)-1-i}">')
+                    self.file_x3d.write(f'\n\t\t\t\t\t<Appearance DEF="{nc}layer{i}_sp{sp}_appe" sortType="transparent" sortKey="{len(isolevels)-1-i}">')
 
-                    style = 'transparent'
-                    if style == 'transparent':
-                        #set color and transparency of layer
-                        if i == len(isolevels)-1:
-                            op = 0.4
-                        else:
-                            op = 0.8
-                        self.file_x3d.write(f'\n{misc.tabs(6)}<Material DEF="{nc}layer{i}_sp{sp}" '\
-                                + 'ambientIntensity="0" emissiveColor="0 0 0" '\
-                                + f'diffuseColor="{self.cube.l_colors[nc][i]}" specularColor=' \
-                                +f'"0 0 0" shininess="0.0078" transparency="{op}"/>')
-                    elif style == 'opaque':
-                        #set color of layer, transparency is set in HTML
-                        self.file_x3d.write(f'\n{misc.tabs(6)}<Material DEF="{nc}layer{i}_sp{sp}" ambientIntensity="0" emissiveColor="{self.cube.l_colors[nc][i]}" diffuseColor="{self.cube.l_colors[nc][i]}" specularColor="0 0 0" shininess="0.0078"/>')
                     #correct color with depthmode (ALSO FOR LAST LAYER?)
                     # if i != len(isolevels)-1:
                     self.file_x3d.write('\n'+misc.tabs(6)+'<DepthMode readOnly="true"></DepthMode>')
@@ -309,8 +296,6 @@ class WriteX3D:
         """
         Create the labels of different elements in the figure.
         """
-        gals = self.cube.galaxies
-
         self.file_x3d.write('\n\t\t<ProximitySensor DEF="PROX_LABEL" size="1.0e+06 1.0e+06 1.0e+06"/>')
         self.file_x3d.write('\n\t\t<Collision enabled="false">')
 
@@ -436,7 +421,7 @@ class WriteX3D:
 
         self.file_x3d.write('\n\t\t</Collision>')
 
-    def make_markers(self, geom, points, shape, delta, trans, color, labels=None):
+    def make_markers(self, geom, points, shape, trans, color, labels=None):
         """
         Create markers in the X3D model.
         Must be called before make_ticklines().
@@ -460,7 +445,7 @@ class WriteX3D:
         color : list
             List with the color of the markers. Each element is a string with RGB values.
         """
-        delta = np.array(delta)
+        delta = np.array(self.cube.delta)
         if geom == 'tube':
             n = 0
             for tube in points:
@@ -484,19 +469,19 @@ class WriteX3D:
                     self.file_x3d.write(misc.tabs(5)+'</Appearance>\n')
                     self.file_x3d.write(misc.tabs(4)+'</Shape>\n')
                     self.file_x3d.write(misc.tabs(3)+'</Transform>\n')
-                
-                self.file_x3d.write(misc.tabs(4)+f'<Transform DEF="label_pytubtra{n}" translation="{pos[0]}" rotation="0 1 0 3.14" scale="20 20 20">\n') # labelscale = 20
-                self.file_x3d.write(misc.tabs(5)+'<Billboard axisOfRotation="0,0,0"  bboxCenter="0,0,0">\n')
-                self.file_x3d.write(misc.tabs(6)+'<Shape ispickable="false">\n')
-                self.file_x3d.write(misc.tabs(6)+'<Appearance>\n')
-                self.file_x3d.write(misc.tabs(6)+f'<Material DEF="label_pytub{n}" diffuseColor="0 0 0" emissiveColor="0 0 0"/>\n')
-                self.file_x3d.write(misc.tabs(6)+'</Appearance>\n')
-                self.file_x3d.write(misc.tabs(6)+f'<Text string="{labels[n]}">\n')
-                self.file_x3d.write(misc.tabs(7)+f'<FontStyle family=\'"SANS"\' topToBottom="false" justify=\'"BEGIN" "BEGIN"\' size="8"/>\n')
-                self.file_x3d.write(misc.tabs(6)+'</Text>\n')
-                self.file_x3d.write(misc.tabs(6)+'</Shape>\n')
-                self.file_x3d.write(misc.tabs(5)+'</Billboard>\n')
-                self.file_x3d.write(misc.tabs(4)+'</Transform>\n')
+                if labels is not None:
+                    self.file_x3d.write(misc.tabs(4)+f'<Transform DEF="label_pytubtra{n}" translation="{pos[0]}" rotation="0 1 0 3.14" scale="20 20 20">\n') # labelscale = 20
+                    self.file_x3d.write(misc.tabs(5)+'<Billboard axisOfRotation="0,0,0"  bboxCenter="0,0,0">\n')
+                    self.file_x3d.write(misc.tabs(6)+'<Shape ispickable="false">\n')
+                    self.file_x3d.write(misc.tabs(6)+'<Appearance>\n')
+                    self.file_x3d.write(misc.tabs(6)+f'<Material DEF="label_pytub{n}" diffuseColor="0 0 0" emissiveColor="0 0 0"/>\n')
+                    self.file_x3d.write(misc.tabs(6)+'</Appearance>\n')
+                    self.file_x3d.write(misc.tabs(6)+f'<Text string="{labels[n]}">\n')
+                    self.file_x3d.write(misc.tabs(7)+f'<FontStyle family=\'"SANS"\' topToBottom="false" justify=\'"BEGIN" "BEGIN"\' size="8"/>\n')
+                    self.file_x3d.write(misc.tabs(6)+'</Text>\n')
+                    self.file_x3d.write(misc.tabs(6)+'</Shape>\n')
+                    self.file_x3d.write(misc.tabs(5)+'</Billboard>\n')
+                    self.file_x3d.write(misc.tabs(4)+'</Transform>\n')
 
                 n = n + 1
 
@@ -514,18 +499,19 @@ class WriteX3D:
                 self.file_x3d.write(misc.tabs(4)+'</Shape>\n')
                 self.file_x3d.write(misc.tabs(3)+'</Transform>\n')
 
-                self.file_x3d.write(misc.tabs(4)+f'<Transform DEF="label_pysphtra{n}" translation="{sphere}" rotation="0 1 0 3.14" scale="20 20 20">\n') # labelscale = 20
-                self.file_x3d.write(misc.tabs(5)+'<Billboard axisOfRotation="0,0,0"  bboxCenter="0,0,0">\n')
-                self.file_x3d.write(misc.tabs(6)+'<Shape ispickable="false">\n')
-                self.file_x3d.write(misc.tabs(6)+'<Appearance>\n')
-                self.file_x3d.write(misc.tabs(6)+f'<Material DEF="label_pysph{n}" diffuseColor="0 0 0" emissiveColor="0 0 0"/>\n')
-                self.file_x3d.write(misc.tabs(6)+'</Appearance>\n')
-                self.file_x3d.write(misc.tabs(6)+f'<Text string="{labels[n]}">\n')
-                self.file_x3d.write(misc.tabs(7)+f'<FontStyle family=\'"SANS"\' topToBottom="false" justify=\'"BEGIN" "BEGIN"\' size="8"/>\n')
-                self.file_x3d.write(misc.tabs(6)+'</Text>\n')
-                self.file_x3d.write(misc.tabs(6)+'</Shape>\n')
-                self.file_x3d.write(misc.tabs(5)+'</Billboard>\n')
-                self.file_x3d.write(misc.tabs(4)+'</Transform>\n')
+                if labels is not None:
+                    self.file_x3d.write(misc.tabs(4)+f'<Transform DEF="label_pysphtra{n}" translation="{sphere}" rotation="0 1 0 3.14" scale="20 20 20">\n') # labelscale = 20
+                    self.file_x3d.write(misc.tabs(5)+'<Billboard axisOfRotation="0,0,0"  bboxCenter="0,0,0">\n')
+                    self.file_x3d.write(misc.tabs(6)+'<Shape ispickable="false">\n')
+                    self.file_x3d.write(misc.tabs(6)+'<Appearance>\n')
+                    self.file_x3d.write(misc.tabs(6)+f'<Material DEF="label_pysph{n}" diffuseColor="0 0 0" emissiveColor="0 0 0"/>\n')
+                    self.file_x3d.write(misc.tabs(6)+'</Appearance>\n')
+                    self.file_x3d.write(misc.tabs(6)+f'<Text string="{labels[n]}">\n')
+                    self.file_x3d.write(misc.tabs(7)+f'<FontStyle family=\'"SANS"\' topToBottom="false" justify=\'"BEGIN" "BEGIN"\' size="8"/>\n')
+                    self.file_x3d.write(misc.tabs(6)+'</Text>\n')
+                    self.file_x3d.write(misc.tabs(6)+'</Shape>\n')
+                    self.file_x3d.write(misc.tabs(5)+'</Billboard>\n')
+                    self.file_x3d.write(misc.tabs(4)+'</Transform>\n')
 
                 n = n + 1
         
@@ -543,18 +529,19 @@ class WriteX3D:
                 self.file_x3d.write(misc.tabs(4)+'</Shape>\n')
                 self.file_x3d.write(misc.tabs(3)+'</Transform>\n')
 
-                self.file_x3d.write(misc.tabs(4)+f'<Transform DEF="label_pyboxtra{n}" translation="{box}" rotation="0 1 0 3.14" scale="20 20 20">\n') # labelscale = 20
-                self.file_x3d.write(misc.tabs(5)+'<Billboard axisOfRotation="0,0,0"  bboxCenter="0,0,0">\n')
-                self.file_x3d.write(misc.tabs(6)+'<Shape ispickable="false">\n')
-                self.file_x3d.write(misc.tabs(6)+'<Appearance>\n')
-                self.file_x3d.write(misc.tabs(6)+f'<Material DEF="label_pybox{n}" diffuseColor="0 0 0" emissiveColor="0 0 0"/>\n')
-                self.file_x3d.write(misc.tabs(6)+'</Appearance>\n')
-                self.file_x3d.write(misc.tabs(6)+f'<Text string="{labels[n]}">\n')
-                self.file_x3d.write(misc.tabs(7)+f'<FontStyle family=\'"SANS"\' topToBottom="false" justify=\'"BEGIN" "BEGIN"\' size="8"/>\n')
-                self.file_x3d.write(misc.tabs(6)+'</Text>\n')
-                self.file_x3d.write(misc.tabs(6)+'</Shape>\n')
-                self.file_x3d.write(misc.tabs(5)+'</Billboard>\n')
-                self.file_x3d.write(misc.tabs(4)+'</Transform>\n')
+                if labels is not None:
+                    self.file_x3d.write(misc.tabs(4)+f'<Transform DEF="label_pyboxtra{n}" translation="{box}" rotation="0 1 0 3.14" scale="20 20 20">\n') # labelscale = 20
+                    self.file_x3d.write(misc.tabs(5)+'<Billboard axisOfRotation="0,0,0"  bboxCenter="0,0,0">\n')
+                    self.file_x3d.write(misc.tabs(6)+'<Shape ispickable="false">\n')
+                    self.file_x3d.write(misc.tabs(6)+'<Appearance>\n')
+                    self.file_x3d.write(misc.tabs(6)+f'<Material DEF="label_pybox{n}" diffuseColor="0 0 0" emissiveColor="0 0 0"/>\n')
+                    self.file_x3d.write(misc.tabs(6)+'</Appearance>\n')
+                    self.file_x3d.write(misc.tabs(6)+f'<Text string="{labels[n]}">\n')
+                    self.file_x3d.write(misc.tabs(7)+f'<FontStyle family=\'"SANS"\' topToBottom="false" justify=\'"BEGIN" "BEGIN"\' size="8"/>\n')
+                    self.file_x3d.write(misc.tabs(6)+'</Text>\n')
+                    self.file_x3d.write(misc.tabs(6)+'</Shape>\n')
+                    self.file_x3d.write(misc.tabs(5)+'</Billboard>\n')
+                    self.file_x3d.write(misc.tabs(4)+'</Transform>\n')
 
                 n = n + 1
             
@@ -572,18 +559,19 @@ class WriteX3D:
                 self.file_x3d.write(misc.tabs(4)+'</Shape>\n')
                 self.file_x3d.write(misc.tabs(3)+'</Transform>\n')
 
-                self.file_x3d.write(misc.tabs(4)+f'<Transform DEF="label_pycontra{n}" translation="{cone}" rotation="0 1 0 3.14" scale="20 20 20">\n') # labelscale = 20
-                self.file_x3d.write(misc.tabs(5)+'<Billboard axisOfRotation="0,0,0"  bboxCenter="0,0,0">\n')
-                self.file_x3d.write(misc.tabs(6)+'<Shape ispickable="false">\n')
-                self.file_x3d.write(misc.tabs(6)+'<Appearance>\n')
-                self.file_x3d.write(misc.tabs(6)+f'<Material DEF="label_pycon{n}" diffuseColor="0 0 0" emissiveColor="0 0 0"/>\n')
-                self.file_x3d.write(misc.tabs(6)+'</Appearance>\n')
-                self.file_x3d.write(misc.tabs(6)+f'<Text string="{labels[n]}">\n')
-                self.file_x3d.write(misc.tabs(7)+f'<FontStyle family=\'"SANS"\' topToBottom="false" justify=\'"BEGIN" "BEGIN"\' size="8"/>\n')
-                self.file_x3d.write(misc.tabs(6)+'</Text>\n')
-                self.file_x3d.write(misc.tabs(6)+'</Shape>\n')
-                self.file_x3d.write(misc.tabs(5)+'</Billboard>\n')
-                self.file_x3d.write(misc.tabs(4)+'</Transform>\n')
+                if labels is not None:
+                    self.file_x3d.write(misc.tabs(4)+f'<Transform DEF="label_pycontra{n}" translation="{cone}" rotation="0 1 0 3.14" scale="20 20 20">\n') # labelscale = 20
+                    self.file_x3d.write(misc.tabs(5)+'<Billboard axisOfRotation="0,0,0"  bboxCenter="0,0,0">\n')
+                    self.file_x3d.write(misc.tabs(6)+'<Shape ispickable="false">\n')
+                    self.file_x3d.write(misc.tabs(6)+'<Appearance>\n')
+                    self.file_x3d.write(misc.tabs(6)+f'<Material DEF="label_pycon{n}" diffuseColor="0 0 0" emissiveColor="0 0 0"/>\n')
+                    self.file_x3d.write(misc.tabs(6)+'</Appearance>\n')
+                    self.file_x3d.write(misc.tabs(6)+f'<Text string="{labels[n]}">\n')
+                    self.file_x3d.write(misc.tabs(7)+f'<FontStyle family=\'"SANS"\' topToBottom="false" justify=\'"BEGIN" "BEGIN"\' size="8"/>\n')
+                    self.file_x3d.write(misc.tabs(6)+'</Text>\n')
+                    self.file_x3d.write(misc.tabs(6)+'</Shape>\n')
+                    self.file_x3d.write(misc.tabs(5)+'</Billboard>\n')
+                    self.file_x3d.write(misc.tabs(4)+'</Transform>\n')
 
                 n = n + 1
                 
@@ -675,33 +663,39 @@ class WriteHTML:
             for i in range(nlayers[nc]):
                 self.file_html.write(f'{misc.tabs(4)}setHI{nc}layer{i}();\n')
             self.file_html.write(misc.tabs(3)+"}\n")
+
+        self.file_html.write(misc.tabs(3)+"function changeopa() {\n")
+        self.file_html.write(misc.tabs(4)+f'const nlayers = {nlayers};\n')
+        self.file_html.write(misc.tabs(4)+'if (document.getElementById("cube__0layer0_sp0_appe").getAttribute("sortType") == "opaque") {\n')
+        self.file_html.write(misc.tabs(5)+'for (let nc = 0; nc < %s; nc++) {\n'%numcubes)
+        self.file_html.write(misc.tabs(6)+'for (let i = 0; i < nlayers[nc]; i++) {\n')
+        self.file_html.write(misc.tabs(7)+f'document.getElementById("cube__"+nc+"layer"+i+"_sp0_appe").setAttribute("sortType", "transparent");\n')
+        self.file_html.write(misc.tabs(6)+"}\n")
+        self.file_html.write(misc.tabs(5)+"}\n")
+        self.file_html.write(misc.tabs(4)+'} else {\n')
+        self.file_html.write(misc.tabs(5)+'for (let nc = 0; nc < %s; nc++) {\n'%numcubes)
+        self.file_html.write(misc.tabs(6)+'for (let i = 0; i < nlayers[nc]; i++) {\n')
+        self.file_html.write(misc.tabs(7)+f'document.getElementById("cube__"+nc+"layer"+i+"_sp0_appe").setAttribute("sortType", "opaque");\n')
+        self.file_html.write(misc.tabs(6)+"}\n")
+        self.file_html.write(misc.tabs(5)+"}\n")
+        self.file_html.write(misc.tabs(4)+"}\n")
+        self.file_html.write(misc.tabs(3)+"}\n")
+
         self.file_html.write(misc.tabs(2)+"</script>\n")
+
         for nc in range(numcubes):
             for i in range(nlayers[nc]):
-                if i != nlayers[nc]-1:
-                    self.file_html.write("\t <script>\n\t \t function setHI%slayer%s()\n\t \t {\n\t \t if(document.getElementById('cube__%slayer%s_sp0').getAttribute('transparency') != '0.8') {\n"%(nc,i,nc,i))
-                    self.file_html.write(f"\t\t document.getElementById('{nc}but{i}').style.border = '5px dashed black';\n")
-                    for sp in range(self.cube.iso_split[nc][i]):
-                        self.file_html.write(f"\t\t document.getElementById('cube__{nc}layer{i}_sp{sp}').setAttribute('transparency', '0.8');\n")
-                        self.file_html.write(f"\t\t document.getElementById('cube__{nc}layer{i}_sp{sp}_shape').setAttribute('ispickable', 'true');\n")
-                    self.file_html.write("\t\t } else { \n")
-                    self.file_html.write(f"\t\t document.getElementById('{nc}but{i}').style.border = 'inset black';\n")
-                    for sp in range(self.cube.iso_split[nc][i]):
-                        self.file_html.write(f"\t\t document.getElementById('cube__{nc}layer{i}_sp{sp}').setAttribute('transparency', '1');\n")
-                        self.file_html.write(f"\t\t document.getElementById('cube__{nc}layer{i}_sp{sp}_shape').setAttribute('ispickable', 'false');\n")
-                    self.file_html.write("\t\t } \n\t\t }\n\t </script>\n")
-                else:
-                    self.file_html.write("\t <script>\n\t\t function setHI%slayer%s()\n\t\t {\n\t \t if(document.getElementById('cube__%slayer%s_sp0').getAttribute('transparency') != '0.4') {\n"%(nc,i,nc,i))
-                    self.file_html.write("\t\t document.getElementById('%sbut%s').style.border = '5px dashed black';\n"%(nc,i))
-                    for sp in range(self.cube.iso_split[nc][i]):
-                        self.file_html.write("\t\t document.getElementById('cube__%slayer%s_sp%s').setAttribute('transparency', '0.4');\n"%(nc,i,sp))
-                        self.file_html.write("\t\t document.getElementById('cube__%slayer%s_sp%s_shape').setAttribute('ispickable', 'true');\n"%(nc,i,sp))
-                    self.file_html.write("\t\t } else { \n")
-                    self.file_html.write("\t\t document.getElementById('%sbut%s').style.border = 'inset black';\n"%(nc,i))
-                    for sp in range(self.cube.iso_split[nc][i]):
-                        self.file_html.write("\t\t document.getElementById('cube__%slayer%s_sp%s').setAttribute('transparency', '1');\n"%(nc,i,sp))
-                        self.file_html.write("\t\t document.getElementById('cube__%slayer%s_sp%s_shape').setAttribute('ispickable', 'false');\n"%(nc,i,sp))
-                    self.file_html.write("\t\t } \n\t\t }\n\t </script>\n")
+                self.file_html.write("\t <script>\n\t \t function setHI%slayer%s()\n\t \t {\n\t \t if(document.getElementById('cube__%slayer%s_sp0').getAttribute('transparency') != '0.8') {\n"%(nc,i,nc,i))
+                self.file_html.write(f"\t\t document.getElementById('{nc}but{i}').style.border = '5px dashed black';\n")
+                for sp in range(self.cube.iso_split[nc][i]):
+                    self.file_html.write(f"\t\t document.getElementById('cube__{nc}layer{i}_sp{sp}').setAttribute('transparency', '0.8');\n")
+                    self.file_html.write(f"\t\t document.getElementById('cube__{nc}layer{i}_sp{sp}_shape').setAttribute('ispickable', 'true');\n")
+                self.file_html.write("\t\t } else { \n")
+                self.file_html.write(f"\t\t document.getElementById('{nc}but{i}').style.border = 'inset black';\n")
+                for sp in range(self.cube.iso_split[nc][i]):
+                    self.file_html.write(f"\t\t document.getElementById('cube__{nc}layer{i}_sp{sp}').setAttribute('transparency', '1');\n")
+                    self.file_html.write(f"\t\t document.getElementById('cube__{nc}layer{i}_sp{sp}_shape').setAttribute('ispickable', 'false');\n")
+                self.file_html.write("\t\t } \n\t\t }\n\t </script>\n")
 
     def func_galaxies(self):
         """
@@ -1174,6 +1168,7 @@ class WriteHTML:
 
         for nc in range(numcubes):
             self.file_html.write(misc.tabs(2)+'<br><br>\n')
+            rgbcolors = misc.create_colormap(self.cube.cmaps[nc], self.cube.l_isolevels[nc])
             if isinstance(self.cube.lines, dict):
                 llab = list(self.cube.lines)[nc]
                 llab = f'{llab} ({self.cube.lines[llab][0]})'
@@ -1184,20 +1179,18 @@ class WriteHTML:
             else:
                 self.file_html.write(misc.tabs(2)+'&nbsp <b>Cube %s (%s):</b>\n'%(nc,self.cube.units[0]))
             for i in range(nlayers[nc]):
-                ca = np.array(self.cube.l_colors[nc][i].split(' ')).astype(float)*255
+                ca = np.array(rgbcolors[i].split(' ')).astype(float)*255
                 c = 'rgb('+str(ca.astype(int))[1:-1]+')'
                 butlabel = self.cube.l_isolevels[nc][i]
                 if self.cube.l_isolevels[nc][i] > 0.01:
                     butlabel = f'{butlabel:0.3f}'
                 else:
-                    butlabel = f'{butlabel:0.6f}'
+                    butlabel = f'{butlabel:0.3e}'
                 if (ca[0]*0.299 + ca[1]*0.587 + ca[2]*0.114) > 130:
                     self.file_html.write(misc.tabs(3)+'<button id="%sbut%s" onclick="setHI%slayer%s();" style="font-size:20px ; border:5px dashed black ; background:%s ; color:black"><b>%s</b></button>\n'%(nc,i,nc,i,c,butlabel))
                 else:
                     self.file_html.write(misc.tabs(3)+'<button id="%sbut%s" onclick="setHI%slayer%s();" style="font-size:20px ; border:5px dashed black ; background:%s ; color:white"><b>%s</b></button>\n'%(nc,i,nc,i,c,butlabel))
             self.file_html.write(misc.tabs(3)+f'&nbsp <button id="all" onclick="hideall{nc}()"><b>Invert</b></button>')
-        self.file_html.write(misc.tabs(2)+'<br><br>\n')
-
                     
         # to separate buttons in two parts
         #if self.grids or self.gals or self.gallabs or self.axes or self.hclick or colormaps is not None:
@@ -1205,14 +1198,17 @@ class WriteHTML:
         
         # Colormaps
         for nc in range(numcubes):
+            self.file_html.write(misc.tabs(2)+'<br><br>\n')
             if isinstance(self.cube.lines, dict) or isinstance(self.cube.lines, list):
                 llab = list(self.cube.lines)[nc]
                 self.file_html.write(misc.tabs(2)+'&nbsp <label for="cmaps-choice%s"><b>Cmap %s</b> </label>\n'%(nc,llab))
             else:
                 self.file_html.write(misc.tabs(2)+'&nbsp <label for="cmaps-choice%s"><b>Cmap %s</b> </label>\n'%(nc,nc))
             self.file_html.write(misc.tabs(2)+'<select id="cmaps-choice%s">\n'%nc)
+            self.file_html.write(misc.tabs(3)+f'<option value="{self.cube.cmaps[nc]}">{self.cube.cmaps[nc]}</option>\n')
             for c in misc.default_cmaps:
-                self.file_html.write(misc.tabs(3)+'<option value="%s">%s</option>\n'%(c,c))
+                if c != self.cube.cmaps[nc]:
+                    self.file_html.write(misc.tabs(3)+'<option value="%s">%s</option>\n'%(c,c))
             self.file_html.write(misc.tabs(2)+'</select>\n')
             self.file_html.write(misc.tabs(2) + '<label for="cmaps-min%s"><b>Min %s:</b> </label>\n'%(nc,nc))
             self.file_html.write(misc.tabs(2) + '<input id="cmaps-min%s" type="number" value="%s">\n'%(nc, np.min(self.cube.l_isolevels[nc])))
@@ -1227,15 +1223,18 @@ class WriteHTML:
             self.file_html.write(misc.tabs(3) + '<option value="asinh">asinh</option>\n')
             self.file_html.write(misc.tabs(2) + '</select>\n')
 
-        # Background
+        # Opacity
         self.file_html.write('\n'+misc.tabs(2)+'<br><br>\n')
+        self.file_html.write(misc.tabs(3)+f'&nbsp <button id="all" onclick="changeopa()"><b>Opacity</b></button>')
+
+        # Background 
         self.file_html.write(misc.tabs(3)+'&nbsp <label for="back-choice"><b>Background:</b> </label>\n')
         self.file_html.write(misc.tabs(3)+'<input oninput="change_background()" id="back-choice" type="color" value="#999999">\n')
 
         # SCALEV
         #self.file_html.write(misc.tabs(2)+'<br><br>\n')
         self.file_html.write(misc.tabs(2)+'&nbsp <label for="scalev"><b>Z scale:</b> </label>\n')
-        self.file_html.write(misc.tabs(2)+'<input oninput="changescalev()" id="scalev" type="range" list="marker" min="0" max="5" step="0.001" value="1"/>\n')
+        self.file_html.write(misc.tabs(2)+'<input oninput="changescalev()" id="scalev" type="range" list="marker" min="0" max="10" step="0.001" value="1"/>\n')
         self.file_html.write(misc.tabs(2)+'<datalist id="marker">\n')
         self.file_html.write(misc.tabs(3)+'<option value="1"></option>\n')
         self.file_html.write(misc.tabs(2)+'</datalist>\n')
@@ -1423,7 +1422,7 @@ class WriteHTML:
             self.file_html.write(misc.tabs(2)+"</script>\n")
             
             
-    def func_scalev(self, sphere=None, box=None, cone=None, tube=None, delta=None, trans=None):
+    def func_scalev(self, sphere=None, box=None, cone=None, tube=None, trans=None):
         """
         Make JS funtion to change the scale of the spectral axis.
         Must be after buttons().
@@ -1516,7 +1515,7 @@ class WriteHTML:
         self.file_html.write(misc.tabs(1)+"}\n")
 
         # scale python markers
-        delta = np.array(delta)
+        delta = np.array(self.cube.delta)
         if sphere is not None:
             n = 0
             for s in range(len(sphere)):

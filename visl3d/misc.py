@@ -29,7 +29,7 @@ def marching_cubes(cube, level, shift=(0,0,0), step_size=1):
     level : float
         Value of the isosurface.
     shift : tuple, optional
-        Shift in RA, DEC and V in same units as delta and mins. The default is (0,0,0).
+        Shift in RA, DEC and V in pixels. The default is (0,0,0).
     step_size : int, optional
         Step size for the marching_cubes algorithm. Sets the resolution. High step sizes produce
         low resolution models. Default is 1. 
@@ -44,8 +44,8 @@ def marching_cubes(cube, level, shift=(0,0,0), step_size=1):
     verts, faces, normals, _ = measure.marching_cubes(cube, level = level,
                             allow_degenerate=False,
                             step_size=step_size)
-    return (np.array([verts[:,0]*trans[0]-1000+shift[0], verts[:,1]*trans[1]-1000+shift[1],
-                     verts[:,2]*trans[2]-1000+shift[2]]).T, faces,
+    return (np.array([(verts[:,0]+shift[0])*trans[0]-1000, (verts[:,1]+shift[1])*trans[1]-1000,
+                     (verts[:,2]+shift[2])*trans[2]-1000]).T, faces,
                      np.array([normals[:,0], normals[:,1], normals[:,2]]).T)
 
 def get_galaxies(galaxies, cubecoords, cubeunits, delta, trans):
@@ -409,6 +409,26 @@ def calc_axis_angle(point):
     angle = np.arctan2(axis[1], axis[0])  # Angle between the x-axis and the vector
     
     return np.array([axis[0],axis[1],axis[2], angle])
+
+def find_nearest(array, value):
+    """
+    Find the nearest value in an array to a given value
+
+    Parameters
+    ----------
+    array : array-like
+        1D array
+    value : float
+        Value to compare with.
+
+    Returns
+    -------
+    tuple
+        The nearest value in the array and its index.
+    """
+    array = np.asarray(array)
+    idx = (np.abs(array - value)).argmin()
+    return array[idx],idx 
 
 # Some attributes for the classes and functions
 

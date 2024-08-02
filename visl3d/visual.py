@@ -28,9 +28,9 @@ class Cube:
         values of the spatial and spectral axes.
     l_isolevels : list
         List of arrays with the isosurface levels for each cube.
-    l_colors : list
-        RGB color for each isolevel as a string ('122 233 20').
-        Must have the same shape as l_isolevels.
+    cmaps : list
+        Matplotlib colormap to use for each cube. 
+        Must have the same length as l_isolevels.
     units : len 4 array
         Array of strings with the units of the data cube. The first element is the unit of the data.
     mags : len 4 array
@@ -58,14 +58,14 @@ class Cube:
         Format of the web interface. 'full' gives a fully interactive web page and 'minimal' just
         the 3D model. Default is 'full'.
     """
-    def __init__(self, l_cubes, coords, l_isolevels, l_colors, units, mags, rms=None, name='',
+    def __init__(self, l_cubes, coords, l_isolevels, cmaps, units, mags, rms=None, name='',
                  delta=None, resol=1, galaxies=None, image2d=None, lines=None, interface='full'):
         self.l_cubes = l_cubes
         self.name = name
         self.coords = coords
         self.units = units
         self.mags = mags
-        self.l_colors = l_colors
+        self.cmaps = cmaps
         self.rms = rms
         self.l_isolevels = l_isolevels
         self.resol = resol
@@ -140,8 +140,8 @@ def prep_one(cube, header=None, lims=None, unit=None, isolevels=None, colormap='
         delta = np.array([header['CDELT1'], header['CDELT2'], header['CDELT3']])
     except KeyError:
         delta = np.array([header['CD1_1'], header['CD2_2'], header['CD3_3']])
-    cubeunits = np.array(['','','',''], dtype='<U10')
-    cubemags = np.array(['unknown','unknown','unknown','unknown'], dtype='<U10')
+    cubeunits = np.array(['','','',''], dtype='<U20')
+    cubemags = np.array(['unknown','unknown','unknown','unknown'], dtype='<U20')
     for i in range(4):
         if i == 0:
             try:
@@ -234,8 +234,6 @@ def prep_one(cube, header=None, lims=None, unit=None, isolevels=None, colormap='
         if np.max(isolevels) > np.max(cube):
             raise ValueError(f'Isolevels out of range. Max is {np.max(cube)}')
 
-    colors = misc.create_colormap(colormap, isolevels)
-
     if image2d is None:
         pass
     elif isinstance(image2d, str) and image2d == 'blank':
@@ -265,7 +263,7 @@ def prep_one(cube, header=None, lims=None, unit=None, isolevels=None, colormap='
         obj = ''
 
     return Cube(l_cubes=[cube], name=obj, coords=cubecoords, units=cubeunits,
-                mags=cubemags, delta=delta, l_colors=[colors], rms=rms, image2d=image2d,
+                mags=cubemags, delta=delta, cmap=[colormap], rms=rms, image2d=image2d,
                 galaxies=galdict, l_isolevels=[isolevels])
 
 def prep_mult(cube, spectral_lims, header=None, spatial_lims=None, l_isolevels=None, unit=None,
@@ -278,8 +276,10 @@ def prep_mult(cube, spectral_lims, header=None, spatial_lims=None, l_isolevels=N
     ----------
     cube : str or np.ndarray
         Path to the FITS file or the data cube.
+        If data it must be in the form [spectral axis, DEC, RA].
     spectral_lims : list
         List of lists with the limits (minimum and maximum) of the spectral axis.
+        Can be quatities or pixels.
         E.g. [[vmin1, vmax1], [vmin2, vmax2]].
     header : astropy.io.fits.header.Header, optional
         Header of the FITS file.
@@ -336,8 +336,8 @@ def prep_mult(cube, spectral_lims, header=None, spatial_lims=None, l_isolevels=N
         delta = np.array([header['CDELT1'], header['CDELT2'], header['CDELT3']])
     except KeyError:
         delta = np.array([header['CD1_1'], header['CD2_2'], header['CD3_3']])
-    cubeunits = np.array(['','','',''], dtype='<U10')
-    cubemags = np.array(['unknown','unknown','unknown','unknown'], dtype='<U10')
+    cubeunits = np.array(['','','',''], dtype='<U20')
+    cubemags = np.array(['unknown','unknown','unknown','unknown'], dtype='<U20')
     for i in range(4):
         if i == 0:
             try:
@@ -438,6 +438,8 @@ def prep_mult(cube, spectral_lims, header=None, spatial_lims=None, l_isolevels=N
     coords[1] = np.sort(coords[1])
     lims[0] = np.sort(lims[0])
     lims[1] = np.sort(lims[1])
+    # take min and max of subcube limits for the whole cube in spectral axis
+    cubecoords[2] = [np.min(np.array(coords[1])), np.max(np.array(coords[1]))] 
 
     if np.min(lims[0]) < 0:
         raise ValueError('Spatial lims out of range')
@@ -463,6 +465,8 @@ def prep_mult(cube, spectral_lims, header=None, spatial_lims=None, l_isolevels=N
         l_cubes[i][np.isnan(l_cubes[i])] = 0
         l_cubes[i] = misc.transpose(l_cubes[i], delta)
 
+        l_cubes[i] = l_cubes[i][:,:,np.min(np.array(lims[1])):np.max(np.array(lims[1]))]
+
     _, rms = norm.fit(np.hstack([cube[0 > cube].flatten(),
                             -cube[0 > cube].flatten()]))
     for i in range(len(l_cubes)):
@@ -487,18 +491,15 @@ def prep_mult(cube, spectral_lims, header=None, spatial_lims=None, l_isolevels=N
         for i in range(len(l_cubes)):
             if np.min(l_isolevels[i]) < np.min(l_cubes[i]):
                 raise ValueError('isolevels out of range')
-            if np.max(l_isolevels[i]) > np.max(cube[i]):
+            if np.max(l_isolevels[i]) > np.max(l_cubes[i]):
                 raise ValueError('isolevels out of range')
 
-    l_colors = []
     if colormap is None and len(l_cubes) < 7:
         colormap = ['Blues', 'Reds', 'Greens', 'Purples', 'Oranges', 'Greys']
     elif colormap is None and len(l_cubes) >= 7:
-        raise AttributeError('Too many l_cubes for default colormap. Set colormaps manually.')
+        raise AttributeError('Too many l_cubes for default colormap. Must set colormaps manually.')
     elif len(colormap) != len(l_cubes):
         raise AttributeError('Different number of colormaps and l_cubes')
-    for i in range(len(l_cubes)):
-        l_colors.append(misc.create_colormap(colormap[i], l_isolevels[i]))
 
     if image2d is None:
         pass
@@ -523,7 +524,7 @@ def prep_mult(cube, spectral_lims, header=None, spatial_lims=None, l_isolevels=N
         obj = ''
 
     return Cube(l_cubes=l_cubes, name=obj, coords=cubecoords, units=cubeunits,
-                mags=cubemags, l_colors=l_colors, rms=rms, image2d=image2d, galaxies=None, 
+                mags=cubemags, cmaps=colormap, rms=rms, image2d=image2d, galaxies=None, 
                 l_isolevels=l_isolevels, lines=lines, delta=delta)
 
 def prep_overlay(cube, header=None, spectral_lims=None, lines=None, spatial_lims=None,
@@ -597,8 +598,8 @@ def prep_overlay(cube, header=None, spectral_lims=None, lines=None, spatial_lims
         delta = np.array([header['CDELT1'], header['CDELT2'], header['CDELT3']])
     except KeyError:
         delta = np.array([header['CD1_1'], header['CD2_2'], header['CD3_3']])
-    cubeunits = np.array(['','','',''], dtype='<U10')
-    cubemags = np.array(['unknown','unknown','unknown','unknown'], dtype='<U10')
+    cubeunits = np.array(['','','',''], dtype='<U20')
+    cubemags = np.array(['unknown','unknown','unknown','unknown'], dtype='<U20')
     for i in range(4):
         if i == 0:
             try:
@@ -679,7 +680,12 @@ def prep_overlay(cube, header=None, spectral_lims=None, lines=None, spatial_lims
             raise AttributeError('Different number of lines and spatial limits.')
 
         for i, (center, width) in enumerate(lines.values()):
-            center = center.to(u.Unit(cubeunits[3]))
+            if isinstance(center, u.quantity.Quantity):
+                center = center.to(u.Unit(cubeunits[3]))
+            else:
+                center = (center - header["CRPIX3"]) * delta[2] + header["CRVAL3"]
+                center = center * u.Unit(cubeunits[3])
+
             if isinstance(width, u.quantity.Quantity):
                 width = width.to(u.Unit(cubeunits[3]))
                 coords[1].append(np.array([center.value-width.value/2, center.value+width.value/2]))
@@ -781,18 +787,15 @@ def prep_overlay(cube, header=None, spectral_lims=None, lines=None, spatial_lims
         for i in range(len(l_cubes)):
             if np.min(l_isolevels[i]) < np.min(l_cubes[i]):
                 raise ValueError('isolevels out of range')
-            if np.max(l_isolevels[i]) > np.max(cube[i]):
+            if np.max(l_isolevels[i]) > np.max(l_cubes[i]):
                 raise ValueError('isolevels out of range')
 
-    l_colors = []
     if colormap is None and len(l_cubes) < 7:
         colormap = ['Blues', 'Reds', 'Greens', 'Purples', 'Oranges', 'Greys']
     elif colormap is None and len(l_cubes) >= 7:
         raise AttributeError('Too many l_cubes for default colormap. Set colormaps manually.')
     elif len(colormap) != len(l_cubes):
         raise AttributeError('Different number of colormaps and l_cubes')
-    for i in range(len(l_cubes)):
-        l_colors.append(misc.create_colormap(colormap[i], l_isolevels[i]))
 
     if image2d is None:
         pass
@@ -816,7 +819,7 @@ def prep_overlay(cube, header=None, spectral_lims=None, lines=None, spatial_lims
         obj = ''
 
     return Cube(l_cubes=l_cubes, name=obj, coords=cubecoords, units=cubeunits,
-                mags=cubemags, l_colors=l_colors, rms=rms, image2d=image2d, galaxies=None, 
+                mags=cubemags, cmaps=colormap, rms=rms, image2d=image2d, galaxies=None, 
                 l_isolevels=l_isolevels, lines=lines, delta=delta)
 
 def createX3D(cube, filename, shifts=None):
