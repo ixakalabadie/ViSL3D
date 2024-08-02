@@ -626,10 +626,10 @@ class WriteHTML:
         self.file_html.write(misc.tabs(2)+"<script type='text/javascript' src='https://code.jquery.com/jquery-3.6.3.min.js'></script>\n")
         self.file_html.write(misc.tabs(2)+'<script src="x3dom/js-colormaps.js"></script> <!-- FOR COLORMAPS IN JS-->\n')
         self.file_html.write(misc.tabs(2)+'<script type="text/javascript" src="x3dom/markers.js"></script> <!-- FOR MARKERS IN JS-->\n')
+        self.file_html.write(misc.tabs(2)+f'<title> ViSL3D: {self.cube.name}</title>\n')
         if self.cube.interface == 'minimal':
             self.file_html.write("\n\t\t<style>\n"+misc.tabs(3)+"x3d\n"+misc.tabs(4)+"{\n"+misc.tabs(5)+"border:2px solid darkorange;\n"+misc.tabs(5)+"width:100vw;\n"+misc.tabs(5)+"height:100vh;\n"+misc.tabs(3)+"}\n"+misc.tabs(3)+"</style>\n\t</head>\n\t<body>\n")
         else:
-            self.file_html.write(misc.tabs(2)+f'<title> {self.cube.name} </title>\n')
             self.file_html.write("\n\t\t<style>\n"+misc.tabs(3)+"x3d\n"+misc.tabs(4)+"{\n"+misc.tabs(5)+"border:2px solid darkorange;\n"+misc.tabs(5)+"width:95vw;\n"+misc.tabs(5)+"height: 75vh;\n"+misc.tabs(3)+"}\n"+misc.tabs(3)+"</style>\n\t</head>\n\t<body>\n")
         self.file_html.write(f'\t<h1 align="middle"> {pagetitle} </h1>\n')
         self.file_html.write('\t<hr/>\n')
@@ -840,7 +840,9 @@ class WriteHTML:
         # if self.hclick:
         #     self.file_html.write(misc.tabs(3)+'<inline url="%s" nameSpaceName="cube" mapDEFToID="true" onclick="handleClick(event)" onload="loading()"/>\n'%x3dname)
         # else:
-        self.file_html.write(misc.tabs(3)+f'<inline url="{filename}" nameSpaceName="cube" mapDEFToID="true" onclick="" onload="loading()"/>\n')
+        urlname = filename.split('/')[-1]
+        urlname = urlname.split('\\')[-1]
+        self.file_html.write(misc.tabs(3)+f'<inline url="{urlname}" nameSpaceName="cube" mapDEFToID="true" onclick="" onload="loading()"/>\n')
         self.file_html.write(misc.tabs(2)+"</scene>\n\t</x3d></center>\n")
 
     def viewpoints(self, point=None):

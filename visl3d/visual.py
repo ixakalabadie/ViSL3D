@@ -58,7 +58,7 @@ class Cube:
         Format of the web interface. 'full' gives a fully interactive web page and 'minimal' just
         the 3D model. Default is 'full'.
     """
-    def __init__(self, l_cubes, name, coords, l_isolevels, l_colors, units, mags, rms=None,
+    def __init__(self, l_cubes, coords, l_isolevels, l_colors, units, mags, rms=None, name='',
                  delta=None, resol=1, galaxies=None, image2d=None, lines=None, interface='full'):
         self.l_cubes = l_cubes
         self.name = name
@@ -255,11 +255,16 @@ def prep_one(cube, header=None, lims=None, unit=None, isolevels=None, colormap='
     if galaxies is not None:
         nx, ny, nz = cube.shape
         trans = (2000/nx, 2000/ny, 2000/nz)
-        galdict = misc.get_galaxies(galaxies, cubecoords, cubeunits, header['OBJECT'], delta, trans)
+        galdict = misc.get_galaxies(galaxies, cubecoords, cubeunits, delta, trans)
     else: 
         galdict = None
 
-    return Cube(l_cubes=[cube], name=header['OBJECT'], coords=cubecoords, units=cubeunits,
+    if 'OBJECT' in header:
+        obj = header['OBJECT']
+    else:
+        obj = ''
+
+    return Cube(l_cubes=[cube], name=obj, coords=cubecoords, units=cubeunits,
                 mags=cubemags, delta=delta, l_colors=[colors], rms=rms, image2d=image2d,
                 galaxies=galdict, l_isolevels=[isolevels])
 
@@ -511,8 +516,13 @@ def prep_mult(cube, spectral_lims, header=None, spatial_lims=None, l_isolevels=N
                 coordinates='J2000', width=np.diff(cubecoords[0])[0]*u.Unit(cubeunits[1]),
                 height=np.diff(cubecoords[1])[0]*u.Unit(cubeunits[2]), cmap=im2dcolor)
         image2d = imcol, img_shape
+    
+    if 'OBJECT' in header:
+        obj = header['OBJECT']
+    else:
+        obj = ''
 
-    return Cube(l_cubes=l_cubes, name=header['OBJECT'], coords=cubecoords, units=cubeunits,
+    return Cube(l_cubes=l_cubes, name=obj, coords=cubecoords, units=cubeunits,
                 mags=cubemags, l_colors=l_colors, rms=rms, image2d=image2d, galaxies=None, 
                 l_isolevels=l_isolevels, lines=lines, delta=delta)
 
@@ -799,8 +809,13 @@ def prep_overlay(cube, header=None, spectral_lims=None, lines=None, spatial_lims
                 coordinates='J2000', width=np.diff(cubecoords[0])[0]*u.Unit(cubeunits[1]),
                 height=np.diff(cubecoords[1])[0]*u.Unit(cubeunits[2]), cmap=im2dcolor)
         image2d = imcol, img_shape
+    
+    if 'OBJECT' in header:
+        obj = header['OBJECT']
+    else:
+        obj = ''
 
-    return Cube(l_cubes=l_cubes, name=header['OBJECT'], coords=cubecoords, units=cubeunits,
+    return Cube(l_cubes=l_cubes, name=obj, coords=cubecoords, units=cubeunits,
                 mags=cubemags, l_colors=l_colors, rms=rms, image2d=image2d, galaxies=None, 
                 l_isolevels=l_isolevels, lines=lines, delta=delta)
 

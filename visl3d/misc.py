@@ -48,7 +48,7 @@ def marching_cubes(cube, level, shift=(0,0,0), step_size=1):
                      verts[:,2]*trans[2]-1000+shift[2]]).T, faces,
                      np.array([normals[:,0], normals[:,1], normals[:,2]]).T)
 
-def get_galaxies(galaxies, cubecoords, cubeunits, obj, delta, trans):
+def get_galaxies(galaxies, cubecoords, cubeunits, delta, trans):
     """
     Obtain a dictionary with galaxy names, coordinates and colors to introduce in a Cube object to
     use in writers.make_galaxies().
@@ -79,13 +79,14 @@ def get_galaxies(galaxies, cubecoords, cubeunits, obj, delta, trans):
         and color of the galaxy as values.
     """
     if galaxies == ['query']:
-        sc = SkyCoord(cubecoords[0][0]*u.Unit(cubeunits[1]),
+        corner = SkyCoord(cubecoords[0][0]*u.Unit(cubeunits[1]),
                         cubecoords[1][0]*u.Unit(cubeunits[2]))
-        sepa = SkyCoord(
+        center = SkyCoord(
             np.mean(cubecoords[0])*u.Unit(cubeunits[1]),
-            np.mean(cubecoords[1])*u.Unit(cubeunits[2])).separation(sc)
+            np.mean(cubecoords[1])*u.Unit(cubeunits[2]))
+        sepa = center.separation(corner)
         result = Ned.query_region(
-            obj, radius=sepa)['Object Name', 'Type', 'RA', 'DEC',
+            center, radius=sepa)['Object Name', 'Type', 'RA', 'DEC',
                                     'Velocity']
         if result['RA'].unit == 'degrees':
             result['RA'].unit = u.deg
