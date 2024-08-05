@@ -202,10 +202,12 @@ def calc_isolevels(cube, unit=None):
     if unit == 'percent':
         isolevels = [10, 30, 50, 70, 90]
     else:
-        if np.min(cube) < 0:
+        if np.min(cube) <= 0:
             isolevels = [np.max(cube)/10., np.max(cube)/5., np.max(cube)/3., np.max(cube)/1.5]
-        elif np.min(cube) < np.max(cube)/5.:
-            isolevels = [np.min(cube), np.max(cube)/5., np.max(cube)/3., np.max(cube)/1.5]
+        else:
+            print(np.max(cube), np.min(cube))
+            m = np.max(cube)/np.min(cube)
+            isolevels = [np.min(cube)+m/10, np.min(cube)+m/5, np.min(cube)+m/3., np.min(cube)+m/1.5]
     return np.array(isolevels)
 
 def objquery(result, coords, otype):

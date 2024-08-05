@@ -438,8 +438,11 @@ def prep_mult(cube, spectral_lims, header=None, spatial_lims=None, l_isolevels=N
     coords[1] = np.sort(coords[1])
     lims[0] = np.sort(lims[0])
     lims[1] = np.sort(lims[1])
-    # take min and max of subcube limits for the whole cube in spectral axis
-    cubecoords[2] = [np.min(np.array(coords[1])), np.max(np.array(coords[1]))] 
+
+    # take min and max of subcube limits for the whole cube
+    cubecoords[0] = [np.min(np.array(coords[0])[:,0]), np.max(np.array(coords[0])[:,0])]
+    cubecoords[1] = [np.min(np.array(coords[0])[:,1]), np.max(np.array(coords[0])[:,1])]
+    cubecoords[2] = [np.min(np.array(coords[1])), np.max(np.array(coords[1]))]
 
     if np.min(lims[0]) < 0:
         raise ValueError('Spatial lims out of range')
@@ -450,6 +453,12 @@ def prep_mult(cube, spectral_lims, header=None, spatial_lims=None, l_isolevels=N
         raise ValueError('Spectral lims out of range')
     if np.max(lims[1]) > cube.shape[0]:
         raise ValueError('Spectral lims out of range')
+    
+    shape = np.array([
+        [np.min(np.array(lims[1])[:,0]), np.max(np.array(lims[1])[:,1])],
+        [np.min(np.array(lims[0])[:,0]), np.max(np.array(lims[0])[:,1])],
+        [np.min(np.array(lims[0])[:,1]), np.max(np.array(lims[0])[:,1])]
+        ], dtype=int)
 
     l_cubes = []
     for i in range(len(coords[1])):
@@ -462,22 +471,26 @@ def prep_mult(cube, spectral_lims, header=None, spatial_lims=None, l_isolevels=N
                    lims[0][j][0][0]:lims[0][j][0][1]] = \
             cube[lims[1][i][0]:lims[1][i][1], lims[0][j][1][0]:lims[0][j][1][1],
                  lims[0][j][0][0]:lims[0][j][0][1]]
+        l_cubes[i] = l_cubes[i][shape[0][0]:shape[0][1], shape[1][0]:shape[1][1], shape[2][0]:shape[2][1]]
         l_cubes[i][np.isnan(l_cubes[i])] = 0
         l_cubes[i] = misc.transpose(l_cubes[i], delta)
 
-        l_cubes[i] = l_cubes[i][:,:,np.min(np.array(lims[1])):np.max(np.array(lims[1]))]
+        # l_cubes[i] = l_cubes[i][:,:,np.min(np.array(lims[1])):np.max(np.array(lims[1]))]
 
     _, rms = norm.fit(np.hstack([cube[0 > cube].flatten(),
                             -cube[0 > cube].flatten()]))
     for i in range(len(l_cubes)):
         if unit == 'rms':
-            l_cubes[i] = l_cubes[i]/rms
+            cube = cube/rms #rms is in units of cubeunits[0]
+            cubeunits[0] = 'RMS'
         elif unit == 'percent':
-            l_cubes[i] = l_cubes[i]/np.nanmax(l_cubes[i])*100
+            cube = cube/np.nanmax(cube)*100
+            cubeunits[0] = '%'
         elif unit is None:
             pass
         elif unit is not cubeunits[0]:
-            l_cubes[i] = l_cubes[i]*u.Unit(cubeunits[0]).to(unit)
+            cube = cube*u.Unit(cubeunits[0]).to(unit)
+            cubeunits[0] = unit
 
     del cube
 
@@ -762,17 +775,19 @@ def prep_overlay(cube, header=None, spectral_lims=None, lines=None, spatial_lims
         l_cubes[i] = misc.transpose(l_cubes[i], delta)
         
 
-    _, rms = norm.fit(np.hstack([cube[0 > cube].flatten(),
-                            -cube[0 > cube].flatten()]))
+    _, rms = norm.fit(np.hstack([cube[0 > cube].flatten(), -cube[0 > cube].flatten()]))
     for i in range(len(l_cubes)):
         if unit == 'rms':
-            l_cubes[i] = l_cubes[i]/rms
+            cube = cube/rms #rms is in units of cubeunits[0]
+            cubeunits[0] = 'RMS'
         elif unit == 'percent':
-            l_cubes[i] = l_cubes[i]/np.nanmax(l_cubes[i])*100
+            cube = cube/np.nanmax(cube)*100
+            cubeunits[0] = '%'
         elif unit is None:
             pass
         elif unit is not cubeunits[0]:
-            l_cubes[i] = l_cubes[i]*u.Unit(cubeunits[0]).to(unit)
+            cube = cube*u.Unit(cubeunits[0]).to(unit)
+            cubeunits[0] = unit
 
     del cube
 
@@ -927,7 +942,6 @@ def createVis(cube, filename, description=None, pagetitle=None, shifts=None):
     file.make_animation()
     file.make_labels()
     file.close_x3d()
-
     file.func_layers()
     if cube.galaxies is not None:
         file.func_galaxies()
