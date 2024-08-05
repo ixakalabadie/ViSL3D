@@ -263,7 +263,7 @@ def prep_one(cube, header=None, lims=None, unit=None, isolevels=None, colormap='
         obj = ''
 
     return Cube(l_cubes=[cube], name=obj, coords=cubecoords, units=cubeunits,
-                mags=cubemags, delta=delta, cmap=[colormap], rms=rms, image2d=image2d,
+                mags=cubemags, delta=delta, cmaps=[colormap], rms=rms, image2d=image2d,
                 galaxies=galdict, l_isolevels=[isolevels])
 
 def prep_mult(cube, spectral_lims, header=None, spatial_lims=None, l_isolevels=None, unit=None,
@@ -626,11 +626,9 @@ def prep_overlay(cube, header=None, spectral_lims=None, lines=None, spatial_lims
     if cubeunits[0] == 'JY/BEAM':
         cubeunits[0] = 'Jy/beam'
 
-    if '' in cubeunits and (spatial_lims is not None and isinstance(spatial_lims[0][0][0], u.quantity.Quantity)):
+    if '' in cubeunits[1:2] and (spatial_lims is not None and isinstance(spatial_lims[0][0][0], u.quantity.Quantity)):
         raise KeyError('Spatial limits given with units but units not in file header. Give in pixels instead or update header.')
-    if '' in cubeunits and lines is not None:
-        raise KeyError('Lines given with units but units not in file header. Fix header or give lines with spectral_lims.')
-    if '' in cubeunits and (spectral_lims is not None and isinstance(spectral_lims[0][0], u.quantity.Quantity)):
+    if cubeunits[3] == '' and (spectral_lims is not None and isinstance(spectral_lims[0][0], u.quantity.Quantity)):
         raise KeyError('Spectral limits given with units but units not in file header. Give in pixels instead or update header.')
 
     nz, ny, nx = cube.shape
@@ -676,8 +674,9 @@ def prep_overlay(cube, header=None, spectral_lims=None, lines=None, spatial_lims
     if lines is not None:
         if len(lines) < 2:
             raise AttributeError('Not enough lines for overlay. Use prep_one instead.')
-        elif len(spatial_lims) != 1 and len(lines) != len(spatial_lims):
-            raise AttributeError('Different number of lines and spatial limits.')
+        elif spatial_lims is not None:
+            if len(spatial_lims) != 1 and len(lines) != len(spatial_lims):
+                raise AttributeError('Different number of lines and spatial limits.')
 
         for i, (center, width) in enumerate(lines.values()):
             if isinstance(center, u.quantity.Quantity):

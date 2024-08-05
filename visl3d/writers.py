@@ -87,7 +87,10 @@ class WriteX3D:
                                         +' translation="0 0 0" rotation="0 0 1 -0" scale="1 1 1">')
                     self.file_x3d.write(f'\n\t\t\t\t<Shape DEF="{nc}layer{i}_sp{sp}_shape">')
                     self.file_x3d.write(f'\n\t\t\t\t\t<Appearance DEF="{nc}layer{i}_sp{sp}_appe" sortType="transparent" sortKey="{len(isolevels)-1-i}">')
-
+                    self.file_x3d.write(f'\n{misc.tabs(6)}<Material DEF="{nc}layer{i}_sp{sp}" '\
+                            + 'ambientIntensity="0" emissiveColor="0 0 0" '\
+                            + f'diffuseColor="{rgbcolors[i]}" specularColor=' \
+                            +f'"0 0 0" shininess="0.0078" transparency="0.8"/>')
                     #correct color with depthmode (ALSO FOR LAST LAYER?)
                     # if i != len(isolevels)-1:
                     self.file_x3d.write('\n'+misc.tabs(6)+'<DepthMode readOnly="true"></DepthMode>')
