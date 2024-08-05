@@ -894,3 +894,57 @@ def createHTML(cube, filename, description=None, pagetitle=None):
         file.close_html()
         print('If the path leads to a local server, the visualisation can be accessed in a ' +\
               f'web browser with "localhost/path/from/DocumentRoot/{filename.split("/")[-1]}"')
+
+def createVis(cube, filename, description=None, pagetitle=None, shifts=None):
+    """
+    Create an HTML file with a 3D visualisation of a datacube (without an X3D file).
+
+    Parameters
+    ----------
+    cube : Cube
+        Object of the Cube class.
+    filename : str
+        Name of the HTML file including the extension (.html).
+    description : str, optional
+        A description for the web page.
+    pagetitle : str, optional
+        The title of the web page.
+    """
+    file = writers.WriteVis(filename, cube, description, pagetitle)
+    # if cube.interface == 'minimal':
+    #     file.start_x3d()
+    #     file.close_x3d(filename.split("/")[-1])
+    #     file.close_html()
+    # else:
+    file.start_x3d()
+    file.make_layers(shifts=shifts)
+    file.make_outline()
+    if cube.galaxies is not None:
+        file.make_galaxies()
+    if cube.image2d is not None:
+        file.make_image2d()
+    file.make_ticklines()
+    file.make_animation()
+    file.make_labels()
+    file.close_x3d()
+
+    file.func_layers()
+    if cube.galaxies is not None:
+        file.func_galaxies()
+    file.func_grids()
+    file.func_axes()
+    # file.func_pick
+    file.func_animation()
+    file.buttons(centrot=False)
+    # mandatory after buttons
+    if cube.galaxies is not None:
+        file.func_galsize()
+    if cube.image2d is not None:
+        file.func_image2d()
+        file.func_move2dimage()
+    file.func_scalev()
+    file.func_markers()
+    # html.func_setCenterOfRotation(centers)
+    file.func_background()
+    file.func_colormaps()
+    file.close_html()
