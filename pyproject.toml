@@ -1,0 +1,38 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "visl3d"
+version = "0.2"
+requires-python = ">= 3.7"
+dependencies = [
+    "numpy",
+    "scikit-image",
+    "matplotlib",
+    "scipy",
+    "astroquery >= 0.4.7",
+    "astropy",
+]
+authors = [
+    {name = "Ixaka Labadie García", email = "ixaka.lab@gmail.com"}
+]
+maintainers = [
+    {name = "Ixaka Labadie García", email = "ixaka.lab@gmail.com"}
+]
+description = "Python library to create interactive 3D visualisations of astrophysical spectral line data"
+readme = "README.md"
+license = {file = "LICENSE"}
+keywords = ["3d", "visualisation", "astrophysics", "spectral lines", "interactive", "datacube"]
+classifiers = [
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)",
+    "Topic :: Scientific/Engineering :: Astronomy",
+    "Topic :: Scientific/Engineering :: Visualization",
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+    Repository = "https://github.com/ixakalabadie/ViSL3D"
+    Issues = "https://github.com/ixakalabadie/ViSL3D/issues"
