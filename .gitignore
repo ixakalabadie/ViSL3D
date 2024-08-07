@@ -1,0 +1,5 @@
+# Packages/installer info
+dist
+
+#Compiled files
+__pycache__
