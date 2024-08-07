@@ -3,3 +3,9 @@ dist
 
 #Compiled files
 __pycache__
+
+#Testing files
+test_notebook.ipynb
+test_cube_hcg16.fits
+*.html
+*.x3d
