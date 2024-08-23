@@ -320,9 +320,12 @@ class WriteX3D:
             if vmin1.unit.is_equivalent(u.km/u.s):
                 vmin1 = vmin1.to('km/s')
                 vmax1 = vmax1.to('km/s')
-            elif vmin1.unit.is_equivalent('m'):
+            elif vmin1.unit.is_equivalent('m') and vmin1 < 1*u.um:
                 vmin1 = vmin1.to(u.Angstrom)
                 vmax1 = vmax1.to(u.Angstrom)
+            elif vmin1.unit.is_equivalent('m') and vmin1 < 1*u.mm:
+                vmin1 = vmin1.to(u.um)
+                vmax1 = vmax1.to(u.um)
             elif vmin1.unit.is_equivalent('Hz'):
                 vmin1 = vmin1.to(u.GHz)
                 vmax1 = vmax1.to(u.GHz)
@@ -338,9 +341,12 @@ class WriteX3D:
             if vmin2.unit.is_equivalent(u.km/u.s):
                 vmin2 = vmin2.to('km/s')
                 vmax2 = vmax2.to('km/s')
-            elif vmin2.unit.is_equivalent('m'):
-                vmin2 = vmin2.to(u.Angstrom)
-                vmax2 = vmax2.to(u.Angstrom)
+            elif vmin2.unit.is_equivalent('m') and vmin1 < 1*u.um:
+                vmin2 = vmin1.to(u.Angstrom)
+                vmax2 = vmax1.to(u.Angstrom)
+            elif vmin2.unit.is_equivalent('m') and vmin1 < 1*u.mm:
+                vmin2 = vmin1.to(u.um)
+                vmax2 = vmax1.to(u.um)
             elif vmin2.unit.is_equivalent('Hz'):
                 vmin2 = vmin2.to(u.GHz)
                 vmax2 = vmax2.to(u.GHz)
@@ -611,12 +617,12 @@ class WriteHTML:
             pagetitle = self.cube.name
         self.file_html = open(filename, 'w', encoding="utf-8")
         self.file_html.write('<!DOCTYPE html>\n\t <head>\n')
-        self.file_html.write(misc.tabs(2)+"<script type='text/javascript' src='x3dom/x3dom.js'></script>\n")
+        self.file_html.write(misc.tabs(2)+"<script type='text/javascript' src='https://ixakalabadie.github.io/x3dom/x3dom.js'></script>\n")
         self.file_html.write(misc.tabs(2)+"<script type='text/javascript'  src='https://www.maths.nottingham.ac.uk/plp/pmadw/LaTeXMathML.js'></script>\n")
-        self.file_html.write(misc.tabs(2)+"<link rel='stylesheet' type='text/css' href='x3dom/x3dom.css'></link>\n")
+        self.file_html.write(misc.tabs(2)+"<link rel='stylesheet' type='text/css' href='https://ixakalabadie.github.io/x3dom/x3dom.css'></link>\n")
         self.file_html.write(misc.tabs(2)+"<script type='text/javascript' src='https://code.jquery.com/jquery-3.6.3.min.js'></script>\n")
-        self.file_html.write(misc.tabs(2)+'<script src="x3dom/js-colormaps.js"></script> <!-- FOR COLORMAPS IN JS-->\n')
-        self.file_html.write(misc.tabs(2)+'<script type="text/javascript" src="x3dom/markers.js"></script> <!-- FOR MARKERS IN JS-->\n')
+        self.file_html.write(misc.tabs(2)+'<script src="https://ixakalabadie.github.io/x3dom/js-colormaps.js"></script> <!-- FOR COLORMAPS IN JS-->\n')
+        self.file_html.write(misc.tabs(2)+'<script type="text/javascript" src="https://ixakalabadie.github.io/x3dom/markers.js"></script> <!-- FOR MARKERS IN JS-->\n')
         self.file_html.write(misc.tabs(2)+f'<title> ViSL3D: {self.cube.name}</title>\n')
         if self.cube.interface == 'minimal':
             self.file_html.write("\n\t\t<style>\n"+misc.tabs(3)+"x3d\n"+misc.tabs(4)+"{\n"+misc.tabs(5)+"border:2px solid darkorange;\n"+misc.tabs(5)+"width:100vw;\n"+misc.tabs(5)+"height:100vh;\n"+misc.tabs(3)+"}\n"+misc.tabs(3)+"</style>\n\t</head>\n\t<body>\n")
@@ -1624,17 +1630,18 @@ class WriteVis:
             pagetitle = self.cube.name
         self.visfile = open(filename+'.html', 'w', encoding="utf-8")
         self.visfile.write('<!DOCTYPE html>\n\t <head>\n')
-        pa = misc.__file__[:-7]+'x3dom'
-        if '\\' in pa:
-            pa = pa + '\\'
-        else:
-            pa = pa + '/'
-        self.visfile.write(misc.tabs(2)+f"<script type='text/javascript' src='{pa}x3dom.js'></script>\n")
+        # pa = misc.__file__[:-7]+'x3dom'
+        # if '\\' in pa:
+        #     pa = pa + '\\'
+        # else:
+        #     pa = pa + '/'
+        # self.visfile.write(misc.tabs(2)+f"<script type='text/javascript' src='{pa}x3dom.js'></script>\n")
+        self.visfile.write(misc.tabs(2)+f"<script type='text/javascript' src='https://ixakalabadie.github.io/x3dom/x3dom.js'></script>\n")
         self.visfile.write(misc.tabs(2)+"<script type='text/javascript'  src='https://www.maths.nottingham.ac.uk/plp/pmadw/LaTeXMathML.js'></script>\n")
-        self.visfile.write(misc.tabs(2)+f"<link rel='stylesheet' type='text/css' href='{pa}x3dom.css'></link>\n")
+        self.visfile.write(misc.tabs(2)+f"<link rel='stylesheet' type='text/css' href='https://ixakalabadie.github.io/x3dom/x3dom.css'></link>\n")
         self.visfile.write(misc.tabs(2)+"<script type='text/javascript' src='https://code.jquery.com/jquery-3.6.3.min.js'></script>\n")
-        self.visfile.write(misc.tabs(2)+f'<script src="{pa}js-colormaps.js"></script> <!-- FOR COLORMAPS IN JS-->\n')
-        self.visfile.write(misc.tabs(2)+f'<script type="text/javascript" src="{pa}markers.js"></script> <!-- FOR MARKERS IN JS-->\n')
+        self.visfile.write(misc.tabs(2)+f'<script src="https://ixakalabadie.github.io/x3dom/js-colormaps.js"></script> <!-- FOR COLORMAPS IN JS-->\n')
+        self.visfile.write(misc.tabs(2)+f'<script type="text/javascript" src="https://ixakalabadie.github.io/x3dom/markers.js"></script> <!-- FOR MARKERS IN JS-->\n')
         self.visfile.write(misc.tabs(2)+f'<title> ViSL3D: {self.cube.name}</title>\n')
         if self.cube.interface == 'minimal':
             self.visfile.write("\n\t\t<style>\n"+misc.tabs(3)+"x3d\n"+misc.tabs(4)+"{\n"+misc.tabs(5)+"border:2px solid darkorange;\n"+misc.tabs(5)+"width:100vw;\n"+misc.tabs(5)+"height:100vh;\n"+misc.tabs(3)+"}\n"+misc.tabs(3)+"</style>\n\t</head>\n\t<body>\n")
@@ -2864,6 +2871,9 @@ class WriteVis:
             elif vmin1.unit.is_equivalent('m'):
                 vmin1 = vmin1.to(u.Angstrom)
                 vmax1 = vmax1.to(u.Angstrom)
+            elif vmin1.unit.is_equivalent('m') and vmin1 < 1*u.mm:
+                vmin1 = vmin1.to(u.um)
+                vmax1 = vmax1.to(u.um)
             elif vmin1.unit.is_equivalent('Hz'):
                 vmin1 = vmin1.to(u.GHz)
                 vmax1 = vmax1.to(u.GHz)
