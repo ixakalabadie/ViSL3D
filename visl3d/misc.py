@@ -120,8 +120,8 @@ def get_galaxies(galaxies, cubecoords, cubeunits, delta, trans):
             if result['DEC'].unit == 'degrees':
                 result['DEC'].unit = u.deg
             galra = float(result['RA'])*result['RA'].unit
-            if galra > 180 * u.deg:
-                galra = galra - 360*u.deg
+            # if galra > 180 * u.deg:
+            #     galra = galra - 360*u.deg
             galdec = float(result['DEC'])*result['DEC'].unit
             galv = float(result['Velocity'])*result['Velocity'].unit
             galra = (galra - np.mean(cubecoords[0])*u.Unit(cubeunits[1])) \

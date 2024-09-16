@@ -403,10 +403,10 @@ def prep_mult(cube, spectral_lims, header=None, spatial_lims=None, l_isolevels=N
         lims[0] = np.array(spatial_lims)
         for i in range(len(spatial_lims)):
             coords[0].append(np.array([
-                [header['CRVAL1']+header['CDELT1']*(spatial_lims[i][0][0]-header['CRPIX1']),
-                header['CRVAL1']+header['CDELT1']*(spatial_lims[i][0][1]-header['CRPIX1'])],
-                [header['CRVAL2']+header['CDELT2']*(spatial_lims[i][1][0]-header['CRPIX2']),
-                header['CRVAL2']+header['CDELT2']*(spatial_lims[i][1][1]-header['CRPIX2'])]
+                [header['CRVAL1']+delta[0]*(spatial_lims[i][0][0]-header['CRPIX1']),
+                header['CRVAL1']+delta[0]*(spatial_lims[i][0][1]-header['CRPIX1'])],
+                [header['CRVAL2']+delta[1]*(spatial_lims[i][1][0]-header['CRPIX2']),
+                header['CRVAL2']+delta[1]*(spatial_lims[i][1][1]-header['CRPIX2'])]
                 ]))
 
     if len(spectral_lims) == 1:
@@ -430,8 +430,8 @@ def prep_mult(cube, spectral_lims, header=None, spatial_lims=None, l_isolevels=N
         for i in range(len(spectral_lims)):
             lims[1].append(np.array(spectral_lims[i]))
             coords[1].append(np.array([
-                [header['CRVAL3']+header['CDELT3']*(spectral_lims[i][0]-header['CRPIX3']),
-                header['CRVAL3']+header['CDELT3']*(spectral_lims[i][1]-header['CRPIX3'])]
+                [header['CRVAL3']+delta[2]*(spectral_lims[i][0]-header['CRPIX3']),
+                header['CRVAL3']+delta[2]*(spectral_lims[i][1]-header['CRPIX3'])]
                 ]))
 
     coords[0] = np.sort(coords[0])
@@ -678,10 +678,10 @@ def prep_overlay(cube, header=None, spectral_lims=None, lines=None, spatial_lims
         lims[0] = np.array(spatial_lims)
         for i in range(len(spatial_lims)):
             coords[0].append(np.array([
-                [header['CRVAL1']+header['CDELT1']*(spatial_lims[i][0][0]-header['CRPIX1']),
-                header['CRVAL1']+header['CDELT1']*(spatial_lims[i][0][1]-header['CRPIX1'])],
-                [header['CRVAL2']+header['CDELT2']*(spatial_lims[i][1][0]-header['CRPIX2']),
-                header['CRVAL2']+header['CDELT2']*(spatial_lims[i][1][1]-header['CRPIX2'])]
+                [header['CRVAL1']+delta[0]*(spatial_lims[i][0][0]-header['CRPIX1']),
+                header['CRVAL1']+delta[0]*(spatial_lims[i][0][1]-header['CRPIX1'])],
+                [header['CRVAL2']+delta[1]*(spatial_lims[i][1][0]-header['CRPIX2']),
+                header['CRVAL2']+delta[1]*(spatial_lims[i][1][1]-header['CRPIX2'])]
                 ]))
 
     if lines is not None:
@@ -710,8 +710,8 @@ def prep_overlay(cube, header=None, spectral_lims=None, lines=None, spatial_lims
                 cent_pix = np.round((center.value-header['CRVAL3'])/delta[2] + header['CRPIX3'])
                 lims[1].append(np.array([cent_pix-width/2, cent_pix+width/2]))
                 coords[1].append(np.array(
-                    [header['CRVAL3']+header['CDELT3']*(lims[1][i][0]-header['CRPIX3']),
-                    header['CRVAL3']+header['CDELT3']*(lims[1][i][1]-header['CRPIX3'])]
+                    [header['CRVAL3']+delta[2]*(lims[1][i][0]-header['CRPIX3']),
+                    header['CRVAL3']+delta[2]*(lims[1][i][1]-header['CRPIX3'])]
                     ))
     else:
         lines=True
@@ -736,8 +736,8 @@ def prep_overlay(cube, header=None, spectral_lims=None, lines=None, spatial_lims
             for i in range(len(spectral_lims)):
                 lims[1].append(np.array(spectral_lims[i], dtype=int))
                 coords[1].append(np.array([
-                    [header['CRVAL3']+header['CDELT3']*(spectral_lims[i][0]-header['CRPIX3']),
-                    header['CRVAL3']+header['CDELT3']*(spectral_lims[i][1]-header['CRPIX3'])]
+                    [header['CRVAL3']+delta[2]*(spectral_lims[i][0]-header['CRPIX3']),
+                    header['CRVAL3']+delta[2]*(spectral_lims[i][1]-header['CRPIX3'])]
                     ]))
 
     coords[0] = np.sort(coords[0])
