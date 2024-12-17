@@ -168,6 +168,8 @@ def prep_one(cube, header=None, lims=None, unit=None, isolevels=None, colormap='
     if cubeunits[0] == 'JY/BEAM':
         cubeunits[0] = 'Jy/beam'
 
+    origunit = cubeunits[0]
+
     nz, ny, nx = cube.shape
 
     if '' in cubeunits and (isinstance(lims, list) and isinstance(lims[0][0], u.quantity.Quantity)):
@@ -245,7 +247,7 @@ def prep_one(cube, header=None, lims=None, unit=None, isolevels=None, colormap='
         pixels = 1000
         co = SkyCoord(ra=np.mean(cubecoords[0])*u.Unit(cubeunits[1]), dec=np.mean(cubecoords[1])*u.Unit(cubeunits[2]))
         co = co.to_string('hmsdms')
-        imcol, img_shape, _ = misc.get_imcol(position=co, survey=image2d,pixels=f'{pixels}',
+        imcol, img_shape, _ = misc.get_imcol(position=co, survey=image2d, pixels=pixels,
                 coordinates='J2000', width=np.diff(cubecoords[0])[0]*u.Unit(cubeunits[1]),
                 height=np.diff(cubecoords[1])[0]*u.Unit(cubeunits[2]), cmap=im2dcolor)
         image2d = imcol, img_shape
@@ -263,7 +265,7 @@ def prep_one(cube, header=None, lims=None, unit=None, isolevels=None, colormap='
         obj = ''
 
     return Cube(l_cubes=[cube], name=obj, coords=cubecoords, units=cubeunits,
-                mags=cubemags, delta=delta, cmaps=[colormap], rms=rms, image2d=image2d,
+                mags=cubemags, delta=delta, cmaps=[colormap], rms=rms*u.Unit(origunit), image2d=image2d,
                 galaxies=galdict, l_isolevels=[isolevels])
 
 def prep_mult(cube, spectral_lims, header=None, spatial_lims=None, l_isolevels=None, unit=None,
@@ -363,6 +365,8 @@ def prep_mult(cube, spectral_lims, header=None, spatial_lims=None, l_isolevels=N
 
     if cubeunits[0] == 'JY/BEAM':
         cubeunits[0] = 'Jy/beam'
+
+    origunit = cubeunits[0]
     
     if '' in cubeunits and (spatial_lims is not None and isinstance(spatial_lims[0][0][0], u.quantity.Quantity)):
         raise KeyError('Spatial limits given with units but units not in file header. Give in pixels instead or update header.')
@@ -537,7 +541,7 @@ def prep_mult(cube, spectral_lims, header=None, spatial_lims=None, l_isolevels=N
         obj = ''
 
     return Cube(l_cubes=l_cubes, name=obj, coords=cubecoords, units=cubeunits,
-                mags=cubemags, cmaps=colormap, rms=rms, image2d=image2d, galaxies=None, 
+                mags=cubemags, cmaps=colormap, rms=rms*u.Unit(origunit), image2d=image2d, galaxies=None, 
                 l_isolevels=l_isolevels, lines=lines, delta=delta)
 
 def prep_overlay(cube, header=None, spectral_lims=None, lines=None, spatial_lims=None,
@@ -638,6 +642,8 @@ def prep_overlay(cube, header=None, spectral_lims=None, lines=None, spatial_lims
 
     if cubeunits[0] == 'JY/BEAM':
         cubeunits[0] = 'Jy/beam'
+
+    origunit = cubeunits[0]
 
     if '' in cubeunits[1:2] and (spatial_lims is not None and isinstance(spatial_lims[0][0][0], u.quantity.Quantity)):
         raise KeyError('Spatial limits given with units but units not in file header. Give in pixels instead or update header.')
@@ -833,7 +839,7 @@ def prep_overlay(cube, header=None, spectral_lims=None, lines=None, spatial_lims
         obj = ''
 
     return Cube(l_cubes=l_cubes, name=obj, coords=cubecoords, units=cubeunits,
-                mags=cubemags, cmaps=colormap, rms=rms, image2d=image2d, galaxies=None, 
+                mags=cubemags, cmaps=colormap, rms=rms*u.Unit(origunit), image2d=image2d, galaxies=None, 
                 l_isolevels=l_isolevels, lines=lines, delta=delta)
 
 def createX3D(cube, filename, shifts=None):

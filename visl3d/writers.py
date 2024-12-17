@@ -86,7 +86,11 @@ class WriteX3D:
                     self.file_x3d.write(f'\n\t\t\t<Transform DEF="{nc}lt{i}_sp{sp}" ' \
                                         +' translation="0 0 0" rotation="0 0 1 -0" scale="1 1 1">')
                     self.file_x3d.write(f'\n\t\t\t\t<Shape DEF="{nc}layer{i}_sp{sp}_shape">')
-                    self.file_x3d.write(f'\n\t\t\t\t\t<Appearance DEF="{nc}layer{i}_sp{sp}_appe" sortType="transparent" sortKey="{len(isolevels)-1-i}">')
+                    if self.cube.image2d is not None:
+                        sortType = 'transparent'
+                    else:
+                        sortType = 'opaque'
+                    self.file_x3d.write(f'\n\t\t\t\t\t<Appearance DEF="{nc}layer{i}_sp{sp}_appe" sortType="{sortType}" sortKey="{len(isolevels)-1-i}">')
                     self.file_x3d.write(f'\n{misc.tabs(6)}<Material DEF="{nc}layer{i}_sp{sp}" '\
                             + 'ambientIntensity="0" emissiveColor="0 0 0" '\
                             + f'diffuseColor="{rgbcolors[i]}" specularColor=' \
@@ -195,7 +199,7 @@ class WriteX3D:
             self.file_x3d.write(misc.tabs(6)+f'<Material DEF="label_{gal}" diffuseColor="0 0 0" emissiveColor="0 0 0"></Material>\n')
             self.file_x3d.write(misc.tabs(6)+'</Appearance>\n')
             self.file_x3d.write(misc.tabs(6)+f'<Text string="{gal}">\n')
-            self.file_x3d.write(misc.tabs(7)+f'<FontStyle DEF="{gal}_fs" family=\'"SANS"\' topToBottom="false" justify=\'"BEGIN" "BEGIN"\' size="8"></FontStyle>\n')
+            self.file_x3d.write(misc.tabs(7)+f'<FontStyle DEF="{gal}_fs" family=\'"SANS"\' topToBottom="false" justify=\'"BEGIN" "BEGIN"\' size="5"></FontStyle>\n')
             self.file_x3d.write(misc.tabs(6)+'</Text>\n')
             self.file_x3d.write(misc.tabs(6)+'</Shape>\n')
             self.file_x3d.write(misc.tabs(5)+'</Billboard>\n')
@@ -486,7 +490,7 @@ class WriteX3D:
                     self.file_x3d.write(misc.tabs(6)+f'<Material DEF="label_pytub{n}" diffuseColor="0 0 0" emissiveColor="0 0 0"></Material>\n')
                     self.file_x3d.write(misc.tabs(6)+'</Appearance>\n')
                     self.file_x3d.write(misc.tabs(6)+f'<Text string="{labels[n]}">\n')
-                    self.file_x3d.write(misc.tabs(7)+f'<FontStyle family=\'"SANS"\' topToBottom="false" justify=\'"BEGIN" "BEGIN"\' size="8"></FontStyle>\n')
+                    self.file_x3d.write(misc.tabs(7)+f'<FontStyle family=\'"SANS"\' topToBottom="false" justify=\'"BEGIN" "BEGIN"\' size="5"></FontStyle>\n')
                     self.file_x3d.write(misc.tabs(6)+'</Text>\n')
                     self.file_x3d.write(misc.tabs(6)+'</Shape>\n')
                     self.file_x3d.write(misc.tabs(5)+'</Billboard>\n')
@@ -516,7 +520,7 @@ class WriteX3D:
                     self.file_x3d.write(misc.tabs(6)+f'<Material DEF="label_pysph{n}" diffuseColor="0 0 0" emissiveColor="0 0 0"></Material>\n')
                     self.file_x3d.write(misc.tabs(6)+'</Appearance>\n')
                     self.file_x3d.write(misc.tabs(6)+f'<Text string="{labels[n]}">\n')
-                    self.file_x3d.write(misc.tabs(7)+f'<FontStyle family=\'"SANS"\' topToBottom="false" justify=\'"BEGIN" "BEGIN"\' size="8"></FontStyle>\n')
+                    self.file_x3d.write(misc.tabs(7)+f'<FontStyle family=\'"SANS"\' topToBottom="false" justify=\'"BEGIN" "BEGIN"\' size="5"></FontStyle>\n')
                     self.file_x3d.write(misc.tabs(6)+'</Text>\n')
                     self.file_x3d.write(misc.tabs(6)+'</Shape>\n')
                     self.file_x3d.write(misc.tabs(5)+'</Billboard>\n')
@@ -546,7 +550,7 @@ class WriteX3D:
                     self.file_x3d.write(misc.tabs(6)+f'<Material DEF="label_pybox{n}" diffuseColor="0 0 0" emissiveColor="0 0 0"></Material>\n')
                     self.file_x3d.write(misc.tabs(6)+'</Appearance>\n')
                     self.file_x3d.write(misc.tabs(6)+f'<Text string="{labels[n]}">\n')
-                    self.file_x3d.write(misc.tabs(7)+f'<FontStyle family=\'"SANS"\' topToBottom="false" justify=\'"BEGIN" "BEGIN"\' size="8"></FontStyle>\n')
+                    self.file_x3d.write(misc.tabs(7)+f'<FontStyle family=\'"SANS"\' topToBottom="false" justify=\'"BEGIN" "BEGIN"\' size="5"></FontStyle>\n')
                     self.file_x3d.write(misc.tabs(6)+'</Text>\n')
                     self.file_x3d.write(misc.tabs(6)+'</Shape>\n')
                     self.file_x3d.write(misc.tabs(5)+'</Billboard>\n')
@@ -576,7 +580,7 @@ class WriteX3D:
                     self.file_x3d.write(misc.tabs(6)+f'<Material DEF="label_pycon{n}" diffuseColor="0 0 0" emissiveColor="0 0 0"></Material>\n')
                     self.file_x3d.write(misc.tabs(6)+'</Appearance>\n')
                     self.file_x3d.write(misc.tabs(6)+f'<Text string="{labels[n]}">\n')
-                    self.file_x3d.write(misc.tabs(7)+f'<FontStyle family=\'"SANS"\' topToBottom="false" justify=\'"BEGIN" "BEGIN"\' size="8"></FontStyle>\n')
+                    self.file_x3d.write(misc.tabs(7)+f'<FontStyle family=\'"SANS"\' topToBottom="false" justify=\'"BEGIN" "BEGIN"\' size="5"></FontStyle>\n')
                     self.file_x3d.write(misc.tabs(6)+'</Text>\n')
                     self.file_x3d.write(misc.tabs(6)+'</Shape>\n')
                     self.file_x3d.write(misc.tabs(5)+'</Billboard>\n')
@@ -673,7 +677,12 @@ class WriteHTML:
                 self.file_html.write(f'{misc.tabs(4)}setHI{nc}layer{i}();\n')
             self.file_html.write(misc.tabs(3)+"}\n")
 
+        self.file_html.write(misc.tabs(3)+"var showalertopa = true;\n")
         self.file_html.write(misc.tabs(3)+"function changeopa() {\n")
+        self.file_html.write(misc.tabs(4)+"if (showalertopa) {\n")
+        self.file_html.write(misc.tabs(5)+'alert("The opacity feature does not work alongside the 2D image. Hide the 2D image to change the opacity.")\n')
+        self.file_html.write(misc.tabs(5)+"showalertopa = false;\n")
+        self.file_html.write(misc.tabs(4)+"}\n")
         self.file_html.write(misc.tabs(4)+f'const nlayers = {nlayers};\n')
         self.file_html.write(misc.tabs(4)+'if (document.getElementById("cube__0layer0_sp0_appe").getAttribute("sortType") == "opaque") {\n')
         self.file_html.write(misc.tabs(5)+'for (let nc = 0; nc < %s; nc++) {\n'%numcubes)
@@ -1251,7 +1260,7 @@ class WriteHTML:
         # Galaxies Font Size
         if self.cube.galaxies is not None:
             self.file_html.write(misc.tabs(3)+'&nbsp <label for="galsize-choice"><b>Galaxy size: </b></label>\n')
-            self.file_html.write(misc.tabs(3)+'<input oninput="change_galsize()" id="galsize-choice" type="number" min="2" max="100" value="8", step="2">\n')
+            self.file_html.write(misc.tabs(3)+'<input oninput="change_galsize()" id="galsize-choice" type="number" min="2" max="50" value="5", step="1">\n')
             
         if self.cube.image2d is not None:
             #self.file_html.write('\t\t <br><br>\n')
@@ -1589,13 +1598,18 @@ class WriteHTML:
         # self.file_html.write(roundTo) #premade string with function to round to two decimals
 
         self.file_html.write(misc.tabs(2)+"<script>\n")
-        
-        self.file_html.write(misc.tabs(2)+"function setimage2d()\n\t\t{\n")
-        self.file_html.write(misc.tabs(2)+"if(document.getElementById('cube__image2d').getAttribute('scale') != '1 1 1')\n")
-        self.file_html.write(misc.tabs(3)+"document.getElementById('cube__image2d').setAttribute('scale', '1 1 1');\n")
-        self.file_html.write(misc.tabs(2)+"else \n")
-        self.file_html.write(misc.tabs(3)+"document.getElementById('cube__image2d').setAttribute('scale', '0 0 0');\n")
-        self.file_html.write(misc.tabs(2)+"}\n\t\t</script>\n")
+        self.file_html.write(misc.tabs(3)+"var showalertimage2d = true;\n")
+        self.file_html.write(misc.tabs(3)+"function setimage2d()\n\t\t{\n")
+        self.file_html.write(misc.tabs(4)+"if (showalertimage2d) {\n")
+        self.file_html.write(misc.tabs(5)+'alert("The opacity feature does not work alongside the 2D image. Hide the 2D image to change the opacity.")\n')
+        self.file_html.write(misc.tabs(5)+"showalertimage2d = false;\n")
+        self.file_html.write(misc.tabs(4)+"}\n")
+        self.file_html.write(misc.tabs(4)+"if(document.getElementById('cube__image2d').getAttribute('scale') != '1 1 1')\n")
+        self.file_html.write(misc.tabs(5)+"document.getElementById('cube__image2d').setAttribute('scale', '1 1 1');\n")
+        self.file_html.write(misc.tabs(4)+"else \n")
+        self.file_html.write(misc.tabs(5)+"document.getElementById('cube__image2d').setAttribute('scale', '0 0 0');\n")
+        self.file_html.write(misc.tabs(4)+"}\n")
+        self.file_html.write(misc.tabs(3)+"}\n\t\t</script>\n")
 
             
     def close_html(self):
@@ -1666,7 +1680,12 @@ class WriteVis:
                 self.visfile.write(f'{misc.tabs(4)}setHI{nc}layer{i}();\n')
             self.visfile.write(misc.tabs(3)+"}\n")
 
+        self.visfile.write(misc.tabs(3)+"var showalertopa = true;\n")
         self.visfile.write(misc.tabs(3)+"function changeopa() {\n")
+        self.visfile.write(misc.tabs(4)+"if (showalertopa) {\n")
+        self.visfile.write(misc.tabs(5)+'alert("The opacity feature does not work alongside the 2D image. Hide the 2D image to change the opacity.")\n')
+        self.visfile.write(misc.tabs(5)+"showalertopa = false;\n")
+        self.visfile.write(misc.tabs(4)+"}\n")
         self.visfile.write(misc.tabs(4)+f'const nlayers = {nlayers};\n')
         self.visfile.write(misc.tabs(4)+'if (document.getElementById("0layer0_sp0_appe").getAttribute("sortType") == "opaque") {\n')
         self.visfile.write(misc.tabs(5)+'for (let nc = 0; nc < %s; nc++) {\n'%numcubes)
@@ -2236,7 +2255,7 @@ class WriteVis:
         # Galaxies Font Size
         if self.cube.galaxies is not None:
             self.visfile.write(misc.tabs(3)+'&nbsp <label for="galsize-choice"><b>Galaxy size: </b></label>\n')
-            self.visfile.write(misc.tabs(3)+'<input oninput="change_galsize()" id="galsize-choice" type="number" min="2" max="100" value="8", step="2">\n')
+            self.visfile.write(misc.tabs(3)+'<input oninput="change_galsize()" id="galsize-choice" type="number" min="2" max="50" value="5", step="1">\n')
             
         if self.cube.image2d is not None:
             #self.visfile.write('\t\t <br><br>\n')
@@ -2574,13 +2593,18 @@ class WriteVis:
         # self.visfile.write(roundTo) #premade string with function to round to two decimals
 
         self.visfile.write(misc.tabs(2)+"<script>\n")
-        
-        self.visfile.write(misc.tabs(2)+"function setimage2d()\n\t\t{\n")
-        self.visfile.write(misc.tabs(2)+"if(document.getElementById('image2d').getAttribute('scale') != '1 1 1')\n")
-        self.visfile.write(misc.tabs(3)+"document.getElementById('image2d').setAttribute('scale', '1 1 1');\n")
-        self.visfile.write(misc.tabs(2)+"else \n")
-        self.visfile.write(misc.tabs(3)+"document.getElementById('image2d').setAttribute('scale', '0 0 0');\n")
-        self.visfile.write(misc.tabs(2)+"}\n\t\t</script>\n")
+        self.visfile.write(misc.tabs(3)+"var showalertimage2d = true;\n")
+        self.visfile.write(misc.tabs(3)+"function setimage2d()\n\t\t{\n")
+        self.visfile.write(misc.tabs(4)+"if (showalertimage2d) {\n")
+        self.visfile.write(misc.tabs(5)+'alert("The opacity feature does not work alongside the 2D image. Hide the 2D image to change the opacity.")\n')
+        self.visfile.write(misc.tabs(5)+"showalertimage2d = false;\n")
+        self.visfile.write(misc.tabs(4)+"}\n")
+        self.visfile.write(misc.tabs(4)+"if(document.getElementById('image2d').getAttribute('scale') != '1 1 1')\n")
+        self.visfile.write(misc.tabs(5)+"document.getElementById('image2d').setAttribute('scale', '1 1 1');\n")
+        self.visfile.write(misc.tabs(4)+"else \n")
+        self.visfile.write(misc.tabs(5)+"document.getElementById('image2d').setAttribute('scale', '0 0 0');\n")
+        self.visfile.write(misc.tabs(4)+"}\n")
+        self.visfile.write(misc.tabs(3)+"}\n\t\t</script>\n")
 
     def close_html(self):
         """
@@ -2631,10 +2655,14 @@ class WriteVis:
                     except Exception as ex:
                         print(ex)
                         continue
-                    self.visfile.write(f'\n\t\t\t<Transform id="{nc}lt{i}_sp{sp}" ' \
+                    self.visfile.write('\n'+misc.tabs(3)+f'<Transform id="{nc}lt{i}_sp{sp}" ' \
                                         +' translation="0 0 0" rotation="0 0 1 -0" scale="1 1 1">')
-                    self.visfile.write(f'\n\t\t\t\t<Shape id="{nc}layer{i}_sp{sp}_shape">')
-                    self.visfile.write(f'\n\t\t\t\t\t<Appearance id="{nc}layer{i}_sp{sp}_appe" sortType="transparent" sortKey="{len(isolevels)-1-i}">')
+                    self.visfile.write('\n'+misc.tabs(4)+f'<Shape id="{nc}layer{i}_sp{sp}_shape">')
+                    if self.cube.image2d is not None:
+                        sortType = 'transparent'
+                    else:
+                        sortType = 'opaque'
+                    self.visfile.write('\n'+misc.tabs(5)+f'<Appearance DEF="{nc}layer{i}_sp{sp}_appe" sortType="{sortType}" sortKey="{len(isolevels)-1-i}">')
                     self.visfile.write(f'\n{misc.tabs(6)}<Material id="{nc}layer{i}_sp{sp}" '\
                             + 'ambientIntensity="0" emissiveColor="0 0 0" '\
                             + f'diffuseColor="{rgbcolors[i]}" specularColor=' \
@@ -2743,7 +2771,7 @@ class WriteVis:
             self.visfile.write(misc.tabs(6)+f'<Material id="label_{gal}" diffuseColor="0 0 0" emissiveColor="0 0 0"></Material>\n')
             self.visfile.write(misc.tabs(6)+'</Appearance>\n')
             self.visfile.write(misc.tabs(6)+f'<Text string="{gal}">\n')
-            self.visfile.write(misc.tabs(7)+f'<FontStyle id="{gal}_fs" family=\'"SANS"\' topToBottom="false" justify=\'"BEGIN" "BEGIN"\' size="8"></FontStyle>\n')
+            self.visfile.write(misc.tabs(7)+f'<FontStyle id="{gal}_fs" family=\'"SANS"\' topToBottom="false" justify=\'"BEGIN" "BEGIN"\' size="5"></FontStyle>\n')
             self.visfile.write(misc.tabs(6)+'</Text>\n')
             self.visfile.write(misc.tabs(6)+'</Shape>\n')
             self.visfile.write(misc.tabs(5)+'</Billboard>\n')
@@ -3031,7 +3059,7 @@ class WriteVis:
                     self.visfile.write(misc.tabs(6)+f'<Material id="label_pytub{n}" diffuseColor="0 0 0" emissiveColor="0 0 0"></Material>\n')
                     self.visfile.write(misc.tabs(6)+'</Appearance>\n')
                     self.visfile.write(misc.tabs(6)+f'<Text string="{labels[n]}">\n')
-                    self.visfile.write(misc.tabs(7)+f'<FontStyle family=\'"SANS"\' topToBottom="false" justify=\'"BEGIN" "BEGIN"\' size="8"></FontStyle>\n')
+                    self.visfile.write(misc.tabs(7)+f'<FontStyle family=\'"SANS"\' topToBottom="false" justify=\'"BEGIN" "BEGIN"\' size="5"></FontStyle>\n')
                     self.visfile.write(misc.tabs(6)+'</Text>\n')
                     self.visfile.write(misc.tabs(6)+'</Shape>\n')
                     self.visfile.write(misc.tabs(5)+'</Billboard>\n')
@@ -3061,7 +3089,7 @@ class WriteVis:
                     self.visfile.write(misc.tabs(6)+f'<Material id="label_pysph{n}" diffuseColor="0 0 0" emissiveColor="0 0 0"></Material>\n')
                     self.visfile.write(misc.tabs(6)+'</Appearance>\n')
                     self.visfile.write(misc.tabs(6)+f'<Text string="{labels[n]}">\n')
-                    self.visfile.write(misc.tabs(7)+f'<FontStyle family=\'"SANS"\' topToBottom="false" justify=\'"BEGIN" "BEGIN"\' size="8"></FontStyle>\n')
+                    self.visfile.write(misc.tabs(7)+f'<FontStyle family=\'"SANS"\' topToBottom="false" justify=\'"BEGIN" "BEGIN"\' size="5"></FontStyle>\n')
                     self.visfile.write(misc.tabs(6)+'</Text>\n')
                     self.visfile.write(misc.tabs(6)+'</Shape>\n')
                     self.visfile.write(misc.tabs(5)+'</Billboard>\n')
@@ -3091,7 +3119,7 @@ class WriteVis:
                     self.visfile.write(misc.tabs(6)+f'<Material id="label_pybox{n}" diffuseColor="0 0 0" emissiveColor="0 0 0"></Material>\n')
                     self.visfile.write(misc.tabs(6)+'</Appearance>\n')
                     self.visfile.write(misc.tabs(6)+f'<Text string="{labels[n]}">\n')
-                    self.visfile.write(misc.tabs(7)+f'<FontStyle family=\'"SANS"\' topToBottom="false" justify=\'"BEGIN" "BEGIN"\' size="8"></FontStyle>\n')
+                    self.visfile.write(misc.tabs(7)+f'<FontStyle family=\'"SANS"\' topToBottom="false" justify=\'"BEGIN" "BEGIN"\' size="5"></FontStyle>\n')
                     self.visfile.write(misc.tabs(6)+'</Text>\n')
                     self.visfile.write(misc.tabs(6)+'</Shape>\n')
                     self.visfile.write(misc.tabs(5)+'</Billboard>\n')
@@ -3121,7 +3149,7 @@ class WriteVis:
                     self.visfile.write(misc.tabs(6)+f'<Material id="label_pycon{n}" diffuseColor="0 0 0" emissiveColor="0 0 0"></Material>\n')
                     self.visfile.write(misc.tabs(6)+'</Appearance>\n')
                     self.visfile.write(misc.tabs(6)+f'<Text string="{labels[n]}">\n')
-                    self.visfile.write(misc.tabs(7)+f'<FontStyle family=\'"SANS"\' topToBottom="false" justify=\'"BEGIN" "BEGIN"\' size="8"></FontStyle>\n')
+                    self.visfile.write(misc.tabs(7)+f'<FontStyle family=\'"SANS"\' topToBottom="false" justify=\'"BEGIN" "BEGIN"\' size="5"></FontStyle>\n')
                     self.visfile.write(misc.tabs(6)+'</Text>\n')
                     self.visfile.write(misc.tabs(6)+'</Shape>\n')
                     self.visfile.write(misc.tabs(5)+'</Billboard>\n')
