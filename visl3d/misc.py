@@ -432,6 +432,50 @@ def find_nearest(array, value):
     idx = (np.abs(array - value)).argmin()
     return array[idx],idx 
 
+def cube_info(cube):
+    cen = np.mean(cube.coords, axis=1)
+    de = np.array([cube.delta[0], cube.delta[1], cube.delta[2]])
+    if cube.rms is None:
+        rms = ''
+    else:
+        rms = f'{cube.rms:.5g}'
+    s = f"""
+        <style type="text/css">
+        .tg  {{border-collapse:collapse;border-spacing:0;}}
+        .tg td{{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;
+        overflow:hidden;padding:10px 5px;word-break:normal;}}
+        .tg th{{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;
+        font-weight:normal;overflow:hidden;padding:10px 5px;word-break:normal;}}
+        .tg .tg-zlqz{{background-color:#c0c0c0;border-color:inherit;font-weight:bold;text-align:center;vertical-align:top}}
+        .tg .tg-c3ow{{border-color:inherit;text-align:center;vertical-align:top}}
+        </style>
+        <table class="tg"><thead>
+        <tr>
+            <th class="tg-zlqz">Name</th>
+            <th class="tg-zlqz">Center</th>
+            <th class="tg-zlqz">RMS</th>
+            <th class="tg-zlqz">Magnitudes</th>
+            <th class="tg-zlqz">Units</th>
+            <th class="tg-zlqz">Orig. Delta</th>
+            <th class="tg-zlqz">Resolution</th>
+            <th class="tg-zlqz">2D image</th>
+        </tr></thead>
+        <tbody>
+        <tr>
+            <td class="tg-c3ow">{cube.name}</td>
+            <td class="tg-c3ow">[{cen[0]:.5f}, {cen[1]:.5f}, {cen[2]:.9g}]</td>
+            <td class="tg-c3ow">{rms}</td>
+            <td class="tg-c3ow">{cube.mags}</td>
+            <td class="tg-c3ow">{cube.units}</td>
+            <td class="tg-c3ow">[{de[0]:.3e}, {de[1]:.3e}, {de[2]:.3g}]</td>
+            <td class="tg-c3ow">{cube.resol}</td>
+            <td class="tg-c3ow">{cube.image2d[0]}</td>
+        </tr>
+        </tbody>
+        </table>
+        """
+    return s
+
 # Some attributes for the classes and functions
 
 roundto = "\t<script>\n\t\t //Round a float value to x.xx format\n" \

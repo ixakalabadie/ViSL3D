@@ -86,7 +86,7 @@ class WriteX3D:
                     self.file_x3d.write(f'\n\t\t\t<Transform DEF="{nc}lt{i}_sp{sp}" ' \
                                         +' translation="0 0 0" rotation="0 0 1 -0" scale="1 1 1">')
                     self.file_x3d.write(f'\n\t\t\t\t<Shape DEF="{nc}layer{i}_sp{sp}_shape">')
-                    if self.cube.image2d is not None:
+                    if self.cube.image2d[1] is not None:
                         sortType = 'transparent'
                     else:
                         sortType = 'opaque'
@@ -217,7 +217,7 @@ class WriteX3D:
         img_shape : tuple, optional
             Shape of the 2D image. Use None for white image. Default is None.
         """
-        imcol, img_shape = self.cube.image2d
+        imcol, img_shape = self.cube.image2d[1]
 
         # coordinates of 2d image
         coords2d = np.array([[1000,-1000,1000],
@@ -1152,7 +1152,7 @@ class WriteHTML:
             self.file_html.write(misc.tabs(3)+'<button onclick="setgals();" >Galaxies</button>\n')
             self.file_html.write(misc.tabs(3)+'<button onclick="setgallabels();" >Galaxy Labels</button>\n')
 
-        if self.cube.image2d is not None:
+        if self.cube.image2d[1] is not None:
             self.file_html.write(misc.tabs(3)+'<button onclick="setimage2d();" >2D image</button>\n')
         
         if centrot:
@@ -1262,7 +1262,7 @@ class WriteHTML:
             self.file_html.write(misc.tabs(3)+'&nbsp <label for="galsize-choice"><b>Galaxy size: </b></label>\n')
             self.file_html.write(misc.tabs(3)+'<input oninput="change_galsize()" id="galsize-choice" type="number" min="2" max="50" value="5", step="1">\n')
             
-        if self.cube.image2d is not None:
+        if self.cube.image2d[1] is not None:
             #self.file_html.write('\t\t <br><br>\n')
             self.file_html.write(misc.tabs(2)+'&nbsp <label for="move2dimg"><b>2D image:</b> </label>\n')
             self.file_html.write(misc.tabs(2)+'<input oninput="move2d()" id="move2dimg" type="range" min="-1" max="1" step="0.0001" value="1"></input>\n')
@@ -1462,12 +1462,12 @@ class WriteHTML:
         """
         self.file_html.write(misc.tabs(2)+"<script>\n")
         self.file_html.write(misc.tabs(2)+"const inpscasv = document.querySelector('#scalev');\n")
-        if self.cube.image2d is not None:
+        if self.cube.image2d[1] is not None:
             self.file_html.write(misc.tabs(2)+"const inpmovesv = document.querySelector('#move2dimg');\n")
         #self.file_html.write(misc.tabs(2)+"inpscasv.addEventListener('change', changescalev);\n")
         self.file_html.write(misc.tabs(2)+"function changescalev()\n\t\t {\n")
         self.file_html.write(misc.tabs(3)+"const sca = inpscasv.value;\n")
-        if self.cube.image2d is not None:
+        if self.cube.image2d[1] is not None:
             self.file_html.write(misc.tabs(3)+"const move = inpmovesv.value;\n")
             self.file_html.write(misc.tabs(4)+f"document.getElementById('cube__image2d').setAttribute('translation', '0 0 '+(sca*move-1)*1000);\n")
         #scale layers
@@ -1604,9 +1604,9 @@ class WriteHTML:
         self.file_html.write(misc.tabs(5)+'alert("The opacity feature does not work alongside the 2D image. Hide the 2D image to change the opacity.")\n')
         self.file_html.write(misc.tabs(5)+"showalertimage2d = false;\n")
         self.file_html.write(misc.tabs(4)+"}\n")
-        self.file_html.write(misc.tabs(4)+"if(document.getElementById('cube__image2d').getAttribute('scale') != '1 1 1')\n")
+        self.file_html.write(misc.tabs(4)+"if(document.getElementById('cube__image2d').getAttribute('scale') != '1 1 1') {\n")
         self.file_html.write(misc.tabs(5)+"document.getElementById('cube__image2d').setAttribute('scale', '1 1 1');\n")
-        self.file_html.write(misc.tabs(4)+"else \n")
+        self.file_html.write(misc.tabs(4)+"} else {\n")
         self.file_html.write(misc.tabs(5)+"document.getElementById('cube__image2d').setAttribute('scale', '0 0 0');\n")
         self.file_html.write(misc.tabs(4)+"}\n")
         self.file_html.write(misc.tabs(3)+"}\n\t\t</script>\n")
@@ -2147,7 +2147,7 @@ class WriteVis:
             self.visfile.write(misc.tabs(3)+'<button onclick="setgals();" >Galaxies</button>\n')
             self.visfile.write(misc.tabs(3)+'<button onclick="setgallabels();" >Galaxy Labels</button>\n')
 
-        if self.cube.image2d is not None:
+        if self.cube.image2d[1] is not None:
             self.visfile.write(misc.tabs(3)+'<button onclick="setimage2d();" >2D image</button>\n')
         
         if centrot:
@@ -2257,7 +2257,7 @@ class WriteVis:
             self.visfile.write(misc.tabs(3)+'&nbsp <label for="galsize-choice"><b>Galaxy size: </b></label>\n')
             self.visfile.write(misc.tabs(3)+'<input oninput="change_galsize()" id="galsize-choice" type="number" min="2" max="50" value="5", step="1">\n')
             
-        if self.cube.image2d is not None:
+        if self.cube.image2d[1] is not None:
             #self.visfile.write('\t\t <br><br>\n')
             self.visfile.write(misc.tabs(2)+'&nbsp <label for="move2dimg"><b>2D image:</b> </label>\n')
             self.visfile.write(misc.tabs(2)+'<input oninput="move2d()" id="move2dimg" type="range" min="-1" max="1" step="0.0001" value="1"></input>\n')
@@ -2457,12 +2457,12 @@ class WriteVis:
         """
         self.visfile.write(misc.tabs(2)+"<script>\n")
         self.visfile.write(misc.tabs(2)+"const inpscasv = document.querySelector('#scalev');\n")
-        if self.cube.image2d is not None:
+        if self.cube.image2d[1] is not None:
             self.visfile.write(misc.tabs(2)+"const inpmovesv = document.querySelector('#move2dimg');\n")
         #self.visfile.write(misc.tabs(2)+"inpscasv.addEventListener('change', changescalev);\n")
         self.visfile.write(misc.tabs(2)+"function changescalev()\n\t\t {\n")
         self.visfile.write(misc.tabs(3)+"const sca = inpscasv.value;\n")
-        if self.cube.image2d is not None:
+        if self.cube.image2d[1] is not None:
             self.visfile.write(misc.tabs(3)+"const move = inpmovesv.value;\n")
             self.visfile.write(misc.tabs(4)+f"document.getElementById('image2d').setAttribute('translation', '0 0 '+(sca*move-1)*1000);\n")
         #scale layers
@@ -2594,14 +2594,14 @@ class WriteVis:
 
         self.visfile.write(misc.tabs(2)+"<script>\n")
         self.visfile.write(misc.tabs(3)+"var showalertimage2d = true;\n")
-        self.visfile.write(misc.tabs(3)+"function setimage2d()\n\t\t{\n")
+        self.visfile.write(misc.tabs(3)+"function setimage2d() {\n")
         self.visfile.write(misc.tabs(4)+"if (showalertimage2d) {\n")
         self.visfile.write(misc.tabs(5)+'alert("The opacity feature does not work alongside the 2D image. Hide the 2D image to change the opacity.")\n')
         self.visfile.write(misc.tabs(5)+"showalertimage2d = false;\n")
         self.visfile.write(misc.tabs(4)+"}\n")
-        self.visfile.write(misc.tabs(4)+"if(document.getElementById('image2d').getAttribute('scale') != '1 1 1')\n")
+        self.visfile.write(misc.tabs(4)+"if(document.getElementById('image2d').getAttribute('scale') != '1 1 1') {\n")
         self.visfile.write(misc.tabs(5)+"document.getElementById('image2d').setAttribute('scale', '1 1 1');\n")
-        self.visfile.write(misc.tabs(4)+"else \n")
+        self.visfile.write(misc.tabs(4)+"} else {\n")
         self.visfile.write(misc.tabs(5)+"document.getElementById('image2d').setAttribute('scale', '0 0 0');\n")
         self.visfile.write(misc.tabs(4)+"}\n")
         self.visfile.write(misc.tabs(3)+"}\n\t\t</script>\n")
@@ -2658,11 +2658,11 @@ class WriteVis:
                     self.visfile.write('\n'+misc.tabs(3)+f'<Transform id="{nc}lt{i}_sp{sp}" ' \
                                         +' translation="0 0 0" rotation="0 0 1 -0" scale="1 1 1">')
                     self.visfile.write('\n'+misc.tabs(4)+f'<Shape id="{nc}layer{i}_sp{sp}_shape">')
-                    if self.cube.image2d is not None:
+                    if self.cube.image2d[1] is not None:
                         sortType = 'transparent'
                     else:
                         sortType = 'opaque'
-                    self.visfile.write('\n'+misc.tabs(5)+f'<Appearance DEF="{nc}layer{i}_sp{sp}_appe" sortType="{sortType}" sortKey="{len(isolevels)-1-i}">')
+                    self.visfile.write('\n'+misc.tabs(5)+f'<Appearance id="{nc}layer{i}_sp{sp}_appe" sortType="{sortType}" sortKey="{len(isolevels)-1-i}">')
                     self.visfile.write(f'\n{misc.tabs(6)}<Material id="{nc}layer{i}_sp{sp}" '\
                             + 'ambientIntensity="0" emissiveColor="0 0 0" '\
                             + f'diffuseColor="{rgbcolors[i]}" specularColor=' \
@@ -2789,7 +2789,7 @@ class WriteVis:
         img_shape : tuple, optional
             Shape of the 2D image. Use None for white image. Default is None.
         """
-        imcol, img_shape = self.cube.image2d
+        imcol, img_shape = self.cube.image2d[1]
 
         # coordinates of 2d image
         coords2d = np.array([[1000,-1000,1000],

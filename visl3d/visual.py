@@ -21,6 +21,7 @@ class Cube:
     ----------
     l_cubes : list
         List of 3D arrays with the data. Even if it is only one cube it must be a list.
+        For overlay the arrays must have the same shape.
     name : str
         Name of the object.
     coords : array
@@ -37,6 +38,10 @@ class Cube:
         Array of strings with the magnitudes of the data cube. E.g. ['I', 'RA', 'DEC', 'V'].
     rms : float, optional
         RMS of the data cube.
+    name : str, optional
+        Name of the object. Default is ''.
+    delta : len 3 array, optional
+        Array with the pixel size in each axis. Default is None.
     resol : float, optional
         Step size for the marching cubes algorithm. Higher value means lower resolution. Default is 1.
     galaxies : dict, optional
@@ -46,9 +51,11 @@ class Cube:
         'coord' is calculated with '[RA - mean(cubeRA)]/abs(deltaRA)*2000/nPixRA'. The whole dictionary
         can be obtained with misc.get_galaxies().
     image2d : tuple, optional
-        Tuple with the image in hexadecimal format and the shape of the image.
+        Tuple with the name of the survey and the data to plot a 2D image (str, (hex, shape)).
+        The data is the image in hexadecimal format and the shape of the image.
         It can be calculated with the function misc.get_imcol.
-        If (None,None) a blank plane will be used.
+        If ('blank', (None,None)) a blank plane will be created.
+        If ('', None) no image will be created.
     lines : dict, optional
         Dictionary with the names of spectral lines as keys and a tuple with the centre and
         the full width of the line as value. The centre must be an astropy quantity and the width
@@ -58,8 +65,8 @@ class Cube:
         Format of the web interface. 'full' gives a fully interactive web page and 'minimal' just
         the 3D model. Default is 'full'.
     """
-    def __init__(self, l_cubes, coords, l_isolevels, cmaps, units, mags, rms=None, name='',
-                 delta=None, resol=1, galaxies=None, image2d=None, lines=None, interface='full'):
+    def __init__(self, l_cubes, coords, l_isolevels, cmaps, units, mags, delta, rms=None, name='',
+                 resol=1, galaxies=None, image2d=(None, None), lines=None, interface='full'):
         self.l_cubes = l_cubes
         self.name = name
         self.coords = coords
@@ -77,7 +84,18 @@ class Cube:
         self.delta = delta
 
     def __str__(self):
-        s = f'Cube object for {self.name}' #\n\tCoordinates: {self.coords}\n\tUnits: {self.units}\n\tMagnitudes: {self.mags}\n\tRMS: {self.rms}\n\tResolution: {self.resol}\n\tInterface: {self.interface}'
+        cen = np.mean(self.coords, axis=1)
+        de = np.array([self.delta[0], self.delta[1], self.delta[2]])
+
+        if self.rms is None:
+            rms = ''
+        else:
+            rms = f'{self.rms:.5g}'
+
+        s = f'Name: {self.name},\nCenter: [{cen[0]:.5f}{cen[1]:.5f}, {cen[2]:.9g}],\nLimits:\n{self.coords},\n' + \
+            f'RMS: {rms},\nMagnitudes: {self.mags},\nUnits: {self.units},\n' + \
+            f'Delta: [{de[0]:.3e}, {de[1]:.3e}, {de[2]:.3g}],\nResolution: {self.resol},\n2D image: {self.image2d[0]}'
+
         return s
 
 def prep_one(cube, header=None, lims=None, unit=None, isolevels=None, colormap='CMRmap_r',
@@ -103,11 +121,14 @@ def prep_one(cube, header=None, lims=None, unit=None, isolevels=None, colormap='
         Array with the isosurface levels in the given units. If None it is calculated automatically.
     colormap : str, optional
         Name of the colormap to use. Default is 'CMRmap_r'.
-    image2d : str or 2D or 3D array, optional
-        Name of the survey to query a 2D image. See survey options in https://astroquery.readthedocs.io/en/latest/skyview/skyview.html.
-        If 'blank' a blank plane is used. If None no image is created.
-        If 2D or 3D array, the mage data in RGB format between 0 and 1 (3D). The RGB column must be last.
-        If 2D, the image will be converted automatically.
+    image2d : str or tuple or 2D or 3D array, optional
+        - If None, no image is created.
+        - If 'blank', a blank plane is used.
+        - Name of the survey (str) to query a 2D image. See survey options in https://astroquery.readthedocs.io/en/latest/skyview/skyview.html.
+        - Tuple with the name of the survey (str) and the number of pixels (int) to set the resolution of the image (default is 1000). 
+        - Tuple can be given with a name for the image (str) and the image data (2D or 3D array).
+            If 3D array, the image data in RGB format between 0 and 1 (3D). The RGB column must be last.
+            If 2D, the image will be converted automatically.
         The image will cover the full FoV of the created cube model (after applying limits).
     im2dcolor : str, optional
         Name of the colormap to use for the 2D image. Default is 'Greys'.
@@ -236,14 +257,14 @@ def prep_one(cube, header=None, lims=None, unit=None, isolevels=None, colormap='
         if np.max(isolevels) > np.max(cube):
             raise ValueError(f'Isolevels out of range. Max is {np.max(cube)}')
 
+    imname = ''
     if image2d is None:
         pass
     elif isinstance(image2d, str) and image2d == 'blank':
         image2d = None, None
-    elif not isinstance(image2d, str):
-        imcol, img_shape, _ = misc.get_imcol(image = image2d, cmap=im2dcolor)
-        image2d = imcol, img_shape
-    else:
+        imname = 'blank'
+    elif isinstance(image2d, str):
+        imname = image2d
         pixels = 1000
         co = SkyCoord(ra=np.mean(cubecoords[0])*u.Unit(cubeunits[1]), dec=np.mean(cubecoords[1])*u.Unit(cubeunits[2]))
         co = co.to_string('hmsdms')
@@ -251,6 +272,20 @@ def prep_one(cube, header=None, lims=None, unit=None, isolevels=None, colormap='
                 coordinates='J2000', width=np.diff(cubecoords[0])[0]*u.Unit(cubeunits[1]),
                 height=np.diff(cubecoords[1])[0]*u.Unit(cubeunits[2]), cmap=im2dcolor)
         image2d = imcol, img_shape
+    else:
+        if isinstance(image2d[1], int):
+            imname = image2d[0]
+            pixels = image2d[1]
+            co = SkyCoord(ra=np.mean(cubecoords[0])*u.Unit(cubeunits[1]), dec=np.mean(cubecoords[1])*u.Unit(cubeunits[2]))
+            co = co.to_string('hmsdms')
+            imcol, img_shape, _ = misc.get_imcol(position=co, survey=imname, pixels=pixels,
+                    coordinates='J2000', width=np.diff(cubecoords[0])[0]*u.Unit(cubeunits[1]),
+                    height=np.diff(cubecoords[1])[0]*u.Unit(cubeunits[2]), cmap=im2dcolor)
+            image2d = imcol, img_shape
+        else:
+            imname = image2d[0]
+            imcol, img_shape, _ = misc.get_imcol(image = image2d[1], cmap=im2dcolor)
+            image2d = imcol, img_shape
         
     if galaxies is not None:
         nx, ny, nz = cube.shape
@@ -265,7 +300,7 @@ def prep_one(cube, header=None, lims=None, unit=None, isolevels=None, colormap='
         obj = ''
 
     return Cube(l_cubes=[cube], name=obj, coords=cubecoords, units=cubeunits,
-                mags=cubemags, delta=delta, cmaps=[colormap], rms=rms*u.Unit(origunit), image2d=image2d,
+                mags=cubemags, delta=delta, cmaps=[colormap], rms=rms*u.Unit(origunit), image2d=(imname,image2d),
                 galaxies=galdict, l_isolevels=[isolevels])
 
 def prep_mult(cube, spectral_lims, header=None, spatial_lims=None, l_isolevels=None, unit=None,
@@ -479,24 +514,23 @@ def prep_mult(cube, spectral_lims, header=None, spatial_lims=None, l_isolevels=N
         l_cubes[i][np.isnan(l_cubes[i])] = 0
         l_cubes[i] = misc.transpose(l_cubes[i], delta)
 
-        # l_cubes[i] = l_cubes[i][:,:,np.min(np.array(lims[1])):np.max(np.array(lims[1]))]
+    # calculate rms with negative pixels
+    _, rms = norm.fit(np.hstack([cube[0 > cube].flatten(), -cube[0 > cube].flatten()]))
 
-    _, rms = norm.fit(np.hstack([cube[0 > cube].flatten(),
-                            -cube[0 > cube].flatten()]))
+    del cube
+
     for i in range(len(l_cubes)):
         if unit == 'rms':
-            cube = cube/rms #rms is in units of cubeunits[0]
+            l_cubes[i] = l_cubes[i] / rms #rms is in units of cubeunits[0]
             cubeunits[0] = 'RMS'
         elif unit == 'percent':
-            cube = cube/np.nanmax(cube)*100
+            l_cubes[i] = l_cubes[i] / np.nanmax(l_cubes[i])*100
             cubeunits[0] = '%'
         elif unit is None:
             pass
         elif unit is not cubeunits[0]:
-            cube = cube*u.Unit(cubeunits[0]).to(unit)
+            l_cubes[i] = l_cubes[i] * u.Unit(cubeunits[0]).to(unit)
             cubeunits[0] = unit
-
-    del cube
 
     if l_isolevels is None:
         l_isolevels = []
@@ -518,22 +552,35 @@ def prep_mult(cube, spectral_lims, header=None, spatial_lims=None, l_isolevels=N
     elif len(colormap) != len(l_cubes):
         raise AttributeError('Different number of colormaps and l_cubes')
 
+    imname = ''
     if image2d is None:
         pass
     elif isinstance(image2d, str) and image2d == 'blank':
         image2d = None, None
-    elif not isinstance(image2d, str):
-        imcol, img_shape, _ = misc.get_imcol(image = image2d, cmap=im2dcolor)
-        image2d = imcol, img_shape
-    else:
+        imname = 'blank'
+    elif isinstance(image2d, str):
+        imname = image2d
         pixels = 1000
-        co = SkyCoord(ra=np.mean(cubecoords[0])*u.Unit(cubeunits[1]),
-                      dec=np.mean(cubecoords[1])*u.Unit(cubeunits[2]))
+        co = SkyCoord(ra=np.mean(cubecoords[0])*u.Unit(cubeunits[1]), dec=np.mean(cubecoords[1])*u.Unit(cubeunits[2]))
         co = co.to_string('hmsdms')
-        imcol, img_shape, _ = misc.get_imcol(position=co, survey=image2d,pixels=f'{pixels}',
+        imcol, img_shape, _ = misc.get_imcol(position=co, survey=image2d, pixels=pixels,
                 coordinates='J2000', width=np.diff(cubecoords[0])[0]*u.Unit(cubeunits[1]),
                 height=np.diff(cubecoords[1])[0]*u.Unit(cubeunits[2]), cmap=im2dcolor)
         image2d = imcol, img_shape
+    else:
+        if isinstance(image2d[1], int):
+            imname = image2d[0]
+            pixels = image2d[1]
+            co = SkyCoord(ra=np.mean(cubecoords[0])*u.Unit(cubeunits[1]), dec=np.mean(cubecoords[1])*u.Unit(cubeunits[2]))
+            co = co.to_string('hmsdms')
+            imcol, img_shape, _ = misc.get_imcol(position=co, survey=imname, pixels=pixels,
+                    coordinates='J2000', width=np.diff(cubecoords[0])[0]*u.Unit(cubeunits[1]),
+                    height=np.diff(cubecoords[1])[0]*u.Unit(cubeunits[2]), cmap=im2dcolor)
+            image2d = imcol, img_shape
+        else:
+            imname = image2d[0]
+            imcol, img_shape, _ = misc.get_imcol(image = image2d[1], cmap=im2dcolor)
+            image2d = imcol, img_shape
     
     if 'OBJECT' in header:
         obj = header['OBJECT']
@@ -541,7 +588,7 @@ def prep_mult(cube, spectral_lims, header=None, spatial_lims=None, l_isolevels=N
         obj = ''
 
     return Cube(l_cubes=l_cubes, name=obj, coords=cubecoords, units=cubeunits,
-                mags=cubemags, cmaps=colormap, rms=rms*u.Unit(origunit), image2d=image2d, galaxies=None, 
+                mags=cubemags, cmaps=colormap, rms=rms*u.Unit(origunit), image2d=(imname,image2d), galaxies=None, 
                 l_isolevels=l_isolevels, lines=lines, delta=delta)
 
 def prep_overlay(cube, header=None, spectral_lims=None, lines=None, spatial_lims=None,
@@ -780,22 +827,23 @@ def prep_overlay(cube, header=None, spectral_lims=None, lines=None, spatial_lims
         l_cubes[i][np.isnan(l_cubes[i])] = 0
         l_cubes[i] = misc.transpose(l_cubes[i], delta)
         
-
+     # calculate rms with negative pixels
     _, rms = norm.fit(np.hstack([cube[0 > cube].flatten(), -cube[0 > cube].flatten()]))
+
+    del cube
+
     for i in range(len(l_cubes)):
         if unit == 'rms':
-            cube = cube/rms #rms is in units of cubeunits[0]
+            l_cubes[i] = l_cubes[i] / rms #rms is in units of cubeunits[0]
             cubeunits[0] = 'RMS'
         elif unit == 'percent':
-            cube = cube/np.nanmax(cube)*100
+            l_cubes[i] = l_cubes[i] / np.nanmax(l_cubes[i])*100
             cubeunits[0] = '%'
         elif unit is None:
             pass
         elif unit is not cubeunits[0]:
-            cube = cube*u.Unit(cubeunits[0]).to(unit)
+            l_cubes[i] = l_cubes[i] * u.Unit(cubeunits[0]).to(unit)
             cubeunits[0] = unit
-
-    del cube
 
     if l_isolevels is None:
         l_isolevels = []
@@ -817,21 +865,35 @@ def prep_overlay(cube, header=None, spectral_lims=None, lines=None, spatial_lims
     elif len(colormap) != len(l_cubes):
         raise AttributeError('Different number of colormaps and l_cubes')
 
+    imname = ''
     if image2d is None:
         pass
     elif isinstance(image2d, str) and image2d == 'blank':
         image2d = None, None
-    elif not isinstance(image2d, str):
-        imcol, img_shape, _ = misc.get_imcol(image = image2d, cmap=im2dcolor)
-        image2d = imcol, img_shape
-    else:
+        imname = 'blank'
+    elif isinstance(image2d, str):
+        imname = image2d
         pixels = 1000
         co = SkyCoord(ra=np.mean(cubecoords[0])*u.Unit(cubeunits[1]), dec=np.mean(cubecoords[1])*u.Unit(cubeunits[2]))
         co = co.to_string('hmsdms')
-        imcol, img_shape, _ = misc.get_imcol(position=co, survey=image2d,pixels=f'{pixels}',
+        imcol, img_shape, _ = misc.get_imcol(position=co, survey=image2d, pixels=pixels,
                 coordinates='J2000', width=np.diff(cubecoords[0])[0]*u.Unit(cubeunits[1]),
                 height=np.diff(cubecoords[1])[0]*u.Unit(cubeunits[2]), cmap=im2dcolor)
         image2d = imcol, img_shape
+    else:
+        if isinstance(image2d[1], int):
+            imname = image2d[0]
+            pixels = image2d[1]
+            co = SkyCoord(ra=np.mean(cubecoords[0])*u.Unit(cubeunits[1]), dec=np.mean(cubecoords[1])*u.Unit(cubeunits[2]))
+            co = co.to_string('hmsdms')
+            imcol, img_shape, _ = misc.get_imcol(position=co, survey=imname, pixels=pixels,
+                    coordinates='J2000', width=np.diff(cubecoords[0])[0]*u.Unit(cubeunits[1]),
+                    height=np.diff(cubecoords[1])[0]*u.Unit(cubeunits[2]), cmap=im2dcolor)
+            image2d = imcol, img_shape
+        else:
+            imname = image2d[0]
+            imcol, img_shape, _ = misc.get_imcol(image = image2d[1], cmap=im2dcolor)
+            image2d = imcol, img_shape
     
     if 'OBJECT' in header:
         obj = header['OBJECT']
@@ -839,7 +901,7 @@ def prep_overlay(cube, header=None, spectral_lims=None, lines=None, spatial_lims
         obj = ''
 
     return Cube(l_cubes=l_cubes, name=obj, coords=cubecoords, units=cubeunits,
-                mags=cubemags, cmaps=colormap, rms=rms*u.Unit(origunit), image2d=image2d, galaxies=None, 
+                mags=cubemags, cmaps=colormap, rms=rms*u.Unit(origunit), image2d=(imname,image2d), galaxies=None, 
                 l_isolevels=l_isolevels, lines=lines, delta=delta)
 
 def createX3D(cube, filename, shifts=None):
@@ -861,7 +923,7 @@ def createX3D(cube, filename, shifts=None):
     file.make_outline()
     if cube.galaxies is not None:
         file.make_galaxies()
-    if cube.image2d is not None:
+    if cube.image2d[1] is not None:
         file.make_image2d()
     file.make_ticklines()
     file.make_animation()
@@ -904,7 +966,7 @@ def createHTML(cube, filename, description=None, pagetitle=None):
         # mandatory after buttons
         if cube.galaxies is not None:
             file.func_galsize()
-        if cube.image2d is not None:
+        if cube.image2d[1] is not None:
             file.func_image2d()
             file.func_move2dimage()
         file.func_scalev()
@@ -942,7 +1004,7 @@ def createVis(cube, filename, description=None, pagetitle=None, shifts=None):
     file.make_outline()
     if cube.galaxies is not None:
         file.make_galaxies()
-    if cube.image2d is not None:
+    if cube.image2d[1] is not None:
         file.make_image2d()
     file.make_ticklines()
     file.make_animation()
@@ -959,7 +1021,7 @@ def createVis(cube, filename, description=None, pagetitle=None, shifts=None):
     # mandatory after buttons
     if cube.galaxies is not None:
         file.func_galsize()
-    if cube.image2d is not None:
+    if cube.image2d[1] is not None:
         file.func_image2d()
         file.func_move2dimage()
     file.func_scalev()

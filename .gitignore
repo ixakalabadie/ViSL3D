@@ -5,8 +5,8 @@ dist
 __pycache__
 
 #Testing files
-*.ipynb
+# *.ipynb
 *.fits
 *.html
 *.x3d
-*.fits
+test_*.ipynb
