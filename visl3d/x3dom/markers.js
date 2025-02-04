@@ -104,10 +104,10 @@ function createSphere(sca, selsph, col, sph_coords, means, delt, trans, html=fal
     z = (z - means[2])/delt[2]*trans[2];
 
     const lab = document.querySelector('#sphlab'+selsphnum).value;
-    if (lab != '') {
-        makelabel('sph', x, y, z, sca, lab, selsphnum, html);
-    }
     if (document.getElementById('sphtra'+selsphnum) == null) {
+        if (lab != '') {
+            makelabel('sph', x, y, z, sca, lab, selsphnum, html);
+        }
         const newtra = document.createElement('transform');
         newtra.setAttribute('id', 'sphtra'+selsphnum);
         const newshape = document.createElement('shape');
@@ -225,10 +225,10 @@ function createBox(sca, selbox, col, box_coords, means, delt, trans, html=false)
     y = (y - means[1])/delt[1]*trans[1];
     z = (z - means[2])/delt[2]*trans[2];
     const lab = document.querySelector('#boxlab'+selboxnum).value;
-    if (lab != '') {
-        makelabel('box', x, y, z, sca, lab, selboxnum, html);
-    }
     if (document.getElementById('boxtra'+selboxnum) == null) {
+        if (lab != '') {
+            makelabel('box', x, y, z, sca, lab, selboxnum, html);
+        }
         const newtra = document.createElement('transform');
         newtra.setAttribute('id', 'boxtra'+selboxnum);
         const newshape = document.createElement('shape');
@@ -364,10 +364,10 @@ function createCon(sca, selcon, col, con_coords, means, delt, trans, html=false)
     y = (y - means[1])/delt[1]*trans[1];
     z = (z - means[2])/delt[2]*trans[2];
     const lab = document.querySelector('#conlab'+selconnum).value;
-    if (lab != '') {
-        makelabel('con', x, y, z, sca, lab, selconnum, html);
-    }
     if (document.getElementById('contra'+selconnum) == null) {
+        if (lab != '') {
+            makelabel('con', x, y, z, sca, lab, selconnum, html);
+        }
         const newtra = document.createElement('transform');
         newtra.setAttribute('id', 'contra'+selconnum);
         const newshape = document.createElement('shape');
