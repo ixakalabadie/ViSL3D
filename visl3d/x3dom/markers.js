@@ -8,7 +8,7 @@ function newlayout() {
     }
 }
 
-function makelabel(objtype, x, y, z, sca, lab, num) {
+function makelabel(objtype, x, y, z, sca, lab, num, html=false) {
     const labtra = document.createElement('transform');
     const labbill = document.createElement('billboard');
     const labshape = document.createElement('shape');
@@ -31,7 +31,11 @@ function makelabel(objtype, x, y, z, sca, lab, num) {
     labshape.appendChild(labape).appendChild(labmat);
     labshape.appendChild(labtext).appendChild(labfont);
     labtra.appendChild(labbill).appendChild(labshape);
-    document.getElementById('cube__ROOT').appendChild(labtra);
+    if (html) {
+        document.getElementById('ROOT').appendChild(labtra);
+    } else {
+        document.getElementById('cube__ROOT').appendChild(labtra);
+    }
 }
 
 function newSphere(nspheres, selsph) {
@@ -89,7 +93,7 @@ function changeSphere() { // nspheres, selsph
     
 }
 
-function createSphere(sca, selsph, col, sph_coords, means, delt, trans) {
+function createSphere(sca, selsph, col, sph_coords, means, delt, trans, html=false) {
     const selsphnum = selsph.value.slice(3);
     var x = Number(document.querySelector('#sphRA'+selsphnum).value);
     var y = Number(document.querySelector('#sphDEC'+selsphnum).value);
@@ -101,7 +105,7 @@ function createSphere(sca, selsph, col, sph_coords, means, delt, trans) {
 
     const lab = document.querySelector('#sphlab'+selsphnum).value;
     if (lab != '') {
-        makelabel('sph', x, y, z, sca, lab, selsphnum);
+        makelabel('sph', x, y, z, sca, lab, selsphnum, html);
     }
     if (document.getElementById('sphtra'+selsphnum) == null) {
         const newtra = document.createElement('transform');
@@ -119,7 +123,11 @@ function createSphere(sca, selsph, col, sph_coords, means, delt, trans) {
         newgeo.setAttribute('solid', 'false');
         newshape.appendChild(newape).appendChild(newmat);
         newtra.appendChild(newshape).appendChild(newgeo);
-        document.getElementById('cube__ROOT').appendChild(newtra);
+        if (html) {
+            document.getElementById('ROOT').appendChild(newtra);
+        } else {
+            document.getElementById('cube__ROOT').appendChild(newtra);
+        }
         sph_coords.push([x, y, z, rad.value]);
     } else {
         document.getElementById('sphtra'+selsphnum).setAttribute('translation', x+' '+y+' '+sca*z);
@@ -207,7 +215,7 @@ function changeBox() {
     document.getElementById(selbox.value).style.display = 'inline-block';
 }
 
-function createBox(sca, selbox, col, box_coords, means, delt, trans) {
+function createBox(sca, selbox, col, box_coords, means, delt, trans, html=false) {
     const selboxnum = selbox.value.slice(3);
     var x = Number(document.querySelector('#boxRA'+selboxnum).value);
     var y = Number(document.querySelector('#boxDEC'+selboxnum).value);
@@ -218,7 +226,7 @@ function createBox(sca, selbox, col, box_coords, means, delt, trans) {
     z = (z - means[2])/delt[2]*trans[2];
     const lab = document.querySelector('#boxlab'+selboxnum).value;
     if (lab != '') {
-        makelabel('box', x, y, z, sca, lab, selboxnum);
+        makelabel('box', x, y, z, sca, lab, selboxnum, html);
     }
     if (document.getElementById('boxtra'+selboxnum) == null) {
         const newtra = document.createElement('transform');
@@ -236,7 +244,11 @@ function createBox(sca, selbox, col, box_coords, means, delt, trans) {
         newgeo.setAttribute('solid', 'false');
         newshape.appendChild(newape).appendChild(newmat);
         newtra.appendChild(newshape).appendChild(newgeo);
-        document.getElementById('cube__ROOT').appendChild(newtra);
+        if (html) {
+            document.getElementById('ROOT').appendChild(newtra);
+        } else {
+            document.getElementById('cube__ROOT').appendChild(newtra);
+        }
         box_coords.push([x, y, z, rad.value]);
     } else {
         document.getElementById('boxtra'+selboxnum).setAttribute('translation', x+' '+y+' '+sca*z);
@@ -340,7 +352,7 @@ function changeCon() {
     document.getElementById(selcon.value).style.display = 'inline-block';
 }
 
-function createCon(sca, selcon, col, con_coords, means, delt, trans) {
+function createCon(sca, selcon, col, con_coords, means, delt, trans, html=false) {
     const selconnum = selcon.value.slice(3);
     var x = Number(document.querySelector('#conRA'+selconnum).value);
     var y = Number(document.querySelector('#conDEC'+selconnum).value);
@@ -353,7 +365,7 @@ function createCon(sca, selcon, col, con_coords, means, delt, trans) {
     z = (z - means[2])/delt[2]*trans[2];
     const lab = document.querySelector('#conlab'+selconnum).value;
     if (lab != '') {
-        makelabel('con', x, y, z, sca, lab, selconnum);
+        makelabel('con', x, y, z, sca, lab, selconnum, html);
     }
     if (document.getElementById('contra'+selconnum) == null) {
         const newtra = document.createElement('transform');
@@ -373,7 +385,11 @@ function createCon(sca, selcon, col, con_coords, means, delt, trans) {
         newgeo.setAttribute('solid', 'false');
         newshape.appendChild(newape).appendChild(newmat);
         newtra.appendChild(newshape).appendChild(newgeo);
-        document.getElementById('cube__ROOT').appendChild(newtra);
+        if (html) {
+            document.getElementById('ROOT').appendChild(newtra);
+        } else {
+            document.getElementById('cube__ROOT').appendChild(newtra);
+        }
         con_coords.push([x, y, z, height.value, rad.value, ori.value]);
     } else {
         document.getElementById('contra'+selconnum).setAttribute('translation', x+' '+y+' '+sca*z);
@@ -484,7 +500,7 @@ function changeTub() {
     document.getElementById(seltub.value).style.display = 'inline-block';
 }
 
-function createTub(sca, seltub, col, tub_coords, tubelen, means, delt, trans) {
+function createTub(sca, seltub, col, tub_coords, tubelen, means, delt, trans, html) {
     const seltubnum = seltub.value.slice(3);
     const cyl_coord = [];
     const transtube = trans
@@ -525,11 +541,15 @@ function createTub(sca, seltub, col, tub_coords, tubelen, means, delt, trans) {
             newtra.setAttribute('rotation', sca*diff[2]+' 0 '+(-diff[0])+' '+angle);
             newshape.appendChild(newape).appendChild(newmat);
             newtra.appendChild(newshape).appendChild(newgeo);
-            document.getElementById('cube__ROOT').appendChild(newtra);
+            if (html) {
+                document.getElementById('ROOT').appendChild(newtra);
+            } else {
+                document.getElementById('cube__ROOT').appendChild(newtra);
+            }
         }
         const lab = document.querySelector('#tublab'+seltubnum).value;
         if (lab != '') {
-            makelabel('tub', trans[0], trans[1], trans[2], sca, lab, seltubnum);
+            makelabel('tub', trans[0], trans[1], trans[2], sca, lab, seltubnum, html);
         }
         tub_coords.push(cyl_coord);
     } else {
