@@ -12,6 +12,7 @@ from astroquery.skyview import SkyView
 import matplotlib.colors as mcolors
 # import matplotlib.pyplot as plt gives error in dachs
 from matplotlib import cm
+from scipy.stats import norm
 
 from . import np
 from . import u
@@ -430,7 +431,25 @@ def find_nearest(array, value):
     """
     array = np.asarray(array)
     idx = (np.abs(array - value)).argmin()
-    return array[idx],idx 
+    return array[idx],idx
+
+def get_rms(cube):
+    """
+    Calculate the RMS of a data cube from negative noise.
+    This method assumes that there is no absoption.
+
+    Parameters
+    ----------
+    cube : 3D array
+        Data cube.
+    """
+    _, rms = norm.fit(np.hstack([cube[0 > cube].flatten(), -cube[0 > cube].flatten()]))
+    if rms <= 0:
+        rms = np.std(cube)  
+    if rms <= 0:
+        print('Warning: RMS is 0.')
+
+    return rms
 
 def cube_info(cube):
     cen = np.mean(cube.coords, axis=1)

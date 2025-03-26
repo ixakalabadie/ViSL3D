@@ -71,18 +71,21 @@ class WriteX3D:
                 _, _, nz = cube_full.shape
 
                 for sp in range(split):
-
                     cube = cube_full[:,:,int(nz/split*sp):int(nz/split*(sp+1))]
-                    try:
-                        if shifts is not None:
-                            verts, faces, normals = misc.marching_cubes(cube, level=lev,
-                                        shift=shifts[nc], step_size=self.cube.resol)
-                        else:
-                            verts, faces, normals = misc.marching_cubes(cube, level=lev,
-                                                            step_size=self.cube.resol)
-                    except Exception as ex:
-                        print(ex)
-                        continue
+                    if lev > np.max(cube) or lev < np.min(cube):
+                        print(f'Level {lev} is out of bounds for cube {nc} split {sp}. (min,max) = ({np.min(cube)},{np.max(cube)})')
+                        verts, faces, normals = None, None, None
+                    else:
+                        try:
+                            if shifts is not None:
+                                verts, faces, normals = misc.marching_cubes(cube, level=lev,
+                                            shift=shifts[nc], step_size=self.cube.resol)
+                            else:
+                                verts, faces, normals = misc.marching_cubes(cube, level=lev,
+                                                                step_size=self.cube.resol)
+                        except Exception as ex:
+                            print(ex)
+                            continue
                     self.file_x3d.write(f'\n\t\t\t<Transform DEF="{nc}lt{i}_sp{sp}" ' \
                                         +' translation="0 0 0" rotation="0 0 1 -0" scale="1 1 1">')
                     self.file_x3d.write(f'\n\t\t\t\t<Shape DEF="{nc}layer{i}_sp{sp}_shape">')
@@ -100,24 +103,27 @@ class WriteX3D:
                     self.file_x3d.write('\n'+misc.tabs(6)+'<DepthMode readOnly="true"></DepthMode>')
                     self.file_x3d.write('\n'+misc.tabs(5)+'</Appearance>')
                     #define the layer object
-                    if add_normals:
-                        self.file_x3d.write('\n'+misc.tabs(5)+'<IndexedFaceSet solid="false" '\
-                        +'colorPerVertex="false" normalPerVertex="true" coordIndex="\n\t\t\t\t\t\t')
-                    else:
-                        self.file_x3d.write('\n'+misc.tabs(5)+'<IndexedFaceSet solid="false" colorPerVertex="false" normalPerVertex="false" coordIndex="\n\t\t\t\t\t\t')
-                    #write indices
-                    np.savetxt(self.file_x3d, faces, fmt='%i', newline=' -1\n\t\t\t\t\t\t')
-                    self.file_x3d.write('">')
-                    self.file_x3d.write(f'\n\t\t\t\t\t\t<Coordinate DEF="{nc}Coordinates{i}_sp{sp}" point="\n\t\t\t\t\t\t')
-                    #write coordinates
-                    np.savetxt(self.file_x3d, verts,fmt='%.3f', newline=',\n\t\t\t\t\t\t')
-                    self.file_x3d.write('"></Coordinate>')
-                    if add_normals:
-                        self.file_x3d.write(f'\n\t\t\t\t\t\t<Normal DEF="{nc}Normals{i}_sp{sp}" vector="\n\t\t\t\t\t\t')
-                        #write normals
-                        np.savetxt(self.file_x3d, normals,fmt='%.5f', newline=',\n\t\t\t\t\t\t')
-                        self.file_x3d.write('"></Normal>')
-                    self.file_x3d.write('\n\t\t\t\t\t</IndexedFaceSet>\n\t\t\t\t</Shape>\n\t\t\t</Transform>')
+                    if verts is not None:
+                        if add_normals:
+                            self.file_x3d.write('\n'+misc.tabs(5)+'<IndexedFaceSet solid="false" '\
+                            +'colorPerVertex="false" normalPerVertex="true" coordIndex="\n\t\t\t\t\t\t')
+                        else:
+                            self.file_x3d.write('\n'+misc.tabs(5)+'<IndexedFaceSet solid="false" colorPerVertex="false" normalPerVertex="false" coordIndex="\n\t\t\t\t\t\t')
+                        #write indices
+                        np.savetxt(self.file_x3d, faces, fmt='%i', newline=' -1\n\t\t\t\t\t\t')
+                        self.file_x3d.write('">')
+                        self.file_x3d.write(f'\n\t\t\t\t\t\t<Coordinate DEF="{nc}Coordinates{i}_sp{sp}" point="\n\t\t\t\t\t\t')
+                        #write coordinates
+                        np.savetxt(self.file_x3d, verts,fmt='%.3f', newline=',\n\t\t\t\t\t\t')
+                        self.file_x3d.write('"></Coordinate>')
+                        if add_normals:
+                            self.file_x3d.write(f'\n\t\t\t\t\t\t<Normal DEF="{nc}Normals{i}_sp{sp}" vector="\n\t\t\t\t\t\t')
+                            #write normals
+                            np.savetxt(self.file_x3d, normals,fmt='%.5f', newline=',\n\t\t\t\t\t\t')
+                            self.file_x3d.write('"></Normal>')
+                        self.visfile.write('\n'+misc.tabs(5)+'</IndexedFaceSet>\n')
+                    self.visfile.write(misc.tabs(4)+'</Shape>\n')
+                    self.visfile.write(misc.tabs(3)+'</Transform>')
 
     def make_outline(self):
         """
@@ -1266,11 +1272,7 @@ class WriteHTML:
             #self.file_html.write('\t\t <br><br>\n')
             self.file_html.write(misc.tabs(2)+'&nbsp <label for="move2dimg"><b>2D image:</b> </label>\n')
             self.file_html.write(misc.tabs(2)+'<input oninput="move2d()" id="move2dimg" type="range" min="-1" max="1" step="0.0001" value="1"></input>\n')
-            if self.cube.units[3] == 'm/s':
-                un = 'km/s'
-            else:
-                un = self.cube.units[3]
-            self.file_html.write(misc.tabs(2)+f'<b>$Z=$</b> <output id="showvalue"></output> {un}\n')
+            self.file_html.write(misc.tabs(2)+f'<b>$Z=$</b> <output id="showvalue"></output> {self.cube.units[3]}\n')
             # display chosen velocity of bar too
 
         # PICKING
@@ -1883,7 +1885,8 @@ class WriteVis:
         """
         self.visfile.write(misc.tabs(3)+"<script>\n")
         self.visfile.write(misc.tabs(4)+"function hex2Rgb(hex) {\n")
-        self.visfile.write(misc.tabs(5)+r"var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);\n")
+        self.visfile.write(misc.tabs(5)+r"var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);")
+        self.visfile.write(misc.tabs(5)+"\n")
         self.visfile.write(misc.tabs(5)+"var r = parseInt(result[1], 16)/255.;\n")
         self.visfile.write(misc.tabs(5)+"var g = parseInt(result[2], 16)/255.;\n")
         self.visfile.write(misc.tabs(5)+"var b = parseInt(result[3], 16)/255.;\n")
@@ -2246,7 +2249,7 @@ class WriteVis:
 
         # SCALEV
         #self.visfile.write(misc.tabs(2)+'<br><br>\n')
-        self.visfile.write(misc.tabs(2)+'&nbsp <label for="scalev"><b>Z scale:</b> </label>\n')
+        self.visfile.write(misc.tabs(2)+f'&nbsp <label for="scalev"><b>{self.cube.mags[3]} scale:</b> </label>\n')
         self.visfile.write(misc.tabs(2)+'<input oninput="changescalev()" id="scalev" type="range" list="marker" min="0" max="10" step="0.001" value="1"></input>\n')
         self.visfile.write(misc.tabs(2)+'<datalist id="marker">\n')
         self.visfile.write(misc.tabs(3)+'<option value="1"></option>\n')
@@ -2261,11 +2264,7 @@ class WriteVis:
             #self.visfile.write('\t\t <br><br>\n')
             self.visfile.write(misc.tabs(2)+'&nbsp <label for="move2dimg"><b>2D image:</b> </label>\n')
             self.visfile.write(misc.tabs(2)+'<input oninput="move2d()" id="move2dimg" type="range" min="-1" max="1" step="0.0001" value="1"></input>\n')
-            if self.cube.units[3] == 'm/s':
-                un = 'km/s'
-            else:
-                un = self.cube.units[3]
-            self.visfile.write(misc.tabs(2)+f'<b>$Z=$</b> <output id="showvalue"></output> {un}\n')
+            self.visfile.write(misc.tabs(2)+f'<b>${self.cube.mags[3]}=$</b> <output id="showvalue"></output> {self.cube.units[3]}\n')
             # display chosen velocity of bar too
 
         # PICKING
@@ -2643,18 +2642,21 @@ class WriteVis:
                 _, _, nz = cube_full.shape
 
                 for sp in range(split):
-
                     cube = cube_full[:,:,int(nz/split*sp):int(nz/split*(sp+1))]
-                    try:
-                        if shifts is not None:
-                            verts, faces, normals = misc.marching_cubes(cube, level=lev,
-                                        shift=shifts[nc], step_size=self.cube.resol)
-                        else:
-                            verts, faces, normals = misc.marching_cubes(cube, level=lev,
-                                                            step_size=self.cube.resol)
-                    except Exception as ex:
-                        print(ex)
-                        continue
+                    if lev > np.max(cube) or lev < np.min(cube):
+                        print(f'Level {lev} is out of bounds for cube {nc} split {sp}.')
+                        verts, faces, normals = None, None, None
+                    else:
+                        try:
+                            if shifts is not None:
+                                verts, faces, normals = misc.marching_cubes(cube, level=lev,
+                                            shift=shifts[nc], step_size=self.cube.resol)
+                            else:
+                                verts, faces, normals = misc.marching_cubes(cube, level=lev,
+                                                                step_size=self.cube.resol)
+                        except Exception as ex:
+                            print(ex)
+                            continue
                     self.visfile.write('\n'+misc.tabs(3)+f'<Transform id="{nc}lt{i}_sp{sp}" ' \
                                         +' translation="0 0 0" rotation="0 0 1 -0" scale="1 1 1">')
                     self.visfile.write('\n'+misc.tabs(4)+f'<Shape id="{nc}layer{i}_sp{sp}_shape">')
@@ -2672,24 +2674,27 @@ class WriteVis:
                     self.visfile.write('\n'+misc.tabs(6)+'<DepthMode readOnly="true"></DepthMode>')
                     self.visfile.write('\n'+misc.tabs(5)+'</Appearance>')
                     #define the layer object
-                    if add_normals:
-                        self.visfile.write('\n'+misc.tabs(5)+'<IndexedFaceSet solid="false" '\
-                        +'colorPerVertex="false" normalPerVertex="true" coordIndex="\n\t\t\t\t\t\t')
-                    else:
-                        self.visfile.write('\n'+misc.tabs(5)+'<IndexedFaceSet solid="false" colorPerVertex="false" normalPerVertex="false" coordIndex="\n\t\t\t\t\t\t')
-                    #write indices
-                    np.savetxt(self.visfile, faces, fmt='%i', newline=' -1\n\t\t\t\t\t\t')
-                    self.visfile.write('">')
-                    self.visfile.write(f'\n\t\t\t\t\t\t<Coordinate id="{nc}Coordinates{i}_sp{sp}" point="\n\t\t\t\t\t\t')
-                    #write coordinates
-                    np.savetxt(self.visfile, verts,fmt='%.3f', newline=',\n\t\t\t\t\t\t')
-                    self.visfile.write('"></Coordinate>')
-                    if add_normals:
-                        self.visfile.write(f'\n\t\t\t\t\t\t<Normal id="{nc}Normals{i}_sp{sp}" vector="\n\t\t\t\t\t\t')
-                        #write normals
-                        np.savetxt(self.visfile, normals,fmt='%.5f', newline=',\n\t\t\t\t\t\t')
-                        self.visfile.write('"></Normal>')
-                    self.visfile.write('\n\t\t\t\t\t</IndexedFaceSet>\n\t\t\t\t</Shape>\n\t\t\t</Transform>')
+                    if verts is not None:
+                        if add_normals:
+                            self.visfile.write('\n'+misc.tabs(5)+'<IndexedFaceSet solid="false" '\
+                            +'colorPerVertex="false" normalPerVertex="true" coordIndex="\n\t\t\t\t\t\t')
+                        else:
+                            self.visfile.write('\n'+misc.tabs(5)+'<IndexedFaceSet solid="false" colorPerVertex="false" normalPerVertex="false" coordIndex="\n\t\t\t\t\t\t')
+                        #write indices
+                        np.savetxt(self.visfile, faces, fmt='%i', newline=' -1\n\t\t\t\t\t\t')
+                        self.visfile.write('">')
+                        self.visfile.write(f'\n\t\t\t\t\t\t<Coordinate id="{nc}Coordinates{i}_sp{sp}" point="\n\t\t\t\t\t\t')
+                        #write coordinates
+                        np.savetxt(self.visfile, verts,fmt='%.3f', newline=',\n\t\t\t\t\t\t')
+                        self.visfile.write('"></Coordinate>')
+                        if add_normals:
+                            self.visfile.write(f'\n\t\t\t\t\t\t<Normal id="{nc}Normals{i}_sp{sp}" vector="\n\t\t\t\t\t\t')
+                            #write normals
+                            np.savetxt(self.visfile, normals,fmt='%.5f', newline=',\n\t\t\t\t\t\t')
+                            self.visfile.write('"></Normal>')
+                        self.visfile.write('\n'+misc.tabs(5)+'</IndexedFaceSet>\n')
+                    self.visfile.write(misc.tabs(4)+'</Shape>\n')
+                    self.visfile.write(misc.tabs(3)+'</Transform>')
 
     def make_outline(self):
         """

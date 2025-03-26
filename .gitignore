@@ -10,3 +10,4 @@ __pycache__
 *.html
 *.x3d
 test_*.ipynb
+muse_*

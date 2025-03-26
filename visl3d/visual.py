@@ -6,7 +6,6 @@ Created on Fri Mar 22 16:05:52 2024
 @author: ixakalabadie
 """
 from astropy.io import fits
-from scipy.stats import norm
 from astropy.coordinates import SkyCoord
 
 from . import misc, writers
@@ -22,8 +21,6 @@ class Cube:
     l_cubes : list
         List of 3D arrays with the data. Even if it is only one cube it must be a list.
         For overlay the arrays must have the same shape.
-    name : str
-        Name of the object.
     coords : array
         Array with the coordinates of the cube. It must be a sorted 3x2 array with the minimum and maximum
         values of the spatial and spectral axes.
@@ -161,7 +158,7 @@ def prep_one(cube, header=None, lims=None, unit=None, isolevels=None, colormap='
         delta = np.array([header['CDELT1'], header['CDELT2'], header['CDELT3']])
     except KeyError:
         delta = np.array([header['CD1_1'], header['CD2_2'], header['CD3_3']])
-    cubeunits = np.array(['','','',''], dtype='<U20')
+    cubeunits = np.array(['','','',''], dtype='<U40')
     cubemags = np.array(['unknown','unknown','unknown','unknown'], dtype='<U20')
     for i in range(4):
         if i == 0:
@@ -185,9 +182,16 @@ def prep_one(cube, header=None, lims=None, unit=None, isolevels=None, colormap='
                         cubeunits[i] = 'm/s'
                         print(f'Warning: Using "m/s" as unit for axis {i}')
                 continue
-
+    
+    unitfactor = None
     if cubeunits[0] == 'JY/BEAM':
         cubeunits[0] = 'Jy/beam'
+    elif "10**" in cubeunits[0]:
+        i = cubeunits[0][4:].find('*')
+        unitfactor = cubeunits[0][:4+i]
+        cubeunits[0] = cubeunits[0][4+i+1:]
+    if unitfactor is not None:
+        cube = cube * eval(unitfactor)
 
     origunit = cubeunits[0]
 
@@ -235,8 +239,8 @@ def prep_one(cube, header=None, lims=None, unit=None, isolevels=None, colormap='
     cube = misc.transpose(cube, delta)
     cube[np.isnan(cube)] = 0
 
-    _, rms = norm.fit(np.hstack([cube[0 > cube].flatten(),
-                            -cube[0 > cube].flatten()]))
+    rms = misc.get_rms(cube)
+    
     if unit == 'rms':
         cube = cube/rms #rms is in units of cubeunits[0]
         cubeunits[0] = 'RMS'
@@ -373,7 +377,7 @@ def prep_mult(cube, spectral_lims, header=None, spatial_lims=None, l_isolevels=N
         delta = np.array([header['CDELT1'], header['CDELT2'], header['CDELT3']])
     except KeyError:
         delta = np.array([header['CD1_1'], header['CD2_2'], header['CD3_3']])
-    cubeunits = np.array(['','','',''], dtype='<U20')
+    cubeunits = np.array(['','','',''], dtype='<U40')
     cubemags = np.array(['unknown','unknown','unknown','unknown'], dtype='<U20')
     for i in range(4):
         if i == 0:
@@ -398,8 +402,15 @@ def prep_mult(cube, spectral_lims, header=None, spatial_lims=None, l_isolevels=N
                         print(f'Warning: Using "m/s" as unit for axis {i}')
                 continue
 
+    unitfactor = None
     if cubeunits[0] == 'JY/BEAM':
         cubeunits[0] = 'Jy/beam'
+    elif "10**" in cubeunits[0]:
+        i = cubeunits[0][4:].find('*')
+        unitfactor = cubeunits[0][:4+i]
+        cubeunits[0] = cubeunits[0][4+i+1:]
+    if unitfactor is not None:
+        cube = cube * eval(unitfactor)
 
     origunit = cubeunits[0]
     
@@ -515,7 +526,7 @@ def prep_mult(cube, spectral_lims, header=None, spatial_lims=None, l_isolevels=N
         l_cubes[i] = misc.transpose(l_cubes[i], delta)
 
     # calculate rms with negative pixels
-    _, rms = norm.fit(np.hstack([cube[0 > cube].flatten(), -cube[0 > cube].flatten()]))
+    rms = misc.get_rms(cube)
 
     del cube
 
@@ -662,7 +673,7 @@ def prep_overlay(cube, header=None, spectral_lims=None, lines=None, spatial_lims
         delta = np.array([header['CDELT1'], header['CDELT2'], header['CDELT3']])
     except KeyError:
         delta = np.array([header['CD1_1'], header['CD2_2'], header['CD3_3']])
-    cubeunits = np.array(['','','',''], dtype='<U20')
+    cubeunits = np.array(['','','',''], dtype='<U40')
     cubemags = np.array(['unknown','unknown','unknown','unknown'], dtype='<U20')
     for i in range(4):
         if i == 0:
@@ -687,8 +698,15 @@ def prep_overlay(cube, header=None, spectral_lims=None, lines=None, spatial_lims
                         print(f'Warning: Using "m/s" as unit for axis {i}')
                 continue
 
+    unitfactor = None
     if cubeunits[0] == 'JY/BEAM':
         cubeunits[0] = 'Jy/beam'
+    elif "10**" in cubeunits[0]:
+        i = cubeunits[0][4:].find('*')
+        unitfactor = cubeunits[0][:4+i]
+        cubeunits[0] = cubeunits[0][4+i+1:]
+    if unitfactor is not None:
+        cube = cube * eval(unitfactor)
 
     origunit = cubeunits[0]
 
@@ -828,7 +846,7 @@ def prep_overlay(cube, header=None, spectral_lims=None, lines=None, spatial_lims
         l_cubes[i] = misc.transpose(l_cubes[i], delta)
         
      # calculate rms with negative pixels
-    _, rms = norm.fit(np.hstack([cube[0 > cube].flatten(), -cube[0 > cube].flatten()]))
+    rms = misc.get_rms(cube)
 
     del cube
 
