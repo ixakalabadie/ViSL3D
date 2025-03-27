@@ -95,6 +95,230 @@ class Cube:
 
         return s
 
+def open_cube(cube, header=None):
+    """
+    Return cube in the form [Z, DEC, RA] and without polarization axis. Also return the header.
+
+    Parameters
+    ----------
+    cube : str or np.ndarray
+        Path to the FITS file or the data cube.
+    header : astropy.io.fits.header.Header, optional
+        Header of the FITS file.
+    """
+    if isinstance(cube, str):
+        with fits.open(cube) as hdul:
+            for l in range(len(hdul)):
+                cube = hdul[l].data # this is pol, v, dec, ra
+                header = hdul[l].header
+                if cube is not None and len(cube.shape) >= 3:
+                    break
+    elif header is None:
+        raise AttributeError('No header provided')
+
+    if len(cube.shape) < 3:
+        raise ValueError('Not enough axes')
+    if len(cube.shape) >= 4:
+        print('Warning: Cube with polarization axis. Using first.')
+        cube = cube[0]
+    cube = np.squeeze(cube)
+
+    return cube, header
+
+def get_delta(header):
+    try:
+        delta = np.array([header['CDELT1'], header['CDELT2'], header['CDELT3']])
+    except KeyError:
+        delta = np.array([header['CD1_1'], header['CD2_2'], header['CD3_3']])
+    return delta
+
+def get_units_and_magnitudes(header):
+    # initialise empty units
+    cubeunits = np.array(['','','',''], dtype='<U40')
+    cubemags = np.array(['unknown','unknown','unknown','unknown'], dtype='<U20')
+    # make tests for each axis
+    for i in range(4):
+        if i == 0:
+            try:
+                cubeunits[i] = header['BUNIT']
+                cubemags[i] = header['BTYPE']
+            except KeyError:
+                print('Warning: BUNIT or BTYPE not in header')
+                continue
+        else:
+            try:
+                cubemags[i] = header[f'CTYPE{i}']
+                cubeunits[i] = header[f'CUNIT{i}']
+            except KeyError:
+                print(f'Warning: CUNIT{i} or CTYPE{i} not in header')
+                if i < 3:
+                    cubeunits[i] = 'deg'
+                    print(f'Warning: Using "deg" as unit for axis {i}')
+                elif i == 3:
+                    if header[f'CTYPE{i}'] == 'VOPT-F2W':
+                        cubeunits[i] = 'm/s'
+                        print(f'Warning: Using "m/s" as unit for axis {i}')
+                continue
+
+    # look for multiplying factor in BUNIT
+    unitfactor = None
+    if cubeunits[0] == 'JY/BEAM':
+        cubeunits[0] = 'Jy/beam'
+    elif "10**" in cubeunits[0]:
+        i = cubeunits[0][4:].find('*')
+        unitfactor = cubeunits[0][:4+i]
+        cubeunits[0] = cubeunits[0][4+i+1:]
+    if unitfactor is not None:
+        cube = cube * eval(unitfactor)
+
+    origunit = cubeunits[0]
+
+    return cubeunits, cubemags, unitfactor, origunit
+
+def get_cubecoords(header, delta, lims):
+    cubecoords = np.array([
+        [header['CRVAL1']+delta[0]*(lims[0][0]-header['CRPIX1']),
+        header['CRVAL1']+delta[0]*(lims[0][1]-header['CRPIX1'])],
+        [header['CRVAL2']+delta[1]*(lims[1][0]-header['CRPIX2']),
+        header['CRVAL2']+delta[1]*(lims[1][1]-header['CRPIX2'])],
+        [header['CRVAL3']+delta[2]*(lims[2][0]-header['CRPIX3']),
+        header['CRVAL3']+delta[2]*(lims[2][1]-header['CRPIX3'])]
+        ])
+    cubecoords = np.sort(cubecoords)
+
+    return cubecoords
+
+def set_spatial_lims(spatial_lims, cubeunits, cubecoords, header, delta, shape):
+    """
+    Only for mult and overlay
+    """
+    nx, ny, nz = shape
+
+    lims = [[],[]]
+    coords = [[],[]]
+    if spatial_lims is None:
+        lims[0] = [np.array([[0,nx], [0,ny]], dtype=int)] # lims[0] are spatial axes
+        coords[0] = [cubecoords[:2]]
+    if spatial_lims is not None and isinstance(spatial_lims[0][0][0], u.quantity.Quantity):
+        for i in range(len(spatial_lims)):
+            for j in range(2):
+                spatial_lims[i][j][0] = spatial_lims[i][j][0].to(u.Unit(cubeunits[1])).to_value()
+                spatial_lims[i][j][1] = spatial_lims[i][j][1].to(u.Unit(cubeunits[2])).to_value()
+            coords[0].append(np.array(spatial_lims[i]))
+            lims[0].append(np.array([
+                [np.round((coords[0][i][0][0]-header['CRVAL1'])/delta[0] + header['CRPIX1']),
+                np.round((coords[0][i][0][1]-header['CRVAL1'])/delta[0] + header['CRPIX1'])],
+                [np.round((coords[0][i][1][0]-header['CRVAL2'])/delta[1] + header['CRPIX2']),
+                np.round((coords[0][i][1][1]-header['CRVAL2'])/delta[1] + header['CRPIX2'])]
+                ], dtype=int))
+    elif spatial_lims is not None:
+        lims[0] = np.array(spatial_lims)
+        for i in range(len(spatial_lims)):
+            coords[0].append(np.array([
+                [header['CRVAL1']+delta[0]*(spatial_lims[i][0][0]-header['CRPIX1']),
+                header['CRVAL1']+delta[0]*(spatial_lims[i][0][1]-header['CRPIX1'])],
+                [header['CRVAL2']+delta[1]*(spatial_lims[i][1][0]-header['CRPIX2']),
+                header['CRVAL2']+delta[1]*(spatial_lims[i][1][1]-header['CRPIX2'])]
+                ]))
+
+    return lims, coords
+
+def set_spectral_lims(spectral_lims, cubeunits, coords, lims, header, delta):
+    if isinstance(spectral_lims[0][0], u.quantity.Quantity):
+        for i in range(len(spectral_lims)):
+            spectral_lims[i][0] = spectral_lims[i][0].to(u.Unit(cubeunits[3]))
+            spectral_lims[i][1] = spectral_lims[i][1].to(u.Unit(cubeunits[3]))
+            coords[1].append([spectral_lims[i][0].value, spectral_lims[i][1].value])
+            lims[1].append(np.array(
+                [np.round((coords[1][i][0]-header['CRVAL3'])/delta[2] + header['CRPIX3']),
+                np.round((coords[1][i][1]-header['CRVAL3'])/delta[2] + header['CRPIX3'])],
+                dtype=int
+                ))
+    else:
+        for i in range(len(spectral_lims)):
+            lims[1].append(np.array(spectral_lims[i]))
+            coords[1].append(np.array([
+                [header['CRVAL3']+delta[2]*(spectral_lims[i][0]-header['CRPIX3']),
+                header['CRVAL3']+delta[2]*(spectral_lims[i][1]-header['CRPIX3'])]
+                ]))
+
+    coords[0] = np.sort(coords[0])
+    coords[1] = np.sort(coords[1])
+    lims[0] = np.array(np.sort(lims[0]), dtype=int)
+    lims[1] = np.array(np.sort(lims[1]), dtype=int)
+
+    return spectral_lims, coords, lims
+
+def change_bunit(unit, cube, rms, cubeunits):
+    if unit == 'rms':
+        cube = cube/rms #rms is in units of cubeunits[0]
+        cubeunits[0] = 'RMS'
+    elif unit == 'percent':
+        cube = cube/np.nanmax(cube)*100
+        cubeunits[0] = '%'
+    elif unit is None:
+        pass
+    elif unit is not cubeunits[0]:
+        cube = cube*u.Unit(cubeunits[0]).to(unit)
+        cubeunits[0] = unit
+    
+    return cube, cubeunits
+
+def test_isolevels(isolevels, cube):
+    if np.min(isolevels) < np.min(cube):
+        raise ValueError(f'Isolevels out of range. Min is {np.min(cube)}')
+    if np.max(isolevels) > np.max(cube):
+        raise ValueError(f'Isolevels out of range. Max is {np.max(cube)}')
+
+def get_colormap(colormap, l_cubes):
+    if colormap is None and len(l_cubes) < 7:
+        colormap = ['Blues', 'Reds', 'Greens', 'Purples', 'Oranges', 'Greys']
+    elif colormap is None and len(l_cubes) >= 7:
+        raise AttributeError('Too many l_cubes for default colormap. Must set colormaps manually.')
+    elif len(colormap) != len(l_cubes):
+        raise AttributeError('Different number of colormaps and l_cubes')
+    
+    return colormap
+
+def get_image2d(image2d, cubecoords, cubeunits, im2dcolor):
+    imname = ''
+    if image2d is None:
+        pass
+    elif isinstance(image2d, str) and image2d == 'blank':
+        image2d = None, None
+        imname = 'blank'
+    elif isinstance(image2d, str):
+        imname = image2d
+        pixels = 1000
+        co = SkyCoord(ra=np.mean(cubecoords[0])*u.Unit(cubeunits[1]), dec=np.mean(cubecoords[1])*u.Unit(cubeunits[2]))
+        co = co.to_string('hmsdms')
+        imcol, img_shape, _ = misc.get_imcol(position=co, survey=image2d, pixels=pixels,
+                coordinates='J2000', width=np.diff(cubecoords[0])[0]*u.Unit(cubeunits[1]),
+                height=np.diff(cubecoords[1])[0]*u.Unit(cubeunits[2]), cmap=im2dcolor)
+        image2d = imcol, img_shape
+    else:
+        if isinstance(image2d[1], int):
+            imname = image2d[0]
+            pixels = image2d[1]
+            co = SkyCoord(ra=np.mean(cubecoords[0])*u.Unit(cubeunits[1]), dec=np.mean(cubecoords[1])*u.Unit(cubeunits[2]))
+            co = co.to_string('hmsdms')
+            imcol, img_shape, _ = misc.get_imcol(position=co, survey=imname, pixels=pixels,
+                    coordinates='J2000', width=np.diff(cubecoords[0])[0]*u.Unit(cubeunits[1]),
+                    height=np.diff(cubecoords[1])[0]*u.Unit(cubeunits[2]), cmap=im2dcolor)
+            image2d = imcol, img_shape
+        else:
+            imname = image2d[0]
+            imcol, img_shape, _ = misc.get_imcol(image = image2d[1], cmap=im2dcolor)
+            image2d = imcol, img_shape
+
+    return imname, image2d
+
+def get_objectname(header):
+    if 'OBJECT' in header:
+        obj = header['OBJECT']
+    else:
+        obj = ''
+
 def prep_one(cube, header=None, lims=None, unit=None, isolevels=None, colormap='CMRmap_r',
              image2d=None, im2dcolor='Greys', galaxies=None):
     """
@@ -137,72 +361,24 @@ def prep_one(cube, header=None, lims=None, unit=None, isolevels=None, colormap='
     Cube
         An object of the Cube class for a single spectral line model.
     """
-    if isinstance(cube, str):
-        with fits.open(cube) as hdul:
-            for l in range(len(hdul)):
-                cube = hdul[l].data # this is pol, v, dec, ra
-                header = hdul[l].header
-                if cube is not None and len(cube.shape) >= 3:
-                    break
-    elif header is None:
-        raise AttributeError('No header provided')
 
-    if len(cube.shape) < 3:
-        raise ValueError('Not enough axes')
-    if len(cube.shape) >= 4:
-        print('Warning: Cube with polarization axis. Using first.')
-        cube = cube[0]
-    cube = np.squeeze(cube)
+    cube, header = open_cube(cube, header)
 
-    try:
-        delta = np.array([header['CDELT1'], header['CDELT2'], header['CDELT3']])
-    except KeyError:
-        delta = np.array([header['CD1_1'], header['CD2_2'], header['CD3_3']])
-    cubeunits = np.array(['','','',''], dtype='<U40')
-    cubemags = np.array(['unknown','unknown','unknown','unknown'], dtype='<U20')
-    for i in range(4):
-        if i == 0:
-            try:
-                cubeunits[i] = header['BUNIT']
-                cubemags[i] = header['BTYPE']
-            except KeyError:
-                print('Warning: BUNIT or BTYPE not in header')
-                continue
-        else:
-            try:
-                cubemags[i] = header[f'CTYPE{i}']
-                cubeunits[i] = header[f'CUNIT{i}']
-            except KeyError:
-                print(f'Warning: CUNIT{i} or CTYPE{i} not in header')
-                if i < 3:
-                    cubeunits[i] = 'deg'
-                    print(f'Warning: Using "deg" as unit for axis {i}')
-                elif i == 3:
-                    if header[f'CTYPE{i}'] == 'VOPT-F2W':
-                        cubeunits[i] = 'm/s'
-                        print(f'Warning: Using "m/s" as unit for axis {i}')
-                continue
-    
-    unitfactor = None
-    if cubeunits[0] == 'JY/BEAM':
-        cubeunits[0] = 'Jy/beam'
-    elif "10**" in cubeunits[0]:
-        i = cubeunits[0][4:].find('*')
-        unitfactor = cubeunits[0][:4+i]
-        cubeunits[0] = cubeunits[0][4+i+1:]
-    if unitfactor is not None:
-        cube = cube * eval(unitfactor)
+    delta = get_delta(header)
 
-    origunit = cubeunits[0]
+    cubeunits, cubemags, unitfactor, origunit = get_units_and_magnitudes(header)
 
     nz, ny, nx = cube.shape
 
-    if '' in cubeunits and (isinstance(lims, list) and isinstance(lims[0][0], u.quantity.Quantity)):
-        raise KeyError('Limits given with units but units not in file header. Give in pixels instead or update header.')
+    # The following test is probably not needed after setting deg or m/s in for missing units
+
+    # if '' in cubeunits and (isinstance(lims, list) and isinstance(lims[0][0], u.quantity.Quantity)):
+    #     raise KeyError('Limits given with units but units not in file header. Give in pixels instead or update header.')
 
     if lims is None:
         lims = np.array([[0,nx], [0,ny], [0,nz]], dtype=int)
 
+    # set the spatial limits
     if isinstance(lims, list) and isinstance(lims[0][0], u.quantity.Quantity):
         for (i,l) in enumerate(lims):
             for (j,_) in enumerate(l):
@@ -218,21 +394,16 @@ def prep_one(cube, header=None, lims=None, unit=None, isolevels=None, colormap='
             np.round((cubecoords[2][1]-header['CRVAL3'])/delta[2] + header['CRPIX3'])]
             ], dtype=int)
     else:
-        cubecoords = np.array([
-            [header['CRVAL1']+delta[0]*(lims[0][0]-header['CRPIX1']),
-            header['CRVAL1']+delta[0]*(lims[0][1]-header['CRPIX1'])],
-            [header['CRVAL2']+delta[1]*(lims[1][0]-header['CRPIX2']),
-            header['CRVAL2']+delta[1]*(lims[1][1]-header['CRPIX2'])],
-            [header['CRVAL3']+delta[2]*(lims[2][0]-header['CRPIX3']),
-            header['CRVAL3']+delta[2]*(lims[2][1]-header['CRPIX3'])],
-            ])
+        cubecoords = get_cubecoords(header, delta, lims)
 
+    # check limits
     for i in range(3):
         if lims[i][0] < 0:
             raise ValueError('lims out of range')
         if lims[i][1] > cube.shape[2-i]:
             raise ValueError('lims out of range')
 
+    # generate subcube from lims
     cubecoords = np.sort(cubecoords)
     lims = np.sort(lims)
     cube = cube[lims[2][0]:lims[2][1],lims[1][0]:lims[1][1],lims[0][0]:lims[0][1]]
@@ -240,57 +411,18 @@ def prep_one(cube, header=None, lims=None, unit=None, isolevels=None, colormap='
     cube[np.isnan(cube)] = 0
 
     rms = misc.get_rms(cube)
-    
-    if unit == 'rms':
-        cube = cube/rms #rms is in units of cubeunits[0]
-        cubeunits[0] = 'RMS'
-    elif unit == 'percent':
-        cube = cube/np.nanmax(cube)*100
-        cubeunits[0] = '%'
-    elif unit is None:
-        pass
-    elif unit is not cubeunits[0]:
-        cube = cube*u.Unit(cubeunits[0]).to(unit)
-        cubeunits[0] = unit
 
+    cube, cubeunits = change_bunit(unit, cube, rms, cubeunits)
+
+    # calculate isolevels or check them
     if isolevels is None:
         isolevels = misc.calc_isolevels(cube, unit=unit)
     else:
-        if np.min(isolevels) < np.min(cube):
-            raise ValueError(f'Isolevels out of range. Min is {np.min(cube)}')
-        if np.max(isolevels) > np.max(cube):
-            raise ValueError(f'Isolevels out of range. Max is {np.max(cube)}')
+        test_isolevels(isolevels, cube)
 
-    imname = ''
-    if image2d is None:
-        pass
-    elif isinstance(image2d, str) and image2d == 'blank':
-        image2d = None, None
-        imname = 'blank'
-    elif isinstance(image2d, str):
-        imname = image2d
-        pixels = 1000
-        co = SkyCoord(ra=np.mean(cubecoords[0])*u.Unit(cubeunits[1]), dec=np.mean(cubecoords[1])*u.Unit(cubeunits[2]))
-        co = co.to_string('hmsdms')
-        imcol, img_shape, _ = misc.get_imcol(position=co, survey=image2d, pixels=pixels,
-                coordinates='J2000', width=np.diff(cubecoords[0])[0]*u.Unit(cubeunits[1]),
-                height=np.diff(cubecoords[1])[0]*u.Unit(cubeunits[2]), cmap=im2dcolor)
-        image2d = imcol, img_shape
-    else:
-        if isinstance(image2d[1], int):
-            imname = image2d[0]
-            pixels = image2d[1]
-            co = SkyCoord(ra=np.mean(cubecoords[0])*u.Unit(cubeunits[1]), dec=np.mean(cubecoords[1])*u.Unit(cubeunits[2]))
-            co = co.to_string('hmsdms')
-            imcol, img_shape, _ = misc.get_imcol(position=co, survey=imname, pixels=pixels,
-                    coordinates='J2000', width=np.diff(cubecoords[0])[0]*u.Unit(cubeunits[1]),
-                    height=np.diff(cubecoords[1])[0]*u.Unit(cubeunits[2]), cmap=im2dcolor)
-            image2d = imcol, img_shape
-        else:
-            imname = image2d[0]
-            imcol, img_shape, _ = misc.get_imcol(image = image2d[1], cmap=im2dcolor)
-            image2d = imcol, img_shape
-        
+    imname, image2d = get_image2d(image2d, cubecoords, cubeunits, im2dcolor)
+    
+    # calculate positions of galaxies
     if galaxies is not None:
         nx, ny, nz = cube.shape
         trans = (2000/nx, 2000/ny, 2000/nz)
@@ -298,10 +430,7 @@ def prep_one(cube, header=None, lims=None, unit=None, isolevels=None, colormap='
     else: 
         galdict = None
 
-    if 'OBJECT' in header:
-        obj = header['OBJECT']
-    else:
-        obj = ''
+    obj = get_objectname(header)
 
     return Cube(l_cubes=[cube], name=obj, coords=cubecoords, units=cubeunits,
                 mags=cubemags, delta=delta, cmaps=[colormap], rms=rms*u.Unit(origunit), image2d=(imname,image2d),
@@ -356,109 +485,28 @@ def prep_mult(cube, spectral_lims, header=None, spatial_lims=None, l_isolevels=N
     Cube
         An object of the Cube class for a model with multiple spectral lines.
     """
-    if isinstance(cube, str):
-        with fits.open(cube) as hdul:
-            for l in range(len(hdul)):
-                cube = hdul[l].data # this is pol, v, dec, ra
-                header = hdul[l].header
-                if cube is not None and len(cube.shape) >= 3:
-                    break
-    elif header is None:
-        raise AttributeError('No header provided')
-    
-    if len(cube.shape) < 3:
-        raise ValueError('Not enough axes')
-    if len(cube.shape) >= 4:
-        print('Warning: Cube with polarization axis. Using first.')
-        cube = cube[0]
-    cube = np.squeeze(cube)
+    cube, header = open_cube(cube, header)
 
-    try:
-        delta = np.array([header['CDELT1'], header['CDELT2'], header['CDELT3']])
-    except KeyError:
-        delta = np.array([header['CD1_1'], header['CD2_2'], header['CD3_3']])
-    cubeunits = np.array(['','','',''], dtype='<U40')
-    cubemags = np.array(['unknown','unknown','unknown','unknown'], dtype='<U20')
-    for i in range(4):
-        if i == 0:
-            try:
-                cubeunits[i] = header['BUNIT']
-                cubemags[i] = header['BTYPE']
-            except KeyError:
-                print('Warning: BUNIT or BTYPE not in header')
-                continue
-        else:
-            try:
-                cubemags[i] = header[f'CTYPE{i}']
-                cubeunits[i] = header[f'CUNIT{i}']
-            except KeyError:
-                print(f'Warning: CUNIT{i} or CTYPE{i} not in header')
-                if i < 3:
-                    cubeunits[i] = 'deg'
-                    print(f'Warning: Using "deg" as unit for axis {i}')
-                elif i == 3:
-                    if header[f'CTYPE{i}'] == 'VOPT-F2W':
-                        cubeunits[i] = 'm/s'
-                        print(f'Warning: Using "m/s" as unit for axis {i}')
-                continue
+    delta = get_delta(header)
 
-    unitfactor = None
-    if cubeunits[0] == 'JY/BEAM':
-        cubeunits[0] = 'Jy/beam'
-    elif "10**" in cubeunits[0]:
-        i = cubeunits[0][4:].find('*')
-        unitfactor = cubeunits[0][:4+i]
-        cubeunits[0] = cubeunits[0][4+i+1:]
-    if unitfactor is not None:
-        cube = cube * eval(unitfactor)
-
-    origunit = cubeunits[0]
-    
-    if '' in cubeunits and (spatial_lims is not None and isinstance(spatial_lims[0][0][0], u.quantity.Quantity)):
-        raise KeyError('Spatial limits given with units but units not in file header. Give in pixels instead or update header.')
-    if '' in cubeunits and isinstance(spectral_lims[0][0], u.quantity.Quantity):
-        raise KeyError('Spectral limits given with units but units not in file header. Give in pixels instead or update header.')
+    cubeunits, cubemags, unitfactor, origunit = get_units_and_magnitudes(header)
 
     nz, ny, nx = cube.shape
 
+    # The following test is probably not needed after setting deg or m/s in for missing units
+    
+    # if '' in cubeunits and (spatial_lims is not None and isinstance(spatial_lims[0][0][0], u.quantity.Quantity)):
+    #     raise KeyError('Spatial limits given with units but units not in file header. Give in pixels instead or update header.')
+    # if '' in cubeunits and isinstance(spectral_lims[0][0], u.quantity.Quantity):
+    #     raise KeyError('Spectral limits given with units but units not in file header. Give in pixels instead or update header.')
+
     lims = np.array([[0,nx], [0,ny], [0,nz]], dtype=int)
-    cubecoords = np.array([
-        [header['CRVAL1']+delta[0]*(lims[0][0]-header['CRPIX1']),
-        header['CRVAL1']+delta[0]*(lims[0][1]-header['CRPIX1'])],
-        [header['CRVAL2']+delta[1]*(lims[1][0]-header['CRPIX2']),
-        header['CRVAL2']+delta[1]*(lims[1][1]-header['CRPIX2'])],
-        [header['CRVAL3']+delta[2]*(lims[2][0]-header['CRPIX3']),
-        header['CRVAL3']+delta[2]*(lims[2][1]-header['CRPIX3'])]
-        ])
-    cubecoords = np.sort(cubecoords)
 
-    lims = [[],[]]
-    coords = [[],[]]
-    if spatial_lims is None:
-        lims[0] = [np.array([[0,nx], [0,ny]], dtype=int)] # lims[0] are spatial axes
-        coords[0] = [cubecoords[:2]]
-    if spatial_lims is not None and isinstance(spatial_lims[0][0][0], u.quantity.Quantity):
-        for i in range(len(spatial_lims)):
-            for j in range(2):
-                spatial_lims[i][j][0] = spatial_lims[i][j][0].to(u.Unit(cubeunits[1])).to_value()
-                spatial_lims[i][j][1] = spatial_lims[i][j][1].to(u.Unit(cubeunits[2])).to_value()
-            coords[0].append(np.array(spatial_lims[i]))
-            lims[0].append(np.array([
-                [np.round((coords[0][i][0][0]-header['CRVAL1'])/delta[0] + header['CRPIX1']),
-                np.round((coords[0][i][0][1]-header['CRVAL1'])/delta[0] + header['CRPIX1'])],
-                [np.round((coords[0][i][1][0]-header['CRVAL2'])/delta[1] + header['CRPIX2']),
-                np.round((coords[0][i][1][1]-header['CRVAL2'])/delta[1] + header['CRPIX2'])]
-                ], dtype=int))
-    elif spatial_lims is not None:
-        lims[0] = np.array(spatial_lims)
-        for i in range(len(spatial_lims)):
-            coords[0].append(np.array([
-                [header['CRVAL1']+delta[0]*(spatial_lims[i][0][0]-header['CRPIX1']),
-                header['CRVAL1']+delta[0]*(spatial_lims[i][0][1]-header['CRPIX1'])],
-                [header['CRVAL2']+delta[1]*(spatial_lims[i][1][0]-header['CRPIX2']),
-                header['CRVAL2']+delta[1]*(spatial_lims[i][1][1]-header['CRPIX2'])]
-                ]))
+    cubecoords = get_cubecoords(header, delta, lims)
 
+    lims, coords = set_spatial_lims(spatial_lims, cubeunits, cubecoords, header, delta, [nx,ny,nz])
+
+    # check spectral limits
     if len(spectral_lims) == 1:
         raise AttributeError('No or single limits for spectral axis. Use prep_one instead.')
     elif len(spectral_lims) < len(lims[0]) :
@@ -466,34 +514,14 @@ def prep_mult(cube, spectral_lims, header=None, spatial_lims=None, l_isolevels=N
     elif len(lims[0]) > 1 and len(spectral_lims) != len(lims[0]):
         raise AttributeError('Different number of spectral and spatial limits.')
 
-    if isinstance(spectral_lims[0][0], u.quantity.Quantity):
-        for i in range(len(spectral_lims)):
-            spectral_lims[i][0] = spectral_lims[i][0].to(u.Unit(cubeunits[3]))
-            spectral_lims[i][1] = spectral_lims[i][1].to(u.Unit(cubeunits[3]))
-            coords[1].append([spectral_lims[i][0].value, spectral_lims[i][1].value])
-            lims[1].append(np.array(
-                [np.round((coords[1][i][0]-header['CRVAL3'])/delta[2] + header['CRPIX3']),
-                np.round((coords[1][i][1]-header['CRVAL3'])/delta[2] + header['CRPIX3'])],
-                dtype=int
-                ))
-    else:
-        for i in range(len(spectral_lims)):
-            lims[1].append(np.array(spectral_lims[i]))
-            coords[1].append(np.array([
-                [header['CRVAL3']+delta[2]*(spectral_lims[i][0]-header['CRPIX3']),
-                header['CRVAL3']+delta[2]*(spectral_lims[i][1]-header['CRPIX3'])]
-                ]))
+    spectral_lims, coords, lims = set_spectral_lims(spectral_lims, cubeunits, coords, lims, header, delta)
 
-    coords[0] = np.sort(coords[0])
-    coords[1] = np.sort(coords[1])
-    lims[0] = np.sort(lims[0])
-    lims[1] = np.sort(lims[1])
-
-    # take min and max of subcube limits for the whole cube
+    # take min and max of subcube limits for the whole cube. the total cube will be bigger or equal than the subcubes
     cubecoords[0] = [np.min(np.array(coords[0])[:,0]), np.max(np.array(coords[0])[:,0])]
     cubecoords[1] = [np.min(np.array(coords[0])[:,1]), np.max(np.array(coords[0])[:,1])]
     cubecoords[2] = [np.min(np.array(coords[1])), np.max(np.array(coords[1]))]
 
+    # check limits
     if np.min(lims[0]) < 0:
         raise ValueError('Spatial lims out of range')
     for i in range(len(lims[0])):
@@ -510,6 +538,7 @@ def prep_mult(cube, spectral_lims, header=None, spatial_lims=None, l_isolevels=N
         [np.min(np.array(lims[0])[:,1]), np.max(np.array(lims[0])[:,1])]
         ], dtype=int)
 
+    # generate subcubes
     l_cubes = []
     for i in range(len(coords[1])):
         l_cubes.append(np.zeros(cube.shape))
@@ -530,19 +559,11 @@ def prep_mult(cube, spectral_lims, header=None, spatial_lims=None, l_isolevels=N
 
     del cube
 
+    # change the BUNIT for rms, percent or other unit
     for i in range(len(l_cubes)):
-        if unit == 'rms':
-            l_cubes[i] = l_cubes[i] / rms #rms is in units of cubeunits[0]
-            cubeunits[0] = 'RMS'
-        elif unit == 'percent':
-            l_cubes[i] = l_cubes[i] / np.nanmax(l_cubes[i])*100
-            cubeunits[0] = '%'
-        elif unit is None:
-            pass
-        elif unit is not cubeunits[0]:
-            l_cubes[i] = l_cubes[i] * u.Unit(cubeunits[0]).to(unit)
-            cubeunits[0] = unit
+        l_cubes[i], cubeunits = change_bunit(unit, l_cubes[i], rms, cubeunits)
 
+    # calculate the isolevels or check them
     if l_isolevels is None:
         l_isolevels = []
         for c in l_cubes:
@@ -551,52 +572,13 @@ def prep_mult(cube, spectral_lims, header=None, spatial_lims=None, l_isolevels=N
         if len(l_isolevels) != len(l_cubes):
             raise AttributeError('Different number of isolevels and cubes')
         for i in range(len(l_cubes)):
-            if np.min(l_isolevels[i]) < np.min(l_cubes[i]):
-                raise ValueError('isolevels out of range')
-            if np.max(l_isolevels[i]) > np.max(l_cubes[i]):
-                raise ValueError('isolevels out of range')
+            test_isolevels(l_isolevels[i], l_cubes[i])
 
-    if colormap is None and len(l_cubes) < 7:
-        colormap = ['Blues', 'Reds', 'Greens', 'Purples', 'Oranges', 'Greys']
-    elif colormap is None and len(l_cubes) >= 7:
-        raise AttributeError('Too many l_cubes for default colormap. Must set colormaps manually.')
-    elif len(colormap) != len(l_cubes):
-        raise AttributeError('Different number of colormaps and l_cubes')
+    colormap = get_colormap(colormap, l_cubes)
 
-    imname = ''
-    if image2d is None:
-        pass
-    elif isinstance(image2d, str) and image2d == 'blank':
-        image2d = None, None
-        imname = 'blank'
-    elif isinstance(image2d, str):
-        imname = image2d
-        pixels = 1000
-        co = SkyCoord(ra=np.mean(cubecoords[0])*u.Unit(cubeunits[1]), dec=np.mean(cubecoords[1])*u.Unit(cubeunits[2]))
-        co = co.to_string('hmsdms')
-        imcol, img_shape, _ = misc.get_imcol(position=co, survey=image2d, pixels=pixels,
-                coordinates='J2000', width=np.diff(cubecoords[0])[0]*u.Unit(cubeunits[1]),
-                height=np.diff(cubecoords[1])[0]*u.Unit(cubeunits[2]), cmap=im2dcolor)
-        image2d = imcol, img_shape
-    else:
-        if isinstance(image2d[1], int):
-            imname = image2d[0]
-            pixels = image2d[1]
-            co = SkyCoord(ra=np.mean(cubecoords[0])*u.Unit(cubeunits[1]), dec=np.mean(cubecoords[1])*u.Unit(cubeunits[2]))
-            co = co.to_string('hmsdms')
-            imcol, img_shape, _ = misc.get_imcol(position=co, survey=imname, pixels=pixels,
-                    coordinates='J2000', width=np.diff(cubecoords[0])[0]*u.Unit(cubeunits[1]),
-                    height=np.diff(cubecoords[1])[0]*u.Unit(cubeunits[2]), cmap=im2dcolor)
-            image2d = imcol, img_shape
-        else:
-            imname = image2d[0]
-            imcol, img_shape, _ = misc.get_imcol(image = image2d[1], cmap=im2dcolor)
-            image2d = imcol, img_shape
+    imname, image2d = get_image2d(image2d, cubecoords, cubeunits, im2dcolor)
     
-    if 'OBJECT' in header:
-        obj = header['OBJECT']
-    else:
-        obj = ''
+    obj = get_objectname(header)
 
     return Cube(l_cubes=l_cubes, name=obj, coords=cubecoords, units=cubeunits,
                 mags=cubemags, cmaps=colormap, rms=rms*u.Unit(origunit), image2d=(imname,image2d), galaxies=None, 
@@ -652,116 +634,33 @@ def prep_overlay(cube, header=None, spectral_lims=None, lines=None, spatial_lims
     Cube
         An object of the Cube class for an overlay of spectral lines.
     """
-    if isinstance(cube, str):
-        with fits.open(cube) as hdul:
-            for l in range(len(hdul)):
-                cube = hdul[l].data # this is pol, v, dec, ra
-                header = hdul[l].header
-                if cube is not None and len(cube.shape) >= 3:
-                    break
-    elif header is None:
-        raise AttributeError('No header provided')
-    
-    if len(cube.shape) < 3:
-        raise ValueError('Not enough axes')
-    if len(cube.shape) >= 4:
-        print('Warning: Cube with polarization axis. Using first.')
-        cube = cube[0]
-    cube = np.squeeze(cube)
+    cube, header = open_cube(cube, header)
 
-    try:
-        delta = np.array([header['CDELT1'], header['CDELT2'], header['CDELT3']])
-    except KeyError:
-        delta = np.array([header['CD1_1'], header['CD2_2'], header['CD3_3']])
-    cubeunits = np.array(['','','',''], dtype='<U40')
-    cubemags = np.array(['unknown','unknown','unknown','unknown'], dtype='<U20')
-    for i in range(4):
-        if i == 0:
-            try:
-                cubeunits[i] = header['BUNIT']
-                cubemags[i] = header['BTYPE']
-            except KeyError:
-                print('Warning: BUNIT or BTYPE not in header')
-                continue
-        else:
-            try:
-                cubemags[i] = header[f'CTYPE{i}']
-                cubeunits[i] = header[f'CUNIT{i}']
-            except KeyError:
-                print(f'Warning: CUNIT{i} or CTYPE{i} not in header')
-                if i < 3:
-                    cubeunits[i] = 'deg'
-                    print(f'Warning: Using "deg" as unit for axis {i}')
-                elif i == 3:
-                    if header[f'CTYPE{i}'] == 'VOPT-F2W':
-                        cubeunits[i] = 'm/s'
-                        print(f'Warning: Using "m/s" as unit for axis {i}')
-                continue
+    delta = get_delta(header)
 
-    unitfactor = None
-    if cubeunits[0] == 'JY/BEAM':
-        cubeunits[0] = 'Jy/beam'
-    elif "10**" in cubeunits[0]:
-        i = cubeunits[0][4:].find('*')
-        unitfactor = cubeunits[0][:4+i]
-        cubeunits[0] = cubeunits[0][4+i+1:]
-    if unitfactor is not None:
-        cube = cube * eval(unitfactor)
-
-    origunit = cubeunits[0]
-
-    if '' in cubeunits[1:2] and (spatial_lims is not None and isinstance(spatial_lims[0][0][0], u.quantity.Quantity)):
-        raise KeyError('Spatial limits given with units but units not in file header. Give in pixels instead or update header.')
-    if cubeunits[3] == '' and (spectral_lims is not None and isinstance(spectral_lims[0][0], u.quantity.Quantity)):
-        raise KeyError('Spectral limits given with units but units not in file header. Give in pixels instead or update header.')
+    cubeunits, cubemags, unitfactor, origunit = get_units_and_magnitudes(header)
 
     nz, ny, nx = cube.shape
 
+    # if '' in cubeunits[1:2] and (spatial_lims is not None and isinstance(spatial_lims[0][0][0], u.quantity.Quantity)):
+    #     raise KeyError('Spatial limits given with units but units not in file header. Give in pixels instead or update header.')
+    # if cubeunits[3] == '' and (spectral_lims is not None and isinstance(spectral_lims[0][0], u.quantity.Quantity)):
+    #     raise KeyError('Spectral limits given with units but units not in file header. Give in pixels instead or update header.')
+
     lims = np.array([[0,nx], [0,ny], [0,nz]], dtype=int)
-    cubecoords = np.array([
-        [header['CRVAL1']+delta[0]*(lims[0][0]-header['CRPIX1']),
-        header['CRVAL1']+delta[0]*(lims[0][1]-header['CRPIX1'])],
-        [header['CRVAL2']+delta[1]*(lims[1][0]-header['CRPIX2']),
-        header['CRVAL2']+delta[1]*(lims[1][1]-header['CRPIX2'])],
-        [header['CRVAL3']+delta[2]*(lims[2][0]-header['CRPIX3']),
-        header['CRVAL3']+delta[2]*(lims[2][1]-header['CRPIX3'])]
-        ])
-    cubecoords = np.sort(cubecoords)
 
-    lims = [[],[]]
-    coords = [[],[]]
-    if spatial_lims is None:
-        lims[0] = [np.array([[0,nx], [0,ny]], dtype=int)] # lims[0] are spatial axes
-        coords[0] = [cubecoords[:2]]
-    if spatial_lims is not None and isinstance(spatial_lims[0][0][0], u.quantity.Quantity):
-        for i in range(len(spatial_lims)):
-            for j in range(2):
-                spatial_lims[i][j][0] = spatial_lims[i][j][0].to(u.Unit(cubeunits[1])).to_value()
-                spatial_lims[i][j][1] = spatial_lims[i][j][1].to(u.Unit(cubeunits[2])).to_value()
-            coords[0].append(np.array(spatial_lims[i]))
-            lims[0].append(np.array([
-                [np.round((coords[0][i][0][0]-header['CRVAL1'])/delta[0] + header['CRPIX1']),
-                np.round((coords[0][i][0][1]-header['CRVAL1'])/delta[0] + header['CRPIX1'])],
-                [np.round((coords[0][i][1][0]-header['CRVAL2'])/delta[1] + header['CRPIX2']),
-                np.round((coords[0][i][1][1]-header['CRVAL2'])/delta[1] + header['CRPIX2'])]
-                ], dtype=int))
-    elif spatial_lims is not None:
-        lims[0] = np.array(spatial_lims)
-        for i in range(len(spatial_lims)):
-            coords[0].append(np.array([
-                [header['CRVAL1']+delta[0]*(spatial_lims[i][0][0]-header['CRPIX1']),
-                header['CRVAL1']+delta[0]*(spatial_lims[i][0][1]-header['CRPIX1'])],
-                [header['CRVAL2']+delta[1]*(spatial_lims[i][1][0]-header['CRPIX2']),
-                header['CRVAL2']+delta[1]*(spatial_lims[i][1][1]-header['CRPIX2'])]
-                ]))
+    cubecoords = get_cubecoords(header, delta, lims)
 
+    # set spectral limits from "lines"
     if lines is not None:
+        # check "lines"
         if len(lines) < 2:
             raise AttributeError('Not enough lines for overlay. Use prep_one instead.')
         elif spatial_lims is not None:
             if len(spatial_lims) != 1 and len(lines) != len(spatial_lims):
                 raise AttributeError('Different number of lines and spatial limits.')
 
+        # set spectral limits
         for i, (center, width) in enumerate(lines.values()):
             if isinstance(center, u.quantity.Quantity):
                 center = center.to(u.Unit(cubeunits[3]))
@@ -785,37 +684,19 @@ def prep_overlay(cube, header=None, spectral_lims=None, lines=None, spatial_lims
                     header['CRVAL3']+delta[2]*(lims[1][i][1]-header['CRPIX3'])]
                     ))
     else:
+        # lines exist but not given
         lines=True
 
+    # check spectral lims
     if spectral_lims is not None:
         if len(spectral_lims) < 2:
             raise AttributeError('Not enough spectral limits for overlay. Use prep_one instead.')
         elif len(spatial_lims) != 1 and len(spectral_lims) != len(spatial_lims):
             raise AttributeError('Different number of spectral and spatial limits.')
 
-        if isinstance(spectral_lims[0][0], u.quantity.Quantity):
-            for i in range(len(spectral_lims)):
-                spectral_lims[i][0] = spectral_lims[i][0].to(u.Unit(cubeunits[3]))
-                spectral_lims[i][1] = spectral_lims[i][1].to(u.Unit(cubeunits[3]))
-                coords[1].append([spectral_lims[i][0].value, spectral_lims[i][1].value])
-                lims[1].append(np.array(
-                    [np.round((coords[1][i][0]-header['CRVAL3'])/delta[2] + header['CRPIX3']),
-                    np.round((coords[1][i][1]-header['CRVAL3'])/delta[2] + header['CRPIX3'])],
-                    dtype=int
-                    ))
-        else:
-            for i in range(len(spectral_lims)):
-                lims[1].append(np.array(spectral_lims[i], dtype=int))
-                coords[1].append(np.array([
-                    [header['CRVAL3']+delta[2]*(spectral_lims[i][0]-header['CRPIX3']),
-                    header['CRVAL3']+delta[2]*(spectral_lims[i][1]-header['CRPIX3'])]
-                    ]))
+    spectral_lims, coords, lims = set_spectral_lims(spectral_lims, cubeunits, coords, lims, header, delta)
 
-    coords[0] = np.sort(coords[0])
-    coords[1] = np.sort(coords[1])
-    lims[0] = np.array(np.sort(lims[0]), dtype=int)
-    lims[1] = np.array(np.sort(lims[1]), dtype=int)
-
+    # check lims
     if np.min(lims[0]) < 0:
         raise ValueError('Spatial lims out of range')
     for i in range(len(lims[0])):
@@ -832,6 +713,7 @@ def prep_overlay(cube, header=None, spectral_lims=None, lines=None, spatial_lims
         np.squeeze(np.max(np.diff(lims[0]),axis=0)[0])
         ], dtype=int)
 
+    # generate subcubes
     l_cubes = []
     for i in range(len(lims[1])):
         l_cubes.append(np.zeros(shape))
@@ -850,19 +732,11 @@ def prep_overlay(cube, header=None, spectral_lims=None, lines=None, spatial_lims
 
     del cube
 
+    # change the BUNIT for rms, percent or other unit
     for i in range(len(l_cubes)):
-        if unit == 'rms':
-            l_cubes[i] = l_cubes[i] / rms #rms is in units of cubeunits[0]
-            cubeunits[0] = 'RMS'
-        elif unit == 'percent':
-            l_cubes[i] = l_cubes[i] / np.nanmax(l_cubes[i])*100
-            cubeunits[0] = '%'
-        elif unit is None:
-            pass
-        elif unit is not cubeunits[0]:
-            l_cubes[i] = l_cubes[i] * u.Unit(cubeunits[0]).to(unit)
-            cubeunits[0] = unit
+        l_cubes[i], cubeunits = change_bunit(unit, l_cubes[i], rms, cubeunits)
 
+    # calculate the isolevels or check them
     if l_isolevels is None:
         l_isolevels = []
         for c in l_cubes:
@@ -871,52 +745,13 @@ def prep_overlay(cube, header=None, spectral_lims=None, lines=None, spatial_lims
         if len(l_isolevels) != len(l_cubes):
             raise AttributeError('Different number of isolevels and cubes')
         for i in range(len(l_cubes)):
-            if np.min(l_isolevels[i]) < np.min(l_cubes[i]):
-                raise ValueError('isolevels out of range')
-            if np.max(l_isolevels[i]) > np.max(l_cubes[i]):
-                raise ValueError('isolevels out of range')
+            test_isolevels(l_isolevels[i], l_cubes[i])
 
-    if colormap is None and len(l_cubes) < 7:
-        colormap = ['Blues', 'Reds', 'Greens', 'Purples', 'Oranges', 'Greys']
-    elif colormap is None and len(l_cubes) >= 7:
-        raise AttributeError('Too many l_cubes for default colormap. Set colormaps manually.')
-    elif len(colormap) != len(l_cubes):
-        raise AttributeError('Different number of colormaps and l_cubes')
+    colormap = get_colormap(colormap, l_cubes)
 
-    imname = ''
-    if image2d is None:
-        pass
-    elif isinstance(image2d, str) and image2d == 'blank':
-        image2d = None, None
-        imname = 'blank'
-    elif isinstance(image2d, str):
-        imname = image2d
-        pixels = 1000
-        co = SkyCoord(ra=np.mean(cubecoords[0])*u.Unit(cubeunits[1]), dec=np.mean(cubecoords[1])*u.Unit(cubeunits[2]))
-        co = co.to_string('hmsdms')
-        imcol, img_shape, _ = misc.get_imcol(position=co, survey=image2d, pixels=pixels,
-                coordinates='J2000', width=np.diff(cubecoords[0])[0]*u.Unit(cubeunits[1]),
-                height=np.diff(cubecoords[1])[0]*u.Unit(cubeunits[2]), cmap=im2dcolor)
-        image2d = imcol, img_shape
-    else:
-        if isinstance(image2d[1], int):
-            imname = image2d[0]
-            pixels = image2d[1]
-            co = SkyCoord(ra=np.mean(cubecoords[0])*u.Unit(cubeunits[1]), dec=np.mean(cubecoords[1])*u.Unit(cubeunits[2]))
-            co = co.to_string('hmsdms')
-            imcol, img_shape, _ = misc.get_imcol(position=co, survey=imname, pixels=pixels,
-                    coordinates='J2000', width=np.diff(cubecoords[0])[0]*u.Unit(cubeunits[1]),
-                    height=np.diff(cubecoords[1])[0]*u.Unit(cubeunits[2]), cmap=im2dcolor)
-            image2d = imcol, img_shape
-        else:
-            imname = image2d[0]
-            imcol, img_shape, _ = misc.get_imcol(image = image2d[1], cmap=im2dcolor)
-            image2d = imcol, img_shape
+    imname, image2d = get_image2d(image2d, cubecoords, cubeunits, im2dcolor)
     
-    if 'OBJECT' in header:
-        obj = header['OBJECT']
-    else:
-        obj = ''
+    obj = get_objectname(header)
 
     return Cube(l_cubes=l_cubes, name=obj, coords=cubecoords, units=cubeunits,
                 mags=cubemags, cmaps=colormap, rms=rms*u.Unit(origunit), image2d=(imname,image2d), galaxies=None, 
