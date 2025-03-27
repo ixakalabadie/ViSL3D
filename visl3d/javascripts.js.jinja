@@ -1,0 +1,213 @@
+//Round a float value to x.xx format
+function roundTo(value, decimals) {
+    return (Math.round(value * 10**decimals)) / 10**decimals;
+}
+
+{% for nc in range(cube.l_isolevels|length) %}
+function hideall{{nc}}() {
+    {% for i in range(cube.l_isolevels[nc]|length) %}
+    setHI{{nc}}layer{{i}}();
+    {% endfor %}
+}
+{% endfor %}
+
+var showalertopa = true;
+function changeopa() {
+    if (showalertopa) {
+        alert("The opacity feature does not work alongside the 2D image. Hide the 2D image to change the opacity.")
+        showalertopa = false;
+    }
+    const nlayers = [
+        {%- for sub_iso in cube.l_isolevels -%}
+        {{ sub_iso|length }},
+        {%- endfor -%}
+        ];
+    if (document.getElementById("0layer0_sp0_appe").getAttribute("sortType") == "opaque") {
+        for (let nc = 0; nc < {{ cube.l_isolevels|length }}; nc++) {
+            for (let i = 0; i < nlayers[nc]; i++) {
+                document.getElementById(nc+"layer"+i+"_sp0_appe").setAttribute("sortType", "transparent");
+            }
+        }
+    } else {
+        for (let nc = 0; nc < {{ cube.l_isolevels|length }}; nc++) {
+            for (let i = 0; i < nlayers[nc]; i++) {
+                document.getElementById(nc+"layer"+i+"_sp0_appe").setAttribute("sortType", "opaque");
+            }
+        }
+    }
+}
+
+{% for nc in range(cube.l_isolevels|length) %}
+    {% for i in range(cube.l_isolevels[nc]|length) %}
+function setHI{{nc}}layer{{i}}() {
+    if(document.getElementById('{{nc}}layer{{i}}_sp0').getAttribute('transparency') != '0.8') {
+        document.getElementById('{{nc}}but{{i}}').style.border = '5px dashed black';
+        {% for sp in range(cube.iso_split[nc][i]) %}
+        document.getElementById('{{nc}}layer{{i}}_sp{{sp}}').setAttribute('transparency', '0.8');
+        document.getElementById('{{nc}}layer{{i}}_sp{{sp}}_shape').setAttribute('ispickable', 'true');
+        {% endfor %}
+    } else {
+        document.getElementById('{{nc}}but{{i}}').style.border = 'inset black';
+        {% for sp in range(cube.iso_split[nc][i]) %}
+        document.getElementById('{{nc}}layer{{i}}_sp{{sp}}').setAttribute('transparency', '1');
+        document.getElementById('{{nc}}layer{{i}}_sp{{sp}}_shape').setAttribute('ispickable', 'false');
+        {% endfor %}
+    }
+}
+    {% endfor %}
+{% endfor %}
+
+{% for gal in cube.galaxies %}
+{% set i = loop %}
+{% if i == 0 %}
+function setgals() {
+    if(document.getElementById('{{gal}}').getAttribute('transparency')!= '0') {
+{% endif %}
+        document.getElementById('{{gal}}').setAttribute('transparency', '0');
+{% endfor %}
+    } else {
+{% for gal in cube.galaxies %}
+        document.getElementById('{{gal}}').setAttribute('transparency', '1');
+{% endfor %}
+    }
+}
+
+{% for gal in cube.galaxies %}
+{% set i = loop %}
+{% if i == 0 %}
+function setgallabels() {
+    if(document.getElementById('label_{{gal}}').getAttribute('transparency')!= '0') {
+{% endif %}
+        document.getElementById('label_{{gal}}').setAttribute('transparency', '0');
+{% endfor %}
+    } else {
+{% for gal in cube.galaxies %}
+        document.getElementById('label_{{gal}}').setAttribute('transparency', '1');
+{% endfor %}
+    }
+}
+
+function setgrids() {
+    if(document.getElementById('ticklines').getAttribute('transparency') == '0') {
+        document.getElementById('ticklines').setAttribute('transparency', '1');
+    } else if (document.getElementById('outline').getAttribute('transparency') == '0') {
+        document.getElementById('outline').setAttribute('transparency', '1');
+    } else {
+        document.getElementById('ticklines').setAttribute('transparency', '0');
+        document.getElementById('outline').setAttribute('transparency', '0');
+    }
+}
+
+function setaxes() {
+    if(document.getElementById('axlab_diff1').getAttribute('transparency') == '0') {
+        for (i=0; i<12; i++) {
+            if (i<6) {
+                document.getElementById('axlab_diff'+i).setAttribute('transparency', '1');
+                {% if cube.lines is not dict %}
+                document.getElementById('axlab_real'+i).setAttribute('transparency', '0');
+                {% endif %}
+            }
+            document.getElementById('axtick_diff'+i).setAttribute('transparency', '1');
+            {% if cube.lines is not dict %}
+            document.getElementById('axtick_real'+i).setAttribute('transparency', '0');
+            {% endif %}
+        }
+    } {%- if cube.lines is not dict %}
+    else if (document.getElementById('axlab_real1').getAttribute('transparency') == '0') {
+        for (i=0; i<12; i++) {
+            if (i<6) {
+                document.getElementById('axlab_real'+i).setAttribute('transparency', '1');
+            }
+            document.getElementById('axtick_real'+i).setAttribute('transparency', '1');
+        }
+    } {%- endif %} else {
+        for (i=0; i<12; i++) {
+            if (i<6) {
+                document.getElementById('axlab_diff'+i).setAttribute('transparency', '0');
+            }
+            document.getElementById('axtick_diff'+i).setAttribute('transparency', '0');
+        }
+    }
+}
+
+var active = false;
+function animation() {
+    if (active == false) {
+        document.getElementById('time').setAttribute('startTime', document.getElementById('time').getAttribute('time'));
+        document.getElementById('time').setAttribute('isPaused', 'false');
+        active = true;
+    } else if (document.getElementById('time').getAttribute('isPaused') == 'false') {
+        document.getElementById('time').setAttribute('loop', 'false');
+        document.getElementById('time').setAttribute('isPaused', 'true')
+    } else {
+        document.getElementById('time').setAttribute('loop', 'true');
+        document.getElementById('time').setAttribute('isPaused', 'false');
+    }
+}
+
+function hex2Rgb(hex) {
+    var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);					
+    var r = parseInt(result[1], 16)/255.;
+    var g = parseInt(result[2], 16)/255.;
+    var b = parseInt(result[3], 16)/255.;
+    return r.toString()+' '+g.toString()+' '+b.toString()
+}
+
+const background = document.querySelector('#back-choice');
+function change_background() {
+    const backCol = background.value; 
+    document.getElementById('back').setAttribute('skyColor', hex2Rgb(backCol));
+}
+
+// Markers
+// General parameters\n")
+const marktype = document.querySelector('#markers-choice');
+marktype.addEventListener('change', newlayout);
+const sscasv = document.querySelector('#scalev');
+const col = document.querySelector('#butcol');
+
+// Spheres
+var nspheres = 0; //number of spheres
+var sph_coords = []; //coordinates of sphere
+const selsph = document.querySelector('#new-sphere');
+selsph.addEventListener('change', changeSphere);
+
+// Boxes
+var nboxes = 0; //number of boxes
+var box_coords = []; //coordinates of boxes
+const selbox = document.querySelector('#new-box');
+selbox.addEventListener('change', changeBox);
+
+// Cones
+var ncones = 0; //number of cones
+var con_coords = []; //coordinates of cones
+const selcon = document.querySelector('#new-con');
+selcon.addEventListener('change', changeCon);
+
+// Tubes
+var ntubes = 0; //number of tubes
+var tub_coords = []; //coordinates of tubes
+var tubelen = []; //lengths of tubes in number of cylinders
+const seltub = document.querySelector('#new-tub');
+seltub.addEventListener('change', changeTub);
+
+// General
+function newmarker() {
+    if (marktype.value == 'sphere') {
+        nspheres = nspheres += 1;
+        nspheres = newSphere(nspheres, selsph);
+    } else if (marktype.value == 'box') {
+            nboxes = nboxes += 1;
+            nboxes = newBox(nboxes, selbox);
+        } else if (marktype.value == 'tub') {
+            ntubes = ntubes += 1;
+            ntubes, tubelen = newTub(ntubes, seltub, tubelen);
+        } else if (marktype.value == 'con') {
+            ncones = ncones += 1;
+            ncones = newCon(ncones, selcon);
+    }
+}
+
+function createmarker() {
+    const sca = inpscasv.value;
+    const means = {list(np.mean(self.cube.coords, axis=1))};

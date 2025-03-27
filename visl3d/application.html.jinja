@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<head>
+    <script type='text/javascript' src='https://ixakalabadie.github.io/x3dom/x3dom.js'></script>
+    <link rel='stylesheet' type='text/css' href='https://ixakalabadie.github.io/x3dom/x3dom.css'></link>
+    <script type='text/javascript' src='https://code.jquery.com/jquery-3.6.3.min.js'></script>
+    <script type='text/javascript'  src='https://www.maths.nottingham.ac.uk/plp/pmadw/LaTeXMathML.js'></script>
+    <script type='text/javascript' src='https://code.jquery.com/jquery-3.6.3.min.js'></script>
+    <script src="https://ixakalabadie.github.io/x3dom/js-colormaps.js"></script> <!-- FOR COLORMAPS IN JS-->
+    <script type="text/javascript" src="https://ixakalabadie.github.io/x3dom/markers.js"></script> <!-- FOR MARKERS IN JS-->
+
+    <title> ViSL3D: {{ cube.name }} </title>
+    <style>
+        x3d {
+            border:2px solid darkorange;
+            {% if interface == 'minimal'%}
+                width:100vw;
+                height:100vh;
+            {% else %}
+                width:95vw;
+                height:75vh;
+            {% endif %}
+        }
+    </style>
+</head>
+<body>
+    <h1 align="middle"> ViSL3D: 3D model of {{ pagetitle }} </h1>
+    <hr/>
+    <p> {{ description }} </p>
