@@ -2644,7 +2644,7 @@ class WriteVis:
                 for sp in range(split):
                     cube = cube_full[:,:,int(nz/split*sp):int(nz/split*(sp+1))]
                     if lev > np.max(cube) or lev < np.min(cube):
-                        print(f'Level {lev} is out of bounds for cube {nc} split {sp}.')
+                        print(f'Level {lev} is out of bounds for cube {nc} split {sp}. (min,max) = ({np.min(cube)},{np.max(cube)})')
                         verts, faces, normals = None, None, None
                     else:
                         try:
