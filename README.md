@@ -4,7 +4,7 @@ Ixaka Labadie García<br/>
 ---
 `ViSL3D` is a Python package that creates X3D and HTML files to visualize datacubes from astrophysics in 3D in an interactive way. We use [X3D](https://www.web3d.org/x3d/what-x3d) and [x3dom](https://www.web3d.org/x3d/what-x3d) to represent figures in 3D and to integrate them into an HTML. The models have been made taking the x3d-pathway (Vogt et al. 2016) as a starting point. The current code was made for radio data, although it can be used with other types of 3D data.
 
-[This is an example](https://github.com/ixakalabadie/cube_x3d/blob/master/visualisations/HCG16_custom.html) of a 3D visualisation produced with **ViSL3D**. It shows the HI emission of the Hickson Compact Group 16 along an optical image from DSS2 and the positions of the galaxies from NED.
+[This is an example](https://ixakalabadie.github.io/visualisations/HCG16_custom.html) of a 3D visualisation produced with **ViSL3D**. It shows the HI emission of the Hickson Compact Group 16 along an optical image from DSS2 and the positions of the galaxies from NED.
 
 ## Installation
 
