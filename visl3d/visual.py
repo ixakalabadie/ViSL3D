@@ -1012,11 +1012,6 @@ def createVis(cube, filename, description=None, pagetitle=None, shifts=None):
         The title of the web page.
     """
     file = writers.WriteVis(filename, cube, description, pagetitle)
-    # if cube.interface == 'minimal':
-    #     file.start_x3d()
-    #     file.close_x3d(filename.split("/")[-1])
-    #     file.close_html()
-    # else:
     file.start_x3d()
     file.make_layers(shifts=shifts)
     file.make_outline()
@@ -1028,23 +1023,24 @@ def createVis(cube, filename, description=None, pagetitle=None, shifts=None):
     file.make_animation()
     file.make_labels()
     file.close_x3d()
-    file.func_layers()
-    if cube.galaxies is not None:
-        file.func_galaxies()
-    file.func_grids()
-    file.func_axes()
-    # file.func_pick
-    file.func_animation()
-    file.buttons(centrot=False)
-    # mandatory after buttons
-    if cube.galaxies is not None:
-        file.func_galsize()
-    if cube.image2d[1] is not None:
-        file.func_image2d()
-        file.func_move2dimage()
-    file.func_scalev()
-    file.func_markers()
-    # html.func_setCenterOfRotation(centers)
-    file.func_background()
-    file.func_colormaps()
+    if cube.interface != 'minimal':
+        file.func_layers()
+        if cube.galaxies is not None:
+            file.func_galaxies()
+        file.func_grids()
+        file.func_axes()
+        # file.func_pick
+        file.func_animation()
+        file.buttons(centrot=False)
+        # mandatory after buttons
+        if cube.galaxies is not None:
+            file.func_galsize()
+        if cube.image2d[1] is not None:
+            file.func_image2d()
+            file.func_move2dimage()
+        file.func_scalev()
+        file.func_markers()
+        # html.func_setCenterOfRotation(centers)
+        file.func_background()
+        file.func_colormaps()
     file.close_html()

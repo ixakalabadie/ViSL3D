@@ -637,7 +637,7 @@ class WriteHTML:
         if self.cube.interface == 'minimal':
             self.file_html.write("\n\t\t<style>\n"+misc.tabs(3)+"x3d\n"+misc.tabs(4)+"{\n"+misc.tabs(5)+"border:2px solid darkorange;\n"+misc.tabs(5)+"width:100vw;\n"+misc.tabs(5)+"height:100vh;\n"+misc.tabs(3)+"}\n"+misc.tabs(3)+"</style>\n\t</head>\n\t<body>\n")
         else:
-            self.file_html.write("\n\t\t<style>\n"+misc.tabs(3)+"x3d\n"+misc.tabs(4)+"{\n"+misc.tabs(5)+"border:2px solid darkorange;\n"+misc.tabs(5)+"width:95vw;\n"+misc.tabs(5)+"height: 75vh;\n"+misc.tabs(3)+"}\n"+misc.tabs(3)+"</style>\n\t</head>\n\t<body>\n")
+            self.file_html.write("\n\t\t<style>\n"+misc.tabs(3)+"x3d\n"+misc.tabs(4)+"{\n"+misc.tabs(5)+"border:2px solid darkorange;\n"+misc.tabs(5)+"width:95vw;\n"+misc.tabs(5)+"height:75vh;\n"+misc.tabs(3)+"}\n"+misc.tabs(3)+"</style>\n\t</head>\n\t<body>\n")
         self.file_html.write(f'\t<h1 align="middle"> ViSL3D: 3D model of {pagetitle} </h1>\n')
         self.file_html.write('\t<hr/>\n')
         if description is not None:
@@ -1662,7 +1662,7 @@ class WriteVis:
         if self.cube.interface == 'minimal':
             self.visfile.write("\n\t\t<style>\n"+misc.tabs(3)+"x3d\n"+misc.tabs(4)+"{\n"+misc.tabs(5)+"border:2px solid darkorange;\n"+misc.tabs(5)+"width:100vw;\n"+misc.tabs(5)+"height:100vh;\n"+misc.tabs(3)+"}\n"+misc.tabs(3)+"</style>\n\t</head>\n\t<body>\n")
         else:
-            self.visfile.write("\n\t\t<style>\n"+misc.tabs(3)+"x3d\n"+misc.tabs(4)+"{\n"+misc.tabs(5)+"border:2px solid darkorange;\n"+misc.tabs(5)+"width:95vw;\n"+misc.tabs(5)+"height: 75vh;\n"+misc.tabs(3)+"}\n"+misc.tabs(3)+"</style>\n\t</head>\n\t<body>\n")
+            self.visfile.write("\n\t\t<style>\n"+misc.tabs(3)+"x3d\n"+misc.tabs(4)+"{\n"+misc.tabs(5)+"border:2px solid darkorange;\n"+misc.tabs(5)+"width:95vw;\n"+misc.tabs(5)+"height:75vh;\n"+misc.tabs(3)+"}\n"+misc.tabs(3)+"</style>\n\t</head>\n\t<body>\n")
         self.visfile.write(f'\t<h1 align="middle"> ViSL3D: 3D model of {pagetitle} </h1>\n')
         self.visfile.write('\t<hr/>\n')
         if description is not None:
