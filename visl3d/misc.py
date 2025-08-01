@@ -469,20 +469,19 @@ def get_rms2(cube):
     random_dec = 55
     random_v = 65
 
-    if random_ra < nx*0.15 and random_ra > nx*0.85:
-        if random_dec < ny*0.15 and random_dec > ny*0.85:
+
+
+    # if random_ra < nx*0.15 and random_ra > nx*0.85:
+    #     if random_dec < ny*0.15 and random_dec > ny*0.85:
             # random_v stays the same
             
-
     random_indices = np.random.rand(0, 1, size=(6, 6, 6))
 
     sub_indices = np.array([])
 
-    subcube = cube[x:x+10, y:y+10, z:z+10]
+    subcube = cube[random_ra:random_ra+10, y:y+10, z:z+10]
 
-    rms[i] = 
-
-    return rms
+    # rms[i] = 
 
 def cube_info(cube):
     cen = np.mean(cube.coords, axis=1)
