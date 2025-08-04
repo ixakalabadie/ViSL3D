@@ -1007,12 +1007,15 @@ def createVis(cube, filename=None, description=None, pagetitle=None, shifts=None
     ----------
     cube : Cube
         Object of the Cube class.
-    filename : str
-        Name of the HTML file including the extension (.html).
+    filename : str, optional
+        Name of the HTML file including the extension (.html). Optional is notebook=True.
     description : str, optional
         A description for the web page.
     pagetitle : str, optional
         The title of the web page.
+    notebook : bool
+        Display the visualisation in the jupyter notebook. If True, the file will not be saved.
+        Default is False.
     """
     if filename == None:
         filename = 'tmp'
@@ -1097,7 +1100,7 @@ def displayVis(filename):
     Parameters
     ----------
 
-    filename: str
+    filename : str
         Name of the file to visualise, including the '.html' extension.
     """
     print('WARNING: the first time might fail, run again if not working after a while. Take into account large visualisations will load slowly.')
