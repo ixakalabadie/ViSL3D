@@ -7,6 +7,9 @@ Created on Fri Mar 22 16:05:52 2024
 """
 from astropy.io import fits
 from astropy.coordinates import SkyCoord
+import anywidget
+import traitlets
+import os
 
 from . import misc, writers
 from . import np
@@ -996,7 +999,7 @@ def createHTML(cube, filename, description=None, pagetitle=None):
         print('If the path leads to a local server, the visualisation can be accessed in a ' +\
               f'web browser with "localhost/path/from/DocumentRoot/{filename.split("/")[-1]}"')
 
-def createVis(cube, filename, description=None, pagetitle=None, shifts=None):
+def createVis(cube, filename=None, description=None, pagetitle=None, shifts=None, notebook=False):
     """
     Create an HTML file with a 3D visualisation of a datacube (without an X3D file).
 
@@ -1011,6 +1014,8 @@ def createVis(cube, filename, description=None, pagetitle=None, shifts=None):
     pagetitle : str, optional
         The title of the web page.
     """
+    if filename == None:
+        filename = 'tmp'
     file = writers.WriteVis(filename, cube, description, pagetitle)
     file.start_x3d()
     file.make_layers(shifts=shifts)
@@ -1044,3 +1049,67 @@ def createVis(cube, filename, description=None, pagetitle=None, shifts=None):
         file.func_background()
         file.func_colormaps()
     file.close_html()
+    if notebook:
+        displayVis(filename+'.html')
+        os.remove(filename+'.html')
+        try:
+            os.remove(filename+'.x3d')
+        except:
+            pass
+
+
+class X3DomWidget(anywidget.AnyWidget):
+    """
+    Class to display ViSL3D visualisation in a jupyter notebook.
+    """
+    _esm = """
+    async function render({ model, el }) {
+
+        // Insert HTML within el
+        el.innerHTML = model.get('html');
+
+        // Execute <script> tags manually. It does not save or load the script twice, only replaces old script with new one to trigger execution. does not keep duplicates in DOM
+        el.querySelectorAll("script").forEach((oldScript) => {
+            const newScript = document.createElement("script");
+            // Copy script attributes
+            for (const attr of oldScript.attributes) {
+                newScript.setAttribute(attr.name, attr.value);
+            }
+            newScript.textContent = oldScript.textContent;
+            oldScript.replaceWith(newScript);
+        });
+        
+        // if it changes, reload :) Not necessary
+        model.on("change:html", () => {
+            el.innerHTML = model.get("html");
+        });
+    }
+
+    export default { render };
+    """
+
+    html = traitlets.Unicode("").tag(sync=True)
+
+def displayVis(filename):
+    """
+    Disply a ViSL3D visualisation in a jupyter notebook.
+
+    Parameters
+    ----------
+
+    filename: str
+        Name of the file to visualise, including the '.html' extension.
+    """
+    print('WARNING: the first time might fail, run again if not working after a while. Take into account large visualisations will load slowly.')
+    with open(filename, "r") as file:
+        html = file.read()
+
+    html = html.replace("width:100vw", "width:85%")
+    html = html.replace("height:100vh", "height:85%")
+    html = html.replace("width:95vw", "width:85%")
+    html = html.replace("height:75vh", "height:85%")
+
+    html = html.replace('if (showalertopa) {\nalert("The opacity feature does not work alongside the 2D image. Hide the 2D image to change the opacity.")\nshowalertopa = false;\n}', '')
+
+    widget = X3DomWidget(html=html)
+    display(widget)
