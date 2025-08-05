@@ -1,4 +1,4 @@
-visl3d.visual module
+ViSL3D Visual
 ====================
 
 .. automodule:: visl3d.visual

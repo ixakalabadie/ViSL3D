@@ -1,15 +1,15 @@
-visl3d package
+ViSL3D
 ==============
 
-Submodules
+Modules
 ----------
 
 .. toctree::
    :maxdepth: 4
 
-   visl3d.misc
    visl3d.visual
    visl3d.writers
+   visl3d.misc
 
 Module contents
 ---------------

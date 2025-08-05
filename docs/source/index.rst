@@ -3,15 +3,20 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-ViSL3D documentation
+Welcome to ViSL3D documentation
 ====================
 
-This is the documentation of ViSL3D. It is still under construction
+Page under development.
+
+.. include:: ../../README.md
+   :parser: myst_parser.sphinx_
 
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Contents:
 
-   modules
+   visl3d.visual
+   visl3d.writers
+   visl3d.misc
 
