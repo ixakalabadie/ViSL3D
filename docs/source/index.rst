@@ -8,10 +8,6 @@ Welcome to ViSL3D documentation
 
 Page under development.
 
-.. include:: ../../README.md
-   :parser: myst_parser.sphinx_
-
-
 .. toctree::
    :maxdepth: 1
    :caption: Contents:

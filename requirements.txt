@@ -8,5 +8,4 @@ scikit-image
 scipy
 sphinx
 sphinx_rtd_theme
-myst-parser
 traitlets
