@@ -11,3 +11,12 @@ __pycache__
 *.x3d
 test_*.ipynb
 muse_*
+
+# Read the docs
+*.pyc
+*.pyo
+*.swp
+*.doctree
+.DS_Store
+docs/build/*
+!docs/build/html/

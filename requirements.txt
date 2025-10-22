@@ -1,0 +1,11 @@
+astropy
+astroquery>=0.4.10
+ipywidgets
+matplotlib
+numpy
+numpydoc
+scikit-image
+scipy
+sphinx
+sphinx_rtd_theme
+traitlets

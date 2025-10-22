@@ -129,6 +129,7 @@ def prep_one(cube, header=None, lims=None, unit=None, isolevels=None, colormap='
         - Tuple can be given with a name for the image (str) and the image data (2D or 3D array).
             If 3D array, the image data in RGB format between 0 and 1 (3D). The RGB column must be last.
             If 2D, the image will be converted automatically.
+
         The image will cover the full FoV of the created cube model (after applying limits).
     im2dcolor : str, optional
         Name of the colormap to use for the 2D image. Default is 'Greys'.

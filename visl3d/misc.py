@@ -317,8 +317,8 @@ def get_imcol(image=None, position=None, survey=None, cmap='Greys', **kwargs):
         If 2D, the image will be converted automatically.
         The image will cover the full FoV of the created cube model (after applying limits).
         Example for 3D array:
-            image = np.array([img1, img2, img3])
-            image = np.transpose(img, axes=(1,2,0)) # shape=(3,ny,nx)->(ny,nx,3)
+        - image = np.array([img1, img2, img3])
+        - image = np.transpose(img, axes=(1,2,0)) # shape=(3,ny,nx)->(ny,nx,3)
     position : string or SkyCoord, optional
         Name of an object or it position coordinates.
     survey : string, optional
@@ -580,7 +580,7 @@ axlabname1 = np.array(['R.A. [arcsec]', 'Dec. [arcsec]', 'V [km/s]',
 
 def get_axlabnames(mags):
     """
-    Parameters:
+    Parameters
     ----------
     mags : array
         Array with the names of the magnitudes. Must be of length 3.
