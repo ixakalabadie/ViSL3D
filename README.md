@@ -47,6 +47,8 @@ This package is in an early stage of development. It is not intended for product
 
 - Long loading time. If the 3D model is large the visualisation might take a long time to render or not render at all. In this case, try to make a cutout of the cube (can be done directly in `ViSL3D`), decrease the resolution of the 3D model (also in `ViSL3D`) or decrease the number of iso-surfaces or increase the S/N of the lowest surface. 
 
+- When visualising in Jupyter Notebooks, having two visualisations in the same notebook produces errors.
+
 - The animation stops after completing at least one loop. Do not click the button many times if you don't see it stopping.
 
 - The opacity feature does not work properly along the 2D image.
