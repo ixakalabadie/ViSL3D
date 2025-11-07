@@ -1,7 +1,7 @@
 # Packages/installer info
 dist
 
-#Compiled files
+# Compiled files
 __pycache__
 
 #Testing files
@@ -11,6 +11,10 @@ __pycache__
 *.x3d
 test_*.ipynb
 muse_*
+.ipynb_checkpoints
+
+# Not to remove
+!hcg16_example.html
 
 # Read the docs
 *.pyc
@@ -20,3 +24,4 @@ muse_*
 .DS_Store
 docs/build/*
 !docs/build/html/
+

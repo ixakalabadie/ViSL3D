@@ -154,7 +154,7 @@ def prep_one(cube, header=None, lims=None, unit=None, isolevels=None, colormap='
     if len(cube.shape) < 3:
         raise ValueError('Not enough axes')
     if len(cube.shape) >= 4:
-        print('Warning: Cube with polarization axis. Using first.')
+        print('Warning: Cube with polarization axis. Using first element.')
         cube = cube[0]
     cube = np.squeeze(cube)
 
@@ -373,7 +373,7 @@ def prep_mult(cube, spectral_lims, header=None, spatial_lims=None, l_isolevels=N
     if len(cube.shape) < 3:
         raise ValueError('Not enough axes')
     if len(cube.shape) >= 4:
-        print('Warning: Cube with polarization axis. Using first.')
+        print('Warning: Cube with polarization axis. Using first element.')
         cube = cube[0]
     cube = np.squeeze(cube)
 
@@ -669,7 +669,7 @@ def prep_overlay(cube, header=None, spectral_lims=None, lines=None, spatial_lims
     if len(cube.shape) < 3:
         raise ValueError('Not enough axes')
     if len(cube.shape) >= 4:
-        print('Warning: Cube with polarization axis. Using first.')
+        print('Warning: Cube with polarization axis. Using first element.')
         cube = cube[0]
     cube = np.squeeze(cube)
 
@@ -1104,14 +1104,21 @@ def displayVis(filename):
     filename : str
         Name of the file to visualise, including the '.html' extension.
     """
-    print('WARNING: the first time might fail, run again if not working after a while. Take into account large visualisations will load slowly.')
+    # print('WARNING: the first time might fail, run again if not working after a while. Take into account large visualisations will load slowly.')
     with open(filename, "r") as file:
         html = file.read()
 
-    html = html.replace("width:100vw", "width:85%")
+    # modify features for better display in notebooks
+    html = html.replace("width:100vw", "width:100%")
     html = html.replace("height:100vh", "height:85%")
-    html = html.replace("width:95vw", "width:85%")
+    html = html.replace("width:95vw", "width:100%")
     html = html.replace("height:75vh", "height:85%")
+
+    nav = html.find('<!--A table'), html.find('Left.<p>')
+    html = html.replace(html[nav[0]:nav[1]+len('Left.<p>')], '')
+
+    html = html.replace('<center>', '')
+    html = html.replace('</center>', '')
 
     html = html.replace('if (showalertopa) {\nalert("The opacity feature does not work alongside the 2D image. Hide the 2D image to change the opacity.")\nshowalertopa = false;\n}', '')
 
