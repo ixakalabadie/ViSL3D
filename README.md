@@ -1,6 +1,6 @@
 # ViSL3D
 Ixaka Labadie García<br/>
-20/06/2025 - v0.4
+07/11/2025 - v0.5
 ---
 `ViSL3D` is a Python package that creates X3D and HTML files to visualize datacubes from astrophysics in 3D in an interactive way. We use [X3D](https://www.web3d.org/x3d/what-x3d) and [x3dom](https://www.web3d.org/x3d/what-x3d) to represent figures in 3D and to integrate them into an HTML. The models have been made taking the x3d-pathway (Vogt et al. 2016) as a starting point. The current code was made for radio data, although it can be used with other types of 3D data.
 
@@ -12,12 +12,12 @@ Ixaka Labadie García<br/>
 
 ## How to use
 
-Examples of how to use the package are provided in the Jupyter notebook [jupyter_example.ipynb](https://github.com/ixakalabadie/cube_x3d/blob/master/example).<br>
-The produced HTML file can be visualised in any standard browser.
+Examples of how to use the package are provided in the Jupyter Notebooks inside [this folder](https://github.com/ixakalabadie/ViSL3D/tree/master/example).<br>
+The produced HTML file can be visualised in any standard browser or in notebooks themselves.
 
 ## Prerequisites to visualise external X3D file
 
-If you use the function `createVis`, which creates integrates the X3D model in the HTML, there are NO prerequisites. You can directly open the produced HTML file in a browser.<br>
+If you use the function `createVis`, which creates integrates the X3D model in the HTML, there are NO prerequisites. You can directly open the produced HTML file in a browser or run in a Jupyter Notebook.<br>
 If you create the X3D and the HTML files separately, using `createX3D` and `createHTML`, follow these instructions:
 
 1. Install a local HTTP Server. Visualisations produced by **ViSL3D** must be opened through a local server in order to be displayed. There are a few options:

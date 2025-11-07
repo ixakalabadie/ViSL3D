@@ -1,22 +1,20 @@
 .. ViSL3D documentation master file, created by
-   sphinx-quickstart on Mon Aug  4 15:43:24 2025.
+   sphinx-quickstart on Fri Nov  7 15:51:46 2025.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
 Welcome to ViSL3D documentation
-====================
+==================================
 
-**Ixaka Labadie García 20/06/2025 - v0.4**
+**Ixaka Labadie García, 07/11/2025 - v0.5**
 
-Page under development.
-
- **ViSL3D** is a Python package
+**ViSL3D** is a Python package
 that creates X3D and HTML files to visualize datacubes from astrophysics
 in 3D in an interactive way. We use
 `X3D <https://www.web3d.org/x3d/what-x3d>`__ and
 `x3dom <https://www.web3d.org/x3d/what-x3d>`__ to represent figures in
 3D and to integrate them into an HTML. The models have been made taking
-the x3d-pathway (Vogt et al. 2016) as a starting point. The current code
+the x3d-pathway (Vogt et al. 2016) as a starting point. The current code
 was made for radio data, although it can be used with other types of 3D
 data.
 
@@ -34,16 +32,18 @@ Installation
 How to use
 ----------
 
-Examples of how to use the package are provided in the Jupyter notebook
-`jupyter_example.ipynb <https://github.com/ixakalabadie/cube_x3d/blob/master/example>`__.
-The produced HTML file can be visualised in any standard browser.
+Examples of how to use the package are provided in the Jupyter Notebooks inside
+`this folder <https://github.com/ixakalabadie/ViSL3D/tree/master/example>`__.
+The produced HTML files can be visualised in any standard browser or in notebooks themselves.
 
 Prerequisites to visualise external X3D file
 --------------------------------------------
 
 If you use the function ``createVis``, which creates integrates the X3D
-model in the HTML, there are NO prerequisites. You can directly open the
-produced HTML file in a browser. If you create the X3D and the HTML
+model in the HTML, there are **NO prerequisites**. You can directly open the
+produced HTML file in a browser or run in a Jupyter Notebook.
+
+If you create the X3D and the HTML
 files separately, using ``createX3D`` and ``createHTML``, follow these
 instructions:
 
@@ -119,7 +119,7 @@ Citation
 --------
 
 If you use this package in your work, please cite `Labadie-García et
-al. (2025) <https://ui.adsabs.harvard.edu/abs/2025A%26C....5200949L/abstract>`__.
+al. (2025) <https://ui.adsabs.harvard.edu/abs/2025A%26C....5200949L/abstract>`__.
 
 References
 ----------
@@ -135,4 +135,3 @@ in Astrophysics: the X3D Pathway, ApJ 818, 115 (2016)
    visl3d.visual
    visl3d.writers
    visl3d.misc
-
