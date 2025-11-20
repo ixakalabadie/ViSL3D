@@ -14,7 +14,6 @@ muse_*
 .ipynb_checkpoints
 
 # Not to remove
-!hcg16_example.html
 
 # Read the docs
 *.pyc
@@ -22,6 +21,6 @@ muse_*
 *.swp
 *.doctree
 .DS_Store
-docs/build/*
-!docs/build/html/
+# docs/build/*
+!docs/build/html/*
 

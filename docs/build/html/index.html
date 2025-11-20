@@ -1,0 +1,332 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Welcome to ViSL3D documentation &mdash; ViSL3D 0.5 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=db78e746"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="ViSL3D Visual" href="visl3d.visual.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="#" class="icon icon-home">
+            ViSL3D
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="visl3d.visual.html">ViSL3D Visual</a></li>
+<li class="toctree-l1"><a class="reference internal" href="visl3d.writers.html">Writer functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="visl3d.misc.html">Miscellaneous functions</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="#">ViSL3D</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="#" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Welcome to ViSL3D documentation</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="welcome-to-visl3d-documentation">
+<h1>Welcome to ViSL3D documentation<a class="headerlink" href="#welcome-to-visl3d-documentation" title="Link to this heading"></a></h1>
+<p><strong>Ixaka Labadie García, 07/11/2025 - v0.5</strong></p>
+<p><strong>ViSL3D</strong> is a Python package
+that creates X3D and HTML files to visualize datacubes from astrophysics
+in 3D in an interactive way. We use
+<a class="reference external" href="https://www.web3d.org/x3d/what-x3d">X3D</a> and
+<a class="reference external" href="https://www.web3d.org/x3d/what-x3d">x3dom</a> to represent figures in
+3D and to integrate them into an HTML. The models have been made taking
+the x3d-pathway (Vogt et al. 2016) as a starting point. The current code
+was made for radio data, although it can be used with other types of 3D
+data.</p>
+<p><a class="reference external" href="https://ixakalabadie.github.io/visualisations/HCG16_custom.html">This is an
+example</a>
+of a 3D visualisation produced with <strong>ViSL3D</strong>. It shows the HI emission
+of the Hickson Compact Group 16 along an optical image from DSS2 and the
+positions of the galaxies from NED.</p>
+<section id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Link to this heading"></a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">visl3d</span></code></p>
+</section>
+<section id="how-to-use">
+<h2>How to use<a class="headerlink" href="#how-to-use" title="Link to this heading"></a></h2>
+<p>Examples of how to use the package are provided in the Jupyter Notebooks inside
+<a class="reference external" href="https://github.com/ixakalabadie/ViSL3D/tree/master/example">this folder</a>.
+The produced HTML files can be visualised in any standard browser or in notebooks themselves.</p>
+</section>
+<section id="prerequisites-to-visualise-external-x3d-file">
+<h2>Prerequisites to visualise external X3D file<a class="headerlink" href="#prerequisites-to-visualise-external-x3d-file" title="Link to this heading"></a></h2>
+<p>If you use the function <code class="docutils literal notranslate"><span class="pre">createVis</span></code>, which creates integrates the X3D
+model in the HTML, there are <strong>NO prerequisites</strong>. You can directly open the
+produced HTML file in a browser or run in a Jupyter Notebook.</p>
+<p>If you create the X3D and the HTML
+files separately, using <code class="docutils literal notranslate"><span class="pre">createX3D</span></code> and <code class="docutils literal notranslate"><span class="pre">createHTML</span></code>, follow these
+instructions:</p>
+<ol class="arabic simple">
+<li><p>Install a local HTTP Server. Visualisations produced by <strong>ViSL3D</strong>
+must be opened through a local server in order to be displayed. There
+are a few options:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://httpd.apache.org/">Apache</a> is a popular HTTP server
+that can be installed in most operating systems.</p></li>
+<li><p><a class="reference external" href="https://www.python.org/">Python</a> has a built-in HTTP server
+that can be used by running <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-m</span> <span class="pre">http.server</span></code> in the
+directory where the HTML and X3D files are located.</p></li>
+<li><p><a class="reference external" href="https://code.visualstudio.com/">VS Code</a> has a built-in HTTP
+server that can be used by installing the <a class="reference external" href="https://marketplace.visualstudio.com/items?itemName=ms-vscode.live-server">Live
+Preview</a>
+extension.</p></li>
+</ul>
+</li>
+<li><p>Move the created X3D and HTML files into the Apache (or other)
+DocumentRoot directory. By default, in Apache, it is
+<code class="docutils literal notranslate"><span class="pre">/var/www/html</span></code> in Linux, <code class="docutils literal notranslate"><span class="pre">C:\Apache24\htdocs</span></code> in Windows, and
+<code class="docutils literal notranslate"><span class="pre">/usr/local/var/www</span></code> (or similar) in Mac. The DocumentRoot can be
+found and modified in the <code class="docutils literal notranslate"><span class="pre">httpd.config</span></code> file. Finally, open the
+visualisation in a browser (most common browsers are supported) by
+typing the URL <code class="docutils literal notranslate"><span class="pre">localhost\example_file.html</span></code>.</p></li>
+</ol>
+</section>
+<section id="features">
+<h2>Features<a class="headerlink" href="#features" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p>Plot any number of contour surfaces,</p></li>
+<li><p>Plot galaxies with labels,</p></li>
+<li><p>Add a 2D image in any wavelength in background,</p></li>
+<li><p>Change the scale of the velocity axis,</p></li>
+<li><p>Shift 2D image along velocity axis and display the value,</p></li>
+<li><p>Rotate, zoom and pan complete figure,</p></li>
+<li><p>Hide/Show different components of the figure,</p></li>
+<li><p>Change ax labels,</p></li>
+<li><p>Change viewpoints,</p></li>
+<li><p>Change the colormap,</p></li>
+<li><p>Add markers,</p></li>
+<li><p>Represent multiple spectral lines in the same visualisation,</p></li>
+<li><p>Overlay spectral lines.</p></li>
+</ul>
+</section>
+<section id="disclaimer">
+<h2>Disclaimer<a class="headerlink" href="#disclaimer" title="Link to this heading"></a></h2>
+<p>This package is in an early stage of development. It is not intended for
+production use and may contain bugs or incomplete features. These are
+some issues that you may encounter:</p>
+<ul class="simple">
+<li><p>Long loading time. If the 3D model is large the visualisation might
+take a long time to render or not render at all. In this case, try to
+make a cutout of the cube (can be done directly in <code class="docutils literal notranslate"><span class="pre">ViSL3D</span></code>),
+decrease the resolution of the 3D model (also in <code class="docutils literal notranslate"><span class="pre">ViSL3D</span></code>) or
+decrease the number of iso-surfaces or increase the S/N of the lowest
+surface.</p></li>
+<li><p>The animation stops after completing at least one loop. Do not click
+the button many times if you don’t see it stopping.</p></li>
+<li><p>The opacity feature does not work properly along the 2D image.</p></li>
+<li><p>The calculation of the RMS, which can be chosen as the unit to
+represent the cube, can be inaccurate. It uses negative voxels to
+create half a Gaussian and calculates the RMS from that. Therefore, if
+there is absorption or negative artifacts this calculation will be
+wrong. Another option is to calculate the RMS yourself and give it in
+the isosurfaces parameter, e.g., <code class="docutils literal notranslate"><span class="pre">[3*rms,</span> <span class="pre">5*rms...]</span></code>.</p></li>
+</ul>
+<p>Please report any other issue in the <a class="reference external" href="https://github.com/ixakalabadie/ViSL3D/issues">GitHub
+issues</a>.</p>
+</section>
+<section id="citation">
+<h2>Citation<a class="headerlink" href="#citation" title="Link to this heading"></a></h2>
+<p>If you use this package in your work, please cite <a class="reference external" href="https://ui.adsabs.harvard.edu/abs/2025A%26C....5200949L/abstract">Labadie-García et
+al. (2025)</a>.</p>
+</section>
+<section id="references">
+<h2>References<a class="headerlink" href="#references" title="Link to this heading"></a></h2>
+<p>Vogt, Owen, Verdes-Montenegro &amp; Borthakur, Advanced Data Visualization
+in Astrophysics: the X3D Pathway, ApJ 818, 115 (2016)
+(<a class="reference external" href="http://arxiv.org/abs/1510.02796">arxiv</a>;
+<a class="reference external" href="http://adsabs.harvard.edu/abs/2015arXiv151002796V">ADS</a>)</p>
+<div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="visl3d.visual.html">ViSL3D Visual</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="visl3d.visual.html#visl3d.visual.Cube"><code class="docutils literal notranslate"><span class="pre">Cube</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="visl3d.visual.html#visl3d.visual.X3DomWidget"><code class="docutils literal notranslate"><span class="pre">X3DomWidget</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="visl3d.visual.html#visl3d.visual.X3DomWidget.html"><code class="docutils literal notranslate"><span class="pre">X3DomWidget.html</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="visl3d.visual.html#visl3d.visual.createHTML"><code class="docutils literal notranslate"><span class="pre">createHTML()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="visl3d.visual.html#visl3d.visual.createVis"><code class="docutils literal notranslate"><span class="pre">createVis()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="visl3d.visual.html#visl3d.visual.createX3D"><code class="docutils literal notranslate"><span class="pre">createX3D()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="visl3d.visual.html#visl3d.visual.displayVis"><code class="docutils literal notranslate"><span class="pre">displayVis()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="visl3d.visual.html#visl3d.visual.prep_mult"><code class="docutils literal notranslate"><span class="pre">prep_mult()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="visl3d.visual.html#visl3d.visual.prep_one"><code class="docutils literal notranslate"><span class="pre">prep_one()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="visl3d.visual.html#visl3d.visual.prep_overlay"><code class="docutils literal notranslate"><span class="pre">prep_overlay()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="visl3d.writers.html">Writer functions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="visl3d.writers.html#visl3d.writers.WriteHTML"><code class="docutils literal notranslate"><span class="pre">WriteHTML</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="visl3d.writers.html#visl3d.writers.WriteHTML.buttons"><code class="docutils literal notranslate"><span class="pre">WriteHTML.buttons()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="visl3d.writers.html#visl3d.writers.WriteHTML.close_html"><code class="docutils literal notranslate"><span class="pre">WriteHTML.close_html()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="visl3d.writers.html#visl3d.writers.WriteHTML.close_x3d"><code class="docutils literal notranslate"><span class="pre">WriteHTML.close_x3d()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="visl3d.writers.html#visl3d.writers.WriteHTML.func_animation"><code class="docutils literal notranslate"><span class="pre">WriteHTML.func_animation()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="visl3d.writers.html#visl3d.writers.WriteHTML.func_axes"><code class="docutils literal notranslate"><span class="pre">WriteHTML.func_axes()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="visl3d.writers.html#visl3d.writers.WriteHTML.func_background"><code class="docutils literal notranslate"><span class="pre">WriteHTML.func_background()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="visl3d.writers.html#visl3d.writers.WriteHTML.func_colormaps"><code class="docutils literal notranslate"><span class="pre">WriteHTML.func_colormaps()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="visl3d.writers.html#visl3d.writers.WriteHTML.func_galaxies"><code class="docutils literal notranslate"><span class="pre">WriteHTML.func_galaxies()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="visl3d.writers.html#visl3d.writers.WriteHTML.func_galsize"><code class="docutils literal notranslate"><span class="pre">WriteHTML.func_galsize()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="visl3d.writers.html#visl3d.writers.WriteHTML.func_grids"><code class="docutils literal notranslate"><span class="pre">WriteHTML.func_grids()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="visl3d.writers.html#visl3d.writers.WriteHTML.func_image2d"><code class="docutils literal notranslate"><span class="pre">WriteHTML.func_image2d()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="visl3d.writers.html#visl3d.writers.WriteHTML.func_layers"><code class="docutils literal notranslate"><span class="pre">WriteHTML.func_layers()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="visl3d.writers.html#visl3d.writers.WriteHTML.func_markers"><code class="docutils literal notranslate"><span class="pre">WriteHTML.func_markers()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="visl3d.writers.html#visl3d.writers.WriteHTML.func_move2dimage"><code class="docutils literal notranslate"><span class="pre">WriteHTML.func_move2dimage()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="visl3d.writers.html#visl3d.writers.WriteHTML.func_pick"><code class="docutils literal notranslate"><span class="pre">WriteHTML.func_pick()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="visl3d.writers.html#visl3d.writers.WriteHTML.func_pymarkers"><code class="docutils literal notranslate"><span class="pre">WriteHTML.func_pymarkers()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="visl3d.writers.html#visl3d.writers.WriteHTML.func_scalev"><code class="docutils literal notranslate"><span class="pre">WriteHTML.func_scalev()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="visl3d.writers.html#visl3d.writers.WriteHTML.func_setCenterOfRotation"><code class="docutils literal notranslate"><span class="pre">WriteHTML.func_setCenterOfRotation()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="visl3d.writers.html#visl3d.writers.WriteHTML.start_x3d"><code class="docutils literal notranslate"><span class="pre">WriteHTML.start_x3d()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="visl3d.writers.html#visl3d.writers.WriteHTML.viewpoints"><code class="docutils literal notranslate"><span class="pre">WriteHTML.viewpoints()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="visl3d.writers.html#visl3d.writers.WriteVis"><code class="docutils literal notranslate"><span class="pre">WriteVis</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="visl3d.writers.html#visl3d.writers.WriteVis.buttons"><code class="docutils literal notranslate"><span class="pre">WriteVis.buttons()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="visl3d.writers.html#visl3d.writers.WriteVis.close"><code class="docutils literal notranslate"><span class="pre">WriteVis.close()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="visl3d.writers.html#visl3d.writers.WriteVis.close_html"><code class="docutils literal notranslate"><span class="pre">WriteVis.close_html()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="visl3d.writers.html#visl3d.writers.WriteVis.close_x3d"><code class="docutils literal notranslate"><span class="pre">WriteVis.close_x3d()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="visl3d.writers.html#visl3d.writers.WriteVis.func_animation"><code class="docutils literal notranslate"><span class="pre">WriteVis.func_animation()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="visl3d.writers.html#visl3d.writers.WriteVis.func_axes"><code class="docutils literal notranslate"><span class="pre">WriteVis.func_axes()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="visl3d.writers.html#visl3d.writers.WriteVis.func_background"><code class="docutils literal notranslate"><span class="pre">WriteVis.func_background()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="visl3d.writers.html#visl3d.writers.WriteVis.func_colormaps"><code class="docutils literal notranslate"><span class="pre">WriteVis.func_colormaps()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="visl3d.writers.html#visl3d.writers.WriteVis.func_galaxies"><code class="docutils literal notranslate"><span class="pre">WriteVis.func_galaxies()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="visl3d.writers.html#visl3d.writers.WriteVis.func_galsize"><code class="docutils literal notranslate"><span class="pre">WriteVis.func_galsize()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="visl3d.writers.html#visl3d.writers.WriteVis.func_grids"><code class="docutils literal notranslate"><span class="pre">WriteVis.func_grids()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="visl3d.writers.html#visl3d.writers.WriteVis.func_image2d"><code class="docutils literal notranslate"><span class="pre">WriteVis.func_image2d()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="visl3d.writers.html#visl3d.writers.WriteVis.func_layers"><code class="docutils literal notranslate"><span class="pre">WriteVis.func_layers()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="visl3d.writers.html#visl3d.writers.WriteVis.func_markers"><code class="docutils literal notranslate"><span class="pre">WriteVis.func_markers()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="visl3d.writers.html#visl3d.writers.WriteVis.func_move2dimage"><code class="docutils literal notranslate"><span class="pre">WriteVis.func_move2dimage()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="visl3d.writers.html#visl3d.writers.WriteVis.func_pick"><code class="docutils literal notranslate"><span class="pre">WriteVis.func_pick()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="visl3d.writers.html#visl3d.writers.WriteVis.func_pymarkers"><code class="docutils literal notranslate"><span class="pre">WriteVis.func_pymarkers()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="visl3d.writers.html#visl3d.writers.WriteVis.func_scalev"><code class="docutils literal notranslate"><span class="pre">WriteVis.func_scalev()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="visl3d.writers.html#visl3d.writers.WriteVis.func_setCenterOfRotation"><code class="docutils literal notranslate"><span class="pre">WriteVis.func_setCenterOfRotation()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="visl3d.writers.html#visl3d.writers.WriteVis.make_animation"><code class="docutils literal notranslate"><span class="pre">WriteVis.make_animation()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="visl3d.writers.html#visl3d.writers.WriteVis.make_galaxies"><code class="docutils literal notranslate"><span class="pre">WriteVis.make_galaxies()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="visl3d.writers.html#visl3d.writers.WriteVis.make_image2d"><code class="docutils literal notranslate"><span class="pre">WriteVis.make_image2d()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="visl3d.writers.html#visl3d.writers.WriteVis.make_labels"><code class="docutils literal notranslate"><span class="pre">WriteVis.make_labels()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="visl3d.writers.html#visl3d.writers.WriteVis.make_layers"><code class="docutils literal notranslate"><span class="pre">WriteVis.make_layers()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="visl3d.writers.html#visl3d.writers.WriteVis.make_markers"><code class="docutils literal notranslate"><span class="pre">WriteVis.make_markers()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="visl3d.writers.html#visl3d.writers.WriteVis.make_outline"><code class="docutils literal notranslate"><span class="pre">WriteVis.make_outline()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="visl3d.writers.html#visl3d.writers.WriteVis.make_ticklines"><code class="docutils literal notranslate"><span class="pre">WriteVis.make_ticklines()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="visl3d.writers.html#visl3d.writers.WriteVis.start_x3d"><code class="docutils literal notranslate"><span class="pre">WriteVis.start_x3d()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="visl3d.writers.html#visl3d.writers.WriteX3D"><code class="docutils literal notranslate"><span class="pre">WriteX3D</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="visl3d.writers.html#visl3d.writers.WriteX3D.close"><code class="docutils literal notranslate"><span class="pre">WriteX3D.close()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="visl3d.writers.html#visl3d.writers.WriteX3D.make_animation"><code class="docutils literal notranslate"><span class="pre">WriteX3D.make_animation()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="visl3d.writers.html#visl3d.writers.WriteX3D.make_galaxies"><code class="docutils literal notranslate"><span class="pre">WriteX3D.make_galaxies()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="visl3d.writers.html#visl3d.writers.WriteX3D.make_image2d"><code class="docutils literal notranslate"><span class="pre">WriteX3D.make_image2d()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="visl3d.writers.html#visl3d.writers.WriteX3D.make_labels"><code class="docutils literal notranslate"><span class="pre">WriteX3D.make_labels()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="visl3d.writers.html#visl3d.writers.WriteX3D.make_layers"><code class="docutils literal notranslate"><span class="pre">WriteX3D.make_layers()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="visl3d.writers.html#visl3d.writers.WriteX3D.make_markers"><code class="docutils literal notranslate"><span class="pre">WriteX3D.make_markers()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="visl3d.writers.html#visl3d.writers.WriteX3D.make_outline"><code class="docutils literal notranslate"><span class="pre">WriteX3D.make_outline()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="visl3d.writers.html#visl3d.writers.WriteX3D.make_ticklines"><code class="docutils literal notranslate"><span class="pre">WriteX3D.make_ticklines()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="visl3d.misc.html">Miscellaneous functions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="visl3d.misc.html#visl3d.misc.calc_axis_angle"><code class="docutils literal notranslate"><span class="pre">calc_axis_angle()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="visl3d.misc.html#visl3d.misc.calc_camera_position"><code class="docutils literal notranslate"><span class="pre">calc_camera_position()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="visl3d.misc.html#visl3d.misc.calc_isolevels"><code class="docutils literal notranslate"><span class="pre">calc_isolevels()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="visl3d.misc.html#visl3d.misc.calc_step"><code class="docutils literal notranslate"><span class="pre">calc_step()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="visl3d.misc.html#visl3d.misc.create_colormap"><code class="docutils literal notranslate"><span class="pre">create_colormap()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="visl3d.misc.html#visl3d.misc.cube_info"><code class="docutils literal notranslate"><span class="pre">cube_info()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="visl3d.misc.html#visl3d.misc.find_nearest"><code class="docutils literal notranslate"><span class="pre">find_nearest()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="visl3d.misc.html#visl3d.misc.get_axlabnames"><code class="docutils literal notranslate"><span class="pre">get_axlabnames()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="visl3d.misc.html#visl3d.misc.get_galaxies"><code class="docutils literal notranslate"><span class="pre">get_galaxies()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="visl3d.misc.html#visl3d.misc.get_imcol"><code class="docutils literal notranslate"><span class="pre">get_imcol()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="visl3d.misc.html#visl3d.misc.get_rms"><code class="docutils literal notranslate"><span class="pre">get_rms()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="visl3d.misc.html#visl3d.misc.get_rms2"><code class="docutils literal notranslate"><span class="pre">get_rms2()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="visl3d.misc.html#visl3d.misc.insert_3darray"><code class="docutils literal notranslate"><span class="pre">insert_3darray()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="visl3d.misc.html#visl3d.misc.marching_cubes"><code class="docutils literal notranslate"><span class="pre">marching_cubes()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="visl3d.misc.html#visl3d.misc.objquery"><code class="docutils literal notranslate"><span class="pre">objquery()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="visl3d.misc.html#visl3d.misc.preview2d"><code class="docutils literal notranslate"><span class="pre">preview2d()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="visl3d.misc.html#visl3d.misc.tabs"><code class="docutils literal notranslate"><span class="pre">tabs()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="visl3d.misc.html#visl3d.misc.transpose"><code class="docutils literal notranslate"><span class="pre">transpose()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="visl3d.visual.html" class="btn btn-neutral float-right" title="ViSL3D Visual" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Ixaka Labadie-Garcia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

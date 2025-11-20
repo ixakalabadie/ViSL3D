@@ -1,0 +1,522 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ViSL3D Visual &mdash; ViSL3D 0.5 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=db78e746"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Writer functions" href="visl3d.writers.html" />
+    <link rel="prev" title="Welcome to ViSL3D documentation" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            ViSL3D
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">ViSL3D Visual</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#visl3d.visual.Cube"><code class="docutils literal notranslate"><span class="pre">Cube</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#visl3d.visual.X3DomWidget"><code class="docutils literal notranslate"><span class="pre">X3DomWidget</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#visl3d.visual.X3DomWidget.html"><code class="docutils literal notranslate"><span class="pre">X3DomWidget.html</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#visl3d.visual.createHTML"><code class="docutils literal notranslate"><span class="pre">createHTML()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#visl3d.visual.createVis"><code class="docutils literal notranslate"><span class="pre">createVis()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#visl3d.visual.createX3D"><code class="docutils literal notranslate"><span class="pre">createX3D()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#visl3d.visual.displayVis"><code class="docutils literal notranslate"><span class="pre">displayVis()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#visl3d.visual.prep_mult"><code class="docutils literal notranslate"><span class="pre">prep_mult()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#visl3d.visual.prep_one"><code class="docutils literal notranslate"><span class="pre">prep_one()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#visl3d.visual.prep_overlay"><code class="docutils literal notranslate"><span class="pre">prep_overlay()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="visl3d.writers.html">Writer functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="visl3d.misc.html">Miscellaneous functions</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">ViSL3D</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">ViSL3D Visual</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/visl3d.visual.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-visl3d.visual">
+<span id="visl3d-visual"></span><h1>ViSL3D Visual<a class="headerlink" href="#module-visl3d.visual" title="Link to this heading"></a></h1>
+<p>Created on Fri Mar 22 16:05:52 2024</p>
+<p>&#64;author: ixakalabadie</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="visl3d.visual.Cube">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">visl3d.visual.</span></span><span class="sig-name descname"><span class="pre">Cube</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">l_cubes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coords</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">l_isolevels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cmaps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">units</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mags</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">galaxies</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">image2d</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(None,</span> <span class="pre">None)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lines</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">interface</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'full'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/visl3d/visual.html#Cube"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#visl3d.visual.Cube" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Class to store relevant data to create the visualisation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>l_cubes</strong> (<em>list</em>) – List of 3D arrays with the data. Even if it is only one cube it must be a list.
+For overlay the arrays must have the same shape.</p></li>
+<li><p><strong>coords</strong> (<em>array</em>) – Array with the coordinates of the cube. It must be a sorted 3x2 array with the minimum and maximum
+values of the spatial and spectral axes.</p></li>
+<li><p><strong>l_isolevels</strong> (<em>list</em>) – List of arrays with the isosurface levels for each cube.</p></li>
+<li><p><strong>cmaps</strong> (<em>list</em>) – Matplotlib colormap to use for each cube.
+Must have the same length as l_isolevels.</p></li>
+<li><p><strong>units</strong> (<em>len 4 array</em>) – Array of strings with the units of the data cube. The first element is the unit of the data.</p></li>
+<li><p><strong>mags</strong> (<em>len 4 array</em>) – Array of strings with the magnitudes of the data cube. E.g. [‘I’, ‘RA’, ‘DEC’, ‘V’].</p></li>
+<li><p><strong>rms</strong> (<em>float</em><em>, </em><em>optional</em>) – RMS of the data cube.</p></li>
+<li><p><strong>name</strong> (<em>str</em><em>, </em><em>optional</em>) – Name of the object. Default is ‘’.</p></li>
+<li><p><strong>delta</strong> (<em>len 3 array</em><em>, </em><em>optional</em>) – Array with the pixel size in each axis. Default is None.</p></li>
+<li><p><strong>resol</strong> (<em>float</em><em>, </em><em>optional</em>) – Step size for the marching cubes algorithm. Higher value means lower resolution. Default is 1.</p></li>
+<li><p><strong>galaxies</strong> (<em>dict</em><em>, </em><em>optional</em>) – Dictionary with galaxies to include in the model. Keys are names of galaxies and it must
+have two more dictionaries inside with the keys ‘coords’ and ‘col’. ‘coords’ must have the
+coordinates of the galaxy (transformed to units of the cube between -1000 and 1000) and ‘col’ the color of each galaxy as a string. E.g. {‘NGC 1234’: {‘coords’: [-560, 790, 134], ‘col’: ‘255 0 0’}}.
+‘coord’ is calculated with ‘[RA - mean(cubeRA)]/abs(deltaRA)*2000/nPixRA’. The whole dictionary
+can be obtained with misc.get_galaxies().</p></li>
+<li><p><strong>image2d</strong> (<em>tuple</em><em>, </em><em>optional</em>) – Tuple with the name of the survey and the data to plot a 2D image (str, (hex, shape)).
+The data is the image in hexadecimal format and the shape of the image.
+It can be calculated with the function misc.get_imcol.
+If (‘blank’, (None,None)) a blank plane will be created.
+If (‘’, None) no image will be created.</p></li>
+<li><p><strong>lines</strong> (<em>dict</em><em>, </em><em>optional</em>) – Dictionary with the names of spectral lines as keys and a tuple with the centre and
+the full width of the line as value. The centre must be an astropy quantity and the width
+can be a quantity or an integer representing the number of pixels.
+E.g. {‘NII’: (6583*u.Angstrom, 50 [pixels])), ‘Halpha’: (6562*u.Angstrom, 10*u.Angstrom)}.</p></li>
+<li><p><strong>interface</strong> (<em>str</em><em>, </em><em>optional</em>) – Format of the web interface. ‘full’ gives a fully interactive web page and ‘minimal’ just
+the 3D model. Default is ‘full’.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="visl3d.visual.X3DomWidget">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">visl3d.visual.</span></span><span class="sig-name descname"><span class="pre">X3DomWidget</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/visl3d/visual.html#X3DomWidget"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#visl3d.visual.X3DomWidget" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">AnyWidget</span></code></p>
+<p>Class to display ViSL3D visualisation in a jupyter notebook.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Attributes<span class="colon">:</span></dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>comm</strong></dt><dd></dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">cross_validation_lock</span></code></dt><dd><p>A contextmanager for running a block with our cross validation lock set to True.</p>
+</dd>
+<dt><strong>html</strong></dt><dd></dd>
+<dt><strong>keys</strong></dt><dd><p>The traits which are synced.</p>
+</dd>
+<dt><strong>layout</strong></dt><dd></dd>
+<dt><strong>log</strong></dt><dd></dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">model_id</span></code></dt><dd><p>Gets the model id of this widget.</p>
+</dd>
+<dt><strong>tabbable</strong></dt><dd><p>Is widget tabbable?</p>
+</dd>
+<dt><strong>tooltip</strong></dt><dd><p>A tooltip caption.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_class</span></code>(className)</p></td>
+<td><p>Adds a class to the top level element of the widget.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_traits</span></code>(**traits)</p></td>
+<td><p>Dynamically add trait attributes to the Widget.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">blur</span></code>()</p></td>
+<td><p>Blur the widget.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">class_own_trait_events</span></code>(name)</p></td>
+<td><p>Get a dict of all event handlers defined on this class, not a parent.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">class_own_traits</span></code>(**metadata)</p></td>
+<td><p>Get a dict of all the traitlets defined on this class, not a parent.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">class_trait_names</span></code>(**metadata)</p></td>
+<td><p>Get a list of all the names of this class' traits.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">class_traits</span></code>(**metadata)</p></td>
+<td><p>Get a <code class="docutils literal notranslate"><span class="pre">dict</span></code> of all the traits of this class.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">close</span></code>()</p></td>
+<td><p>Close method.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">focus</span></code>()</p></td>
+<td><p>Focus on the widget.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_manager_state</span></code>([drop_defaults, widgets])</p></td>
+<td><p>Returns the full state for a widget manager for embedding</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_state</span></code>([key, drop_defaults])</p></td>
+<td><p>Gets the widget state, or a piece of it.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">handle_comm_opened</span></code>(comm, msg)</p></td>
+<td><p>Static method, called when a widget is constructed.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">handle_control_comm_opened</span></code>(comm, msg)</p></td>
+<td><p>Class method, called when the comm-open message on the &quot;jupyter.widget.control&quot; comm channel is received</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">has_trait</span></code>(name)</p></td>
+<td><p>Returns True if the object has a trait with the specified name.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">hold_sync</span></code>()</p></td>
+<td><p>Hold syncing any state until the outermost context manager exits</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">hold_trait_notifications</span></code>()</p></td>
+<td><p>Context manager for bundling trait change notifications and cross validation.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">notify_change</span></code>(change)</p></td>
+<td><p>Called when a property has changed.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">observe</span></code>(handler[, names, type])</p></td>
+<td><p>Setup a handler to be called when a trait changes.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">on_msg</span></code>(callback[, remove])</p></td>
+<td><p>(Un)Register a custom msg receive callback.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">on_trait_change</span></code>([handler, name, remove])</p></td>
+<td><p>DEPRECATED: Setup a handler to be called when a trait changes.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">on_widget_constructed</span></code>(callback)</p></td>
+<td><p>Registers a callback to be called when a widget is constructed.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">open</span></code>()</p></td>
+<td><p>Open a comm to the frontend if one isn't already open.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">remove_class</span></code>(className)</p></td>
+<td><p>Removes a class from the top level element of the widget.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">send</span></code>(content[, buffers])</p></td>
+<td><p>Sends a custom msg to the widget model in the front-end.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">send_state</span></code>([key])</p></td>
+<td><p>Sends the widget state, or a piece of it, to the front-end, if it exists.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_state</span></code>(sync_data)</p></td>
+<td><p>Called when a state is received from the front-end.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_trait</span></code>(name, value)</p></td>
+<td><p>Forcibly sets trait attribute, including read-only attributes.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">setup_instance</span></code>(**kwargs)</p></td>
+<td><p>This is called <strong>before</strong> self.__init__ is called.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">trait_defaults</span></code>(*names, **metadata)</p></td>
+<td><p>Return a trait's default value or a dictionary of them</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">trait_events</span></code>([name])</p></td>
+<td><p>Get a <code class="docutils literal notranslate"><span class="pre">dict</span></code> of all the event handlers of this class.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">trait_has_value</span></code>(name)</p></td>
+<td><p>Returns True if the specified trait has a value.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">trait_metadata</span></code>(traitname, key[, default])</p></td>
+<td><p>Get metadata values for trait by key.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">trait_names</span></code>(**metadata)</p></td>
+<td><p>Get a list of all the names of this class' traits.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">trait_values</span></code>(**metadata)</p></td>
+<td><p>A <code class="docutils literal notranslate"><span class="pre">dict</span></code> of trait names and their values.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">traits</span></code>(**metadata)</p></td>
+<td><p>Get a <code class="docutils literal notranslate"><span class="pre">dict</span></code> of all the traits of this class.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">unobserve</span></code>(handler[, names, type])</p></td>
+<td><p>Remove a trait change handler.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">unobserve_all</span></code>([name])</p></td>
+<td><p>Remove trait change handlers of any type for the specified name.</p></td>
+</tr>
+</tbody>
+</table>
+<table class="docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><strong>close_all</strong></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><strong>get_view_spec</strong></p></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="visl3d.visual.X3DomWidget.html">
+<span class="sig-name descname"><span class="pre">html</span></span><a class="headerlink" href="#visl3d.visual.X3DomWidget.html" title="Link to this definition"></a></dt>
+<dd><p>A trait for unicode strings.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="visl3d.visual.createHTML">
+<span class="sig-prename descclassname"><span class="pre">visl3d.visual.</span></span><span class="sig-name descname"><span class="pre">createHTML</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cube</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pagetitle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/visl3d/visual.html#createHTML"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#visl3d.visual.createHTML" title="Link to this definition"></a></dt>
+<dd><p>Create HTML file from a Cube object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cube</strong> (<a class="reference internal" href="#visl3d.visual.Cube" title="visl3d.visual.Cube"><em>Cube</em></a>) – Object of the Cube class.</p></li>
+<li><p><strong>filename</strong> (<em>str</em>) – Name of the HTML file including the extension (.html).</p></li>
+<li><p><strong>description</strong> (<em>str</em><em>, </em><em>optional</em>) – A description for the web page.</p></li>
+<li><p><strong>pagetitle</strong> (<em>str</em><em>, </em><em>optional</em>) – The title of the web page.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="visl3d.visual.createVis">
+<span class="sig-prename descclassname"><span class="pre">visl3d.visual.</span></span><span class="sig-name descname"><span class="pre">createVis</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cube</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pagetitle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shifts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">notebook</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/visl3d/visual.html#createVis"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#visl3d.visual.createVis" title="Link to this definition"></a></dt>
+<dd><p>Create an HTML file with a 3D visualisation of a datacube (without an X3D file).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cube</strong> (<a class="reference internal" href="#visl3d.visual.Cube" title="visl3d.visual.Cube"><em>Cube</em></a>) – Object of the Cube class.</p></li>
+<li><p><strong>filename</strong> (<em>str</em><em>, </em><em>optional</em>) – Name of the HTML file including the extension (.html). Optional is notebook=True.</p></li>
+<li><p><strong>description</strong> (<em>str</em><em>, </em><em>optional</em>) – A description for the web page.</p></li>
+<li><p><strong>pagetitle</strong> (<em>str</em><em>, </em><em>optional</em>) – The title of the web page.</p></li>
+<li><p><strong>notebook</strong> (<em>bool</em>) – Display the visualisation in the jupyter notebook. If True, the file will not be saved.
+Default is False.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="visl3d.visual.createX3D">
+<span class="sig-prename descclassname"><span class="pre">visl3d.visual.</span></span><span class="sig-name descname"><span class="pre">createX3D</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cube</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shifts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/visl3d/visual.html#createX3D"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#visl3d.visual.createX3D" title="Link to this definition"></a></dt>
+<dd><p>Create X3D file from a Cube object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cube</strong> (<a class="reference internal" href="#visl3d.visual.Cube" title="visl3d.visual.Cube"><em>Cube</em></a>) – Object of the Cube class.</p></li>
+<li><p><strong>filename</strong> (<em>str</em>) – Name of the X3D file including the extension (.x3d).</p></li>
+<li><p><strong>shift</strong> (<em>list</em><em>, </em><em>optional</em>) – A list with a arrays of 3D vectors giving the shift in RA, DEC and spectral axis in
+the same units given to the cube. Similar to l_cube or l_isolevels.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="visl3d.visual.displayVis">
+<span class="sig-prename descclassname"><span class="pre">visl3d.visual.</span></span><span class="sig-name descname"><span class="pre">displayVis</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/visl3d/visual.html#displayVis"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#visl3d.visual.displayVis" title="Link to this definition"></a></dt>
+<dd><p>Disply a ViSL3D visualisation in a jupyter notebook.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>filename</strong> (<em>str</em>) – Name of the file to visualise, including the ‘.html’ extension.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="visl3d.visual.prep_mult">
+<span class="sig-prename descclassname"><span class="pre">visl3d.visual.</span></span><span class="sig-name descname"><span class="pre">prep_mult</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cube</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spectral_lims</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">header</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spatial_lims</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">l_isolevels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">colormap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">image2d</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">im2dcolor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Greys'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lines</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/visl3d/visual.html#prep_mult"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#visl3d.visual.prep_mult" title="Link to this definition"></a></dt>
+<dd><p>Prepare the Cube class for a cube with multiple spectral lines.
+Makes a subcube for each spectral line.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cube</strong> (<em>str</em><em> or </em><em>np.ndarray</em>) – Path to the FITS file or the data cube.
+If data it must be in the form [spectral axis, DEC, RA].</p></li>
+<li><p><strong>spectral_lims</strong> (<em>list</em>) – List of lists with the limits (minimum and maximum) of the spectral axis.
+Can be quatities or pixels.
+E.g. [[vmin1, vmax1], [vmin2, vmax2]].</p></li>
+<li><p><strong>header</strong> (<em>astropy.io.fits.header.Header</em><em>, </em><em>optional</em>) – Header of the FITS file.</p></li>
+<li><p><strong>spatial_lims</strong> (<em>list</em><em>, </em><em>optional</em>) – List of lists with the limits (minimum and maximum) of the spatial axes.
+E.g. [[[ramin1, ramax1], [decmin1, decmax1]], [[ramin2, ramax2], [decmin2, decmax2]]].
+Each list will correspond to the subcubes defined in spectral_lims in the same order.
+If only one set of limits is provided it will be used for all the subcubes.
+If None the whole cube is used. Default is None.</p></li>
+<li><p><strong>l_isolevels</strong> (<em>list</em><em>, </em><em>optional</em>) – List of arrays with the isosurface levels for each cube. If None it is calculated automatically.</p></li>
+<li><p><strong>unit</strong> (<em>str</em><em>, </em><em>optional</em>) – Unit to convert the data cube. If None the original unit is used.
+If ‘rms’ data is divided by the RMS of the cube.
+If ‘percent’ data is divided by the maximum value.</p></li>
+<li><p><strong>colormap</strong> (<em>str</em><em>, </em><em>optional</em>) – Name of the colormaps to use. Must be the same length as the number of spectral lines to model.
+If None and the number of lines is &lt;7 they are be chosen automatically. Default is None.</p></li>
+<li><p><strong>image2d</strong> (<em>str</em><em> or </em><em>2D</em><em> or </em><em>3D array</em><em>, </em><em>optional</em>) – Name of the survey to query a 2D image. See survey options in <a class="reference external" href="https://astroquery.readthedocs.io/en/latest/skyview/skyview.html">https://astroquery.readthedocs.io/en/latest/skyview/skyview.html</a>.
+If ‘blank’ a blank plane is used. If None no image is created.
+If 2D or 3D array, the mage data in RGB format between 0 and 1 (3D). The RGB column must be last.
+If 2D, the image will be converted automatically.
+The image will cover the full FoV of the created cube model (after applying limits).</p></li>
+<li><p><strong>im2dcolor</strong> (<em>str</em><em>, </em><em>optional</em>) – Name of the colormap to use for the 2D image. Default is ‘Greys’.</p></li>
+<li><p><strong>lines</strong> (<em>array-like</em><em>, </em><em>optional</em>) – List with the names of each subcube to use as labels in the web page. Must have same length
+as spectral_lims. Default is None.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>An object of the Cube class for a model with multiple spectral lines.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#visl3d.visual.Cube" title="visl3d.visual.Cube">Cube</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="visl3d.visual.prep_one">
+<span class="sig-prename descclassname"><span class="pre">visl3d.visual.</span></span><span class="sig-name descname"><span class="pre">prep_one</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cube</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">header</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lims</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">isolevels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">colormap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'CMRmap_r'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">image2d</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">im2dcolor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Greys'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">galaxies</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/visl3d/visual.html#prep_one"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#visl3d.visual.prep_one" title="Link to this definition"></a></dt>
+<dd><p>Prepare the Cube class for a cube with a single spectral line.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cube</strong> (<em>str</em><em> or </em><em>np.ndarray</em>) – Path to the FITS file or to the data cube.</p></li>
+<li><p><strong>header</strong> (<em>astropy.io.fits.header.Header</em><em>, </em><em>optional</em>) – Header of the FITS file.</p></li>
+<li><p><strong>lims</strong> (<em>array-like</em><em>, </em><em>optional</em>) – 3x2 array with the minimum and maximum limits of the cube. If None the whole cube is used.
+It can contain limits in astropy quantities or in pixels.
+E.g. [[ramin, ramax], [decmin, decmax], [vmin, vmax]]. Default is None.</p></li>
+<li><p><strong>unit</strong> (<em>str</em><em>, </em><em>optional</em>) – Unit to convert the data cube. If None the original unit is used.
+If ‘rms’ data is divided by the RMS of the cube.
+If ‘percent’ data is divided by the maximum value.</p></li>
+<li><p><strong>isolevels</strong> (<em>array-like</em><em>, </em><em>optional</em>) – Array with the isosurface levels in the given units. If None it is calculated automatically.</p></li>
+<li><p><strong>colormap</strong> (<em>str</em><em>, </em><em>optional</em>) – Name of the colormap to use. Default is ‘CMRmap_r’.</p></li>
+<li><p><strong>image2d</strong> (<em>str</em><em> or </em><em>tuple</em><em> or </em><em>2D</em><em> or </em><em>3D array</em><em>, </em><em>optional</em>) – <ul>
+<li><p>If None, no image is created.</p></li>
+<li><p>If ‘blank’, a blank plane is used.</p></li>
+<li><p>Name of the survey (str) to query a 2D image. See survey options in <a class="reference external" href="https://astroquery.readthedocs.io/en/latest/skyview/skyview.html">https://astroquery.readthedocs.io/en/latest/skyview/skyview.html</a>.</p></li>
+<li><p>Tuple with the name of the survey (str) and the number of pixels (int) to set the resolution of the image (default is 1000).</p></li>
+<li><dl class="simple">
+<dt>Tuple can be given with a name for the image (str) and the image data (2D or 3D array).</dt><dd><p>If 3D array, the image data in RGB format between 0 and 1 (3D). The RGB column must be last.
+If 2D, the image will be converted automatically.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<p>The image will cover the full FoV of the created cube model (after applying limits).</p>
+</p></li>
+<li><p><strong>im2dcolor</strong> (<em>str</em><em>, </em><em>optional</em>) – Name of the colormap to use for the 2D image. Default is ‘Greys’.</p></li>
+<li><p><strong>galaxies</strong> (<em>list</em><em> or </em><em>str</em><em>, </em><em>optional</em>) – List with the names of galaxies to include in the model. If ‘query’ a NED query is made within the limits of the cube. If None no galaxies are included.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>An object of the Cube class for a single spectral line model.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#visl3d.visual.Cube" title="visl3d.visual.Cube">Cube</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="visl3d.visual.prep_overlay">
+<span class="sig-prename descclassname"><span class="pre">visl3d.visual.</span></span><span class="sig-name descname"><span class="pre">prep_overlay</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cube</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">header</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spectral_lims</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lines</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spatial_lims</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">l_isolevels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">colormap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">image2d</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">im2dcolor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Greys'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/visl3d/visual.html#prep_overlay"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#visl3d.visual.prep_overlay" title="Link to this definition"></a></dt>
+<dd><p>Prepare the Cube class for an overlay of spectral lines. Makes a subcube for each spectral line
+and overlays the centre of each line in the same point.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cube</strong> (<em>str</em><em> or </em><em>np.ndarray</em>) – Path to the FITS file or the data cube.</p></li>
+<li><p><strong>header</strong> (<em>astropy.io.fits.header.Header</em><em>, </em><em>optional</em>) – Header of the FITS file.</p></li>
+<li><p><strong>spectral_lims</strong> (<em>list</em><em>, </em><em>optional</em>) – List of lists with the limits (minimum and maximum) of the spectral axis.
+E.g. [[vmin1, vmax1], [vmin2, vmax2]].</p></li>
+<li><p><strong>lines</strong> (<em>dict</em><em>, </em><em>optional</em>) – Dictionary with the names of spectral lines as keys and a tuple with the centre and
+the full width of the line as value. The centre must be an astropy quantity and the width
+can be a quantity or an integer representing the number of the pixel.
+E.g. {‘NII’: (6583*u.Angstrom, 50 [pixels])), ‘Halpha’: (6562*u.Angstrom, 10*u.Angstrom)}.
+If None the centres will be the centres of the subcubes.</p></li>
+<li><p><strong>spatial_lims</strong> (<em>list</em><em>, </em><em>optional</em>) – List of lists with the limits (minimum and maximum) of the spatial axes.
+E.g. [[[ramin1, ramax1], [decmin1, decmax1]], [[ramin2, ramax2], [decmin2, decmax2]]].
+Each list will correspond to the subcubes defined in spectral_lims in the same order.
+If only one set of limits is provided it will be used for all the subcubes.
+If None the whole cube is used. Default is None.</p></li>
+<li><p><strong>l_isolevels</strong> (<em>list</em><em>, </em><em>optional</em>) – List of arrays with the isosurface levels for each cube. If None it is calculated automatically.</p></li>
+<li><p><strong>unit</strong> (<em>str</em><em>, </em><em>optional</em>) – Unit to convert the data cube. If None the original unit is used.
+If ‘rms’ data is divided by the RMS of the cube.
+If ‘percent’ data is divided by the maximum value.</p></li>
+<li><p><strong>colormap</strong> (<em>str</em><em>, </em><em>optional</em>) – Name of the colormaps to use. Must be the same length as the number of spectral lines to model.
+If None and the number of lines is &lt;7 they are be chosen automatically. Default is None.</p></li>
+<li><p><strong>image2d</strong> (<em>str</em><em> or </em><em>2D</em><em> or </em><em>3D array</em><em>, </em><em>optional</em>) – Name of the survey to query a 2D image. See survey options in <a class="reference external" href="https://astroquery.readthedocs.io/en/latest/skyview/skyview.html">https://astroquery.readthedocs.io/en/latest/skyview/skyview.html</a>.
+If ‘blank’ a blank plane is used. If None no image is created.
+If 2D or 3D array, the mage data in RGB format between 0 and 1 (3D). The RGB column must be last.
+If 2D, the image will be converted automatically.
+The image will cover the full FoV of the created cube model (after applying limits).</p></li>
+<li><p><strong>im2dcolor</strong> (<em>str</em><em>, </em><em>optional</em>) – Name of the colormap to use for the 2D image. Default is ‘Greys’.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>An object of the Cube class for an overlay of spectral lines.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#visl3d.visual.Cube" title="visl3d.visual.Cube">Cube</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="Welcome to ViSL3D documentation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="visl3d.writers.html" class="btn btn-neutral float-right" title="Writer functions" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Ixaka Labadie-Garcia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

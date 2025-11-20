@@ -13,6 +13,9 @@ dependencies = [
     "scipy",
     "astroquery >= 0.4.7",
     "astropy",
+    "anywidgets",
+    "traitlets",
+
 ]
 authors = [
     {name = "Ixaka Labadie García", email = "ixaka.lab@gmail.com"}

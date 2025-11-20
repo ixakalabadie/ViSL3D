@@ -1,0 +1,968 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Writer functions &mdash; ViSL3D 0.5 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=db78e746"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Miscellaneous functions" href="visl3d.misc.html" />
+    <link rel="prev" title="ViSL3D Visual" href="visl3d.visual.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            ViSL3D
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="visl3d.visual.html">ViSL3D Visual</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Writer functions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#visl3d.writers.WriteHTML"><code class="docutils literal notranslate"><span class="pre">WriteHTML</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#visl3d.writers.WriteHTML.buttons"><code class="docutils literal notranslate"><span class="pre">WriteHTML.buttons()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#visl3d.writers.WriteHTML.close_html"><code class="docutils literal notranslate"><span class="pre">WriteHTML.close_html()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#visl3d.writers.WriteHTML.close_x3d"><code class="docutils literal notranslate"><span class="pre">WriteHTML.close_x3d()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#visl3d.writers.WriteHTML.func_animation"><code class="docutils literal notranslate"><span class="pre">WriteHTML.func_animation()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#visl3d.writers.WriteHTML.func_axes"><code class="docutils literal notranslate"><span class="pre">WriteHTML.func_axes()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#visl3d.writers.WriteHTML.func_background"><code class="docutils literal notranslate"><span class="pre">WriteHTML.func_background()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#visl3d.writers.WriteHTML.func_colormaps"><code class="docutils literal notranslate"><span class="pre">WriteHTML.func_colormaps()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#visl3d.writers.WriteHTML.func_galaxies"><code class="docutils literal notranslate"><span class="pre">WriteHTML.func_galaxies()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#visl3d.writers.WriteHTML.func_galsize"><code class="docutils literal notranslate"><span class="pre">WriteHTML.func_galsize()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#visl3d.writers.WriteHTML.func_grids"><code class="docutils literal notranslate"><span class="pre">WriteHTML.func_grids()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#visl3d.writers.WriteHTML.func_image2d"><code class="docutils literal notranslate"><span class="pre">WriteHTML.func_image2d()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#visl3d.writers.WriteHTML.func_layers"><code class="docutils literal notranslate"><span class="pre">WriteHTML.func_layers()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#visl3d.writers.WriteHTML.func_markers"><code class="docutils literal notranslate"><span class="pre">WriteHTML.func_markers()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#visl3d.writers.WriteHTML.func_move2dimage"><code class="docutils literal notranslate"><span class="pre">WriteHTML.func_move2dimage()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#visl3d.writers.WriteHTML.func_pick"><code class="docutils literal notranslate"><span class="pre">WriteHTML.func_pick()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#visl3d.writers.WriteHTML.func_pymarkers"><code class="docutils literal notranslate"><span class="pre">WriteHTML.func_pymarkers()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#visl3d.writers.WriteHTML.func_scalev"><code class="docutils literal notranslate"><span class="pre">WriteHTML.func_scalev()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#visl3d.writers.WriteHTML.func_setCenterOfRotation"><code class="docutils literal notranslate"><span class="pre">WriteHTML.func_setCenterOfRotation()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#visl3d.writers.WriteHTML.start_x3d"><code class="docutils literal notranslate"><span class="pre">WriteHTML.start_x3d()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#visl3d.writers.WriteHTML.viewpoints"><code class="docutils literal notranslate"><span class="pre">WriteHTML.viewpoints()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#visl3d.writers.WriteVis"><code class="docutils literal notranslate"><span class="pre">WriteVis</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#visl3d.writers.WriteVis.buttons"><code class="docutils literal notranslate"><span class="pre">WriteVis.buttons()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#visl3d.writers.WriteVis.close"><code class="docutils literal notranslate"><span class="pre">WriteVis.close()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#visl3d.writers.WriteVis.close_html"><code class="docutils literal notranslate"><span class="pre">WriteVis.close_html()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#visl3d.writers.WriteVis.close_x3d"><code class="docutils literal notranslate"><span class="pre">WriteVis.close_x3d()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#visl3d.writers.WriteVis.func_animation"><code class="docutils literal notranslate"><span class="pre">WriteVis.func_animation()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#visl3d.writers.WriteVis.func_axes"><code class="docutils literal notranslate"><span class="pre">WriteVis.func_axes()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#visl3d.writers.WriteVis.func_background"><code class="docutils literal notranslate"><span class="pre">WriteVis.func_background()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#visl3d.writers.WriteVis.func_colormaps"><code class="docutils literal notranslate"><span class="pre">WriteVis.func_colormaps()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#visl3d.writers.WriteVis.func_galaxies"><code class="docutils literal notranslate"><span class="pre">WriteVis.func_galaxies()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#visl3d.writers.WriteVis.func_galsize"><code class="docutils literal notranslate"><span class="pre">WriteVis.func_galsize()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#visl3d.writers.WriteVis.func_grids"><code class="docutils literal notranslate"><span class="pre">WriteVis.func_grids()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#visl3d.writers.WriteVis.func_image2d"><code class="docutils literal notranslate"><span class="pre">WriteVis.func_image2d()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#visl3d.writers.WriteVis.func_layers"><code class="docutils literal notranslate"><span class="pre">WriteVis.func_layers()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#visl3d.writers.WriteVis.func_markers"><code class="docutils literal notranslate"><span class="pre">WriteVis.func_markers()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#visl3d.writers.WriteVis.func_move2dimage"><code class="docutils literal notranslate"><span class="pre">WriteVis.func_move2dimage()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#visl3d.writers.WriteVis.func_pick"><code class="docutils literal notranslate"><span class="pre">WriteVis.func_pick()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#visl3d.writers.WriteVis.func_pymarkers"><code class="docutils literal notranslate"><span class="pre">WriteVis.func_pymarkers()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#visl3d.writers.WriteVis.func_scalev"><code class="docutils literal notranslate"><span class="pre">WriteVis.func_scalev()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#visl3d.writers.WriteVis.func_setCenterOfRotation"><code class="docutils literal notranslate"><span class="pre">WriteVis.func_setCenterOfRotation()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#visl3d.writers.WriteVis.make_animation"><code class="docutils literal notranslate"><span class="pre">WriteVis.make_animation()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#visl3d.writers.WriteVis.make_galaxies"><code class="docutils literal notranslate"><span class="pre">WriteVis.make_galaxies()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#visl3d.writers.WriteVis.make_image2d"><code class="docutils literal notranslate"><span class="pre">WriteVis.make_image2d()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#visl3d.writers.WriteVis.make_labels"><code class="docutils literal notranslate"><span class="pre">WriteVis.make_labels()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#visl3d.writers.WriteVis.make_layers"><code class="docutils literal notranslate"><span class="pre">WriteVis.make_layers()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#visl3d.writers.WriteVis.make_markers"><code class="docutils literal notranslate"><span class="pre">WriteVis.make_markers()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#visl3d.writers.WriteVis.make_outline"><code class="docutils literal notranslate"><span class="pre">WriteVis.make_outline()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#visl3d.writers.WriteVis.make_ticklines"><code class="docutils literal notranslate"><span class="pre">WriteVis.make_ticklines()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#visl3d.writers.WriteVis.start_x3d"><code class="docutils literal notranslate"><span class="pre">WriteVis.start_x3d()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#visl3d.writers.WriteX3D"><code class="docutils literal notranslate"><span class="pre">WriteX3D</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#visl3d.writers.WriteX3D.close"><code class="docutils literal notranslate"><span class="pre">WriteX3D.close()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#visl3d.writers.WriteX3D.make_animation"><code class="docutils literal notranslate"><span class="pre">WriteX3D.make_animation()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#visl3d.writers.WriteX3D.make_galaxies"><code class="docutils literal notranslate"><span class="pre">WriteX3D.make_galaxies()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#visl3d.writers.WriteX3D.make_image2d"><code class="docutils literal notranslate"><span class="pre">WriteX3D.make_image2d()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#visl3d.writers.WriteX3D.make_labels"><code class="docutils literal notranslate"><span class="pre">WriteX3D.make_labels()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#visl3d.writers.WriteX3D.make_layers"><code class="docutils literal notranslate"><span class="pre">WriteX3D.make_layers()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#visl3d.writers.WriteX3D.make_markers"><code class="docutils literal notranslate"><span class="pre">WriteX3D.make_markers()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#visl3d.writers.WriteX3D.make_outline"><code class="docutils literal notranslate"><span class="pre">WriteX3D.make_outline()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#visl3d.writers.WriteX3D.make_ticklines"><code class="docutils literal notranslate"><span class="pre">WriteX3D.make_ticklines()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="visl3d.misc.html">Miscellaneous functions</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">ViSL3D</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Writer functions</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/visl3d.writers.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="writer-functions">
+<h1>Writer functions<a class="headerlink" href="#writer-functions" title="Link to this heading"></a></h1>
+<p>These functions are used to write the elements of the visualisations; both the HTML and the X3D parts.</p>
+<p id="module-visl3d.writers">Created on Fri Mar 22 16:45:23 2024</p>
+<p>&#64;author: ixakalabadie</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="visl3d.writers.WriteHTML">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">visl3d.writers.</span></span><span class="sig-name descname"><span class="pre">WriteHTML</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cube</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pagetitle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/visl3d/writers.html#WriteHTML"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#visl3d.writers.WriteHTML" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Create an HTML file with an embbeded X3D figure and functions to interact with it.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>filename</strong> (<em>str</em>) – Name of the HTML file including the extension (.html).</p></li>
+<li><p><strong>cube</strong> (<em>Cube</em>) – Object of the Cube class.</p></li>
+<li><p><strong>description</strong> (<em>str</em><em>, </em><em>optional</em>) – A description for the web page.</p></li>
+<li><p><strong>pagetitle</strong> (<em>str</em><em>, </em><em>optional</em>) – The title of the web page.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#visl3d.writers.WriteHTML.buttons" title="visl3d.writers.WriteHTML.buttons"><code class="xref py py-obj docutils literal notranslate"><span class="pre">buttons</span></code></a>([viewpoint, tube, sphere, box, ...])</p></td>
+<td><p>Makes the buttons to apply different functions in the web page.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#visl3d.writers.WriteHTML.close_html" title="visl3d.writers.WriteHTML.close_html"><code class="xref py py-obj docutils literal notranslate"><span class="pre">close_html</span></code></a>()</p></td>
+<td><p>Must be used to finish and close the HTML file.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#visl3d.writers.WriteHTML.close_x3d" title="visl3d.writers.WriteHTML.close_x3d"><code class="xref py py-obj docutils literal notranslate"><span class="pre">close_x3d</span></code></a>(filename)</p></td>
+<td><p>Insert the X3D file and close the X3D part of the HTML.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#visl3d.writers.WriteHTML.func_animation" title="visl3d.writers.WriteHTML.func_animation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">func_animation</span></code></a>()</p></td>
+<td><p>Make JS function to start/stop the animation of the X3D models.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#visl3d.writers.WriteHTML.func_axes" title="visl3d.writers.WriteHTML.func_axes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">func_axes</span></code></a>()</p></td>
+<td><p>Make JS function to hide/show axes labels.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#visl3d.writers.WriteHTML.func_background" title="visl3d.writers.WriteHTML.func_background"><code class="xref py py-obj docutils literal notranslate"><span class="pre">func_background</span></code></a>()</p></td>
+<td><p>Make JS function to change the background color of the X3D figure.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#visl3d.writers.WriteHTML.func_colormaps" title="visl3d.writers.WriteHTML.func_colormaps"><code class="xref py py-obj docutils literal notranslate"><span class="pre">func_colormaps</span></code></a>()</p></td>
+<td><p>Make JS function to change the colormap of the layers.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#visl3d.writers.WriteHTML.func_galaxies" title="visl3d.writers.WriteHTML.func_galaxies"><code class="xref py py-obj docutils literal notranslate"><span class="pre">func_galaxies</span></code></a>()</p></td>
+<td><p>Make JS function to hide/show galaxies and their labels.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#visl3d.writers.WriteHTML.func_galsize" title="visl3d.writers.WriteHTML.func_galsize"><code class="xref py py-obj docutils literal notranslate"><span class="pre">func_galsize</span></code></a>()</p></td>
+<td><p>Make JS function to change the size of the galaxy markers and their labels.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#visl3d.writers.WriteHTML.func_grids" title="visl3d.writers.WriteHTML.func_grids"><code class="xref py py-obj docutils literal notranslate"><span class="pre">func_grids</span></code></a>()</p></td>
+<td><p>Make JS function to hide/show grids.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#visl3d.writers.WriteHTML.func_image2d" title="visl3d.writers.WriteHTML.func_image2d"><code class="xref py py-obj docutils literal notranslate"><span class="pre">func_image2d</span></code></a>()</p></td>
+<td><p>Make JS function to show/hide the 2D image.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#visl3d.writers.WriteHTML.func_layers" title="visl3d.writers.WriteHTML.func_layers"><code class="xref py py-obj docutils literal notranslate"><span class="pre">func_layers</span></code></a>()</p></td>
+<td><p>Make JS funcion to hide/show layers.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#visl3d.writers.WriteHTML.func_markers" title="visl3d.writers.WriteHTML.func_markers"><code class="xref py py-obj docutils literal notranslate"><span class="pre">func_markers</span></code></a>()</p></td>
+<td><p>Create buttons to create markers for the X3D model interactively in the web page.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#visl3d.writers.WriteHTML.func_move2dimage" title="visl3d.writers.WriteHTML.func_move2dimage"><code class="xref py py-obj docutils literal notranslate"><span class="pre">func_move2dimage</span></code></a>()</p></td>
+<td><p>Make JS function to move the 2D image along the spectral axis.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#visl3d.writers.WriteHTML.func_pick" title="visl3d.writers.WriteHTML.func_pick"><code class="xref py py-obj docutils literal notranslate"><span class="pre">func_pick</span></code></a>()</p></td>
+<td><p>Allows picking the coordinates by clicking in the figure.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#visl3d.writers.WriteHTML.func_pymarkers" title="visl3d.writers.WriteHTML.func_pymarkers"><code class="xref py py-obj docutils literal notranslate"><span class="pre">func_pymarkers</span></code></a>([tube, sphere, box, cone])</p></td>
+<td><p>JS function to hide/show markers created with make_markers() directly to the X3D model.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#visl3d.writers.WriteHTML.func_scalev" title="visl3d.writers.WriteHTML.func_scalev"><code class="xref py py-obj docutils literal notranslate"><span class="pre">func_scalev</span></code></a>([sphere, box, cone, tube, trans])</p></td>
+<td><p>Make JS funtion to change the scale of the spectral axis.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#visl3d.writers.WriteHTML.func_setCenterOfRotation" title="visl3d.writers.WriteHTML.func_setCenterOfRotation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">func_setCenterOfRotation</span></code></a>(centers)</p></td>
+<td><p>Make JS function to change the center of rotation from given options.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#visl3d.writers.WriteHTML.start_x3d" title="visl3d.writers.WriteHTML.start_x3d"><code class="xref py py-obj docutils literal notranslate"><span class="pre">start_x3d</span></code></a>()</p></td>
+<td><p>Start the X3D part of the HTML.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#visl3d.writers.WriteHTML.viewpoints" title="visl3d.writers.WriteHTML.viewpoints"><code class="xref py py-obj docutils literal notranslate"><span class="pre">viewpoints</span></code></a>([point])</p></td>
+<td><p>Define viewpoints for the X3D figure.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="visl3d.writers.WriteHTML.buttons">
+<span class="sig-name descname"><span class="pre">buttons</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">viewpoint</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tube</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sphere</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">box</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cone</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">centrot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/visl3d/writers.html#WriteHTML.buttons"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#visl3d.writers.WriteHTML.buttons" title="Link to this definition"></a></dt>
+<dd><p>Makes the buttons to apply different functions in the web page.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>viewpoint</strong> (<em>list</em>) – List of names for the viewpoints. Viewpoints must be created in “viewpoints()”.</p></li>
+<li><p><strong>tube</strong> (<em>list</em>) – List with the points parameter included in make_markers() for tubes.</p></li>
+<li><p><strong>sphere</strong> (<em>list</em>) – List with the points parameter included in make_markers() for spheres.</p></li>
+<li><p><strong>box</strong> (<em>list</em>) – List with the points parameter included in make_markers() for boxes.</p></li>
+<li><p><strong>cone</strong> (<em>list</em>) – List with the points parameter included in make_markers() for cones.</p></li>
+<li><p><strong>centrot</strong> (<em>bool</em>) – Create button to change the center of rotation.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="visl3d.writers.WriteHTML.close_html">
+<span class="sig-name descname"><span class="pre">close_html</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/visl3d/writers.html#WriteHTML.close_html"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#visl3d.writers.WriteHTML.close_html" title="Link to this definition"></a></dt>
+<dd><p>Must be used to finish and close the HTML file. Not using this function results
+in an error.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="visl3d.writers.WriteHTML.close_x3d">
+<span class="sig-name descname"><span class="pre">close_x3d</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/visl3d/writers.html#WriteHTML.close_x3d"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#visl3d.writers.WriteHTML.close_x3d" title="Link to this definition"></a></dt>
+<dd><p>Insert the X3D file and close the X3D part of the HTML.
+Must go after viewpoints() and start_x3d().</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>filename</strong> (<em>string</em>) – Name of the X3D file to be inserted.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="visl3d.writers.WriteHTML.func_animation">
+<span class="sig-name descname"><span class="pre">func_animation</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/visl3d/writers.html#WriteHTML.func_animation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#visl3d.writers.WriteHTML.func_animation" title="Link to this definition"></a></dt>
+<dd><p>Make JS function to start/stop the animation of the X3D models.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="visl3d.writers.WriteHTML.func_axes">
+<span class="sig-name descname"><span class="pre">func_axes</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/visl3d/writers.html#WriteHTML.func_axes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#visl3d.writers.WriteHTML.func_axes" title="Link to this definition"></a></dt>
+<dd><p>Make JS function to hide/show axes labels.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="visl3d.writers.WriteHTML.func_background">
+<span class="sig-name descname"><span class="pre">func_background</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/visl3d/writers.html#WriteHTML.func_background"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#visl3d.writers.WriteHTML.func_background" title="Link to this definition"></a></dt>
+<dd><p>Make JS function to change the background color of the X3D figure.
+Must be after buttons()</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="visl3d.writers.WriteHTML.func_colormaps">
+<span class="sig-name descname"><span class="pre">func_colormaps</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/visl3d/writers.html#WriteHTML.func_colormaps"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#visl3d.writers.WriteHTML.func_colormaps" title="Link to this definition"></a></dt>
+<dd><p>Make JS function to change the colormap of the layers.
+Must be after buttons()</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="visl3d.writers.WriteHTML.func_galaxies">
+<span class="sig-name descname"><span class="pre">func_galaxies</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/visl3d/writers.html#WriteHTML.func_galaxies"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#visl3d.writers.WriteHTML.func_galaxies" title="Link to this definition"></a></dt>
+<dd><p>Make JS function to hide/show galaxies and their labels.
+The X3D file must have galaxies for this to work.
+Must be after buttons()</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="visl3d.writers.WriteHTML.func_galsize">
+<span class="sig-name descname"><span class="pre">func_galsize</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/visl3d/writers.html#WriteHTML.func_galsize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#visl3d.writers.WriteHTML.func_galsize" title="Link to this definition"></a></dt>
+<dd><p>Make JS function to change the size of the galaxy markers and their labels.
+The X3D file must have galaxies for this to work.
+Must be after buttons()</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="visl3d.writers.WriteHTML.func_grids">
+<span class="sig-name descname"><span class="pre">func_grids</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/visl3d/writers.html#WriteHTML.func_grids"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#visl3d.writers.WriteHTML.func_grids" title="Link to this definition"></a></dt>
+<dd><p>Make JS function to hide/show grids.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="visl3d.writers.WriteHTML.func_image2d">
+<span class="sig-name descname"><span class="pre">func_image2d</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/visl3d/writers.html#WriteHTML.func_image2d"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#visl3d.writers.WriteHTML.func_image2d" title="Link to this definition"></a></dt>
+<dd><p>Make JS function to show/hide the 2D image.
+The X3D file must have a 2D image for this to work.
+Must be after buttons().</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="visl3d.writers.WriteHTML.func_layers">
+<span class="sig-name descname"><span class="pre">func_layers</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/visl3d/writers.html#WriteHTML.func_layers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#visl3d.writers.WriteHTML.func_layers" title="Link to this definition"></a></dt>
+<dd><p>Make JS funcion to hide/show layers.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="visl3d.writers.WriteHTML.func_markers">
+<span class="sig-name descname"><span class="pre">func_markers</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/visl3d/writers.html#WriteHTML.func_markers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#visl3d.writers.WriteHTML.func_markers" title="Link to this definition"></a></dt>
+<dd><p>Create buttons to create markers for the X3D model interactively in the web page.
+Must be after buttons(). It is assumed that scalev is used. It will fail otherwise.
+The JS functions are included by default in ‘markers.js’.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="visl3d.writers.WriteHTML.func_move2dimage">
+<span class="sig-name descname"><span class="pre">func_move2dimage</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/visl3d/writers.html#WriteHTML.func_move2dimage"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#visl3d.writers.WriteHTML.func_move2dimage" title="Link to this definition"></a></dt>
+<dd><p>Make JS function to move the 2D image along the spectral axis.
+The X3D file must have a 2D image for this to work.
+Must be after buttons()</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="visl3d.writers.WriteHTML.func_pick">
+<span class="sig-name descname"><span class="pre">func_pick</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/visl3d/writers.html#WriteHTML.func_pick"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#visl3d.writers.WriteHTML.func_pick" title="Link to this definition"></a></dt>
+<dd><p>Allows picking the coordinates by clicking in the figure.
+WORKS WITH VIEWPOINT NOT WITH ORTHOVIEWPOINT.
+NOT FINISHED, DON’T USE.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="visl3d.writers.WriteHTML.func_pymarkers">
+<span class="sig-name descname"><span class="pre">func_pymarkers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tube</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sphere</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">box</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cone</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/visl3d/writers.html#WriteHTML.func_pymarkers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#visl3d.writers.WriteHTML.func_pymarkers" title="Link to this definition"></a></dt>
+<dd><p>JS function to hide/show markers created with make_markers() directly to the X3D model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tube</strong> (<em>list</em>) – List with the points parameter included in make_markers() for tubes.</p></li>
+<li><p><strong>sphere</strong> (<em>list</em>) – List with the points parameter included in make_markers() for spheres.</p></li>
+<li><p><strong>box</strong> (<em>list</em>) – List with the points parameter included in make_markers() for boxes.</p></li>
+<li><p><strong>cone</strong> (<em>list</em>) – List with the points parameter included in make_markers() for cones.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="visl3d.writers.WriteHTML.func_scalev">
+<span class="sig-name descname"><span class="pre">func_scalev</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sphere</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">box</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cone</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tube</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trans</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/visl3d/writers.html#WriteHTML.func_scalev"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#visl3d.writers.WriteHTML.func_scalev" title="Link to this definition"></a></dt>
+<dd><p>Make JS funtion to change the scale of the spectral axis.
+Must be after buttons().</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tube</strong> (<em>list</em>) – List with the points parameter included in make_markers() for tubes.</p></li>
+<li><p><strong>sphere</strong> (<em>list</em>) – List with the points parameter included in make_markers() for spheres.</p></li>
+<li><p><strong>box</strong> (<em>list</em>) – List with the points parameter included in make_markers() for boxes.</p></li>
+<li><p><strong>cone</strong> (<em>list</em>) – List with the points parameter included in make_markers() for cones.</p></li>
+<li><p><strong>delta</strong> (<em>list</em>) – List with the delta of the cube (header[CDELT]).</p></li>
+<li><p><strong>trans</strong> (<em>list</em>) – Transformation factor to the cube. It is calculated with (2000/nx, 2000/ny, 2000/nz).</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="visl3d.writers.WriteHTML.func_setCenterOfRotation">
+<span class="sig-name descname"><span class="pre">func_setCenterOfRotation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">centers</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/visl3d/writers.html#WriteHTML.func_setCenterOfRotation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#visl3d.writers.WriteHTML.func_setCenterOfRotation" title="Link to this definition"></a></dt>
+<dd><p>Make JS function to change the center of rotation from given options.
+Must be after buttons()</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>centers</strong> (<em>list</em>) – List of strings with the coordinates (as different from the centre) of the centers of rotation to be added. E.g. [“0 10 0”, “10 0 10”]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="visl3d.writers.WriteHTML.start_x3d">
+<span class="sig-name descname"><span class="pre">start_x3d</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/visl3d/writers.html#WriteHTML.start_x3d"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#visl3d.writers.WriteHTML.start_x3d" title="Link to this definition"></a></dt>
+<dd><p>Start the X3D part of the HTML. Must go before viewpoints() and close_x3d().</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="visl3d.writers.WriteHTML.viewpoints">
+<span class="sig-name descname"><span class="pre">viewpoints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">point</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/visl3d/writers.html#WriteHTML.viewpoints"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#visl3d.writers.WriteHTML.viewpoints" title="Link to this definition"></a></dt>
+<dd><p>Define viewpoints for the X3D figure. Must go after start_x3d() and
+before close_x3d().</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>point</strong> (<em>list</em><em>, </em><em>optional</em>) – List of points to define viewpoints. The point will be used to create a vector from the origin.
+For example, [1,0,0] will create a viewpoint looking at the positive x-axis. The y axis is inverted.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="visl3d.writers.WriteVis">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">visl3d.writers.</span></span><span class="sig-name descname"><span class="pre">WriteVis</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cube</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">description</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pagetitle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/visl3d/writers.html#WriteVis"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#visl3d.writers.WriteVis" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Create an HTML file to visualise a 3D model of spectral line data (without an X3D file).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>filename</strong> (<em>str</em>) – Name of the HTML file to be created (without extension).</p></li>
+<li><p><strong>cube</strong> (<em>Cube</em>) – Cube object with the data to be visualised.</p></li>
+<li><p><strong>pagetitle</strong> (<em>str</em><em>, </em><em>optional</em>) – The title of the web page.</p></li>
+<li><p><strong>description</strong> (<em>str</em>) – A description for the web page.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#visl3d.writers.WriteVis.buttons" title="visl3d.writers.WriteVis.buttons"><code class="xref py py-obj docutils literal notranslate"><span class="pre">buttons</span></code></a>([viewpoint, tube, sphere, box, ...])</p></td>
+<td><p>Makes the buttons to apply different functions in the web page.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#visl3d.writers.WriteVis.close" title="visl3d.writers.WriteVis.close"><code class="xref py py-obj docutils literal notranslate"><span class="pre">close</span></code></a>()</p></td>
+<td><p>Closes the X3D file.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#visl3d.writers.WriteVis.close_html" title="visl3d.writers.WriteVis.close_html"><code class="xref py py-obj docutils literal notranslate"><span class="pre">close_html</span></code></a>()</p></td>
+<td><p>Must be used to finish and close the HTML file.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#visl3d.writers.WriteVis.close_x3d" title="visl3d.writers.WriteVis.close_x3d"><code class="xref py py-obj docutils literal notranslate"><span class="pre">close_x3d</span></code></a>()</p></td>
+<td><p>Close the X3D section of the HTML.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#visl3d.writers.WriteVis.func_animation" title="visl3d.writers.WriteVis.func_animation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">func_animation</span></code></a>()</p></td>
+<td><p>Make JS function to start/stop the animation of the X3D models.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#visl3d.writers.WriteVis.func_axes" title="visl3d.writers.WriteVis.func_axes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">func_axes</span></code></a>()</p></td>
+<td><p>Make JS function to hide/show axes labels.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#visl3d.writers.WriteVis.func_background" title="visl3d.writers.WriteVis.func_background"><code class="xref py py-obj docutils literal notranslate"><span class="pre">func_background</span></code></a>()</p></td>
+<td><p>Make JS function to change the background color of the X3D figure.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#visl3d.writers.WriteVis.func_colormaps" title="visl3d.writers.WriteVis.func_colormaps"><code class="xref py py-obj docutils literal notranslate"><span class="pre">func_colormaps</span></code></a>()</p></td>
+<td><p>Make JS function to change the colormap of the layers.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#visl3d.writers.WriteVis.func_galaxies" title="visl3d.writers.WriteVis.func_galaxies"><code class="xref py py-obj docutils literal notranslate"><span class="pre">func_galaxies</span></code></a>()</p></td>
+<td><p>Make JS function to hide/show galaxies and their labels.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#visl3d.writers.WriteVis.func_galsize" title="visl3d.writers.WriteVis.func_galsize"><code class="xref py py-obj docutils literal notranslate"><span class="pre">func_galsize</span></code></a>()</p></td>
+<td><p>Make JS function to change the size of the galaxy markers and their labels.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#visl3d.writers.WriteVis.func_grids" title="visl3d.writers.WriteVis.func_grids"><code class="xref py py-obj docutils literal notranslate"><span class="pre">func_grids</span></code></a>()</p></td>
+<td><p>Make JS function to hide/show grids.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#visl3d.writers.WriteVis.func_image2d" title="visl3d.writers.WriteVis.func_image2d"><code class="xref py py-obj docutils literal notranslate"><span class="pre">func_image2d</span></code></a>()</p></td>
+<td><p>Make JS function to show/hide the 2D image.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#visl3d.writers.WriteVis.func_layers" title="visl3d.writers.WriteVis.func_layers"><code class="xref py py-obj docutils literal notranslate"><span class="pre">func_layers</span></code></a>()</p></td>
+<td><p>Make JS funcion to hide/show layers.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#visl3d.writers.WriteVis.func_markers" title="visl3d.writers.WriteVis.func_markers"><code class="xref py py-obj docutils literal notranslate"><span class="pre">func_markers</span></code></a>()</p></td>
+<td><p>Create buttons to create markers for the X3D model interactively in the web page.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#visl3d.writers.WriteVis.func_move2dimage" title="visl3d.writers.WriteVis.func_move2dimage"><code class="xref py py-obj docutils literal notranslate"><span class="pre">func_move2dimage</span></code></a>()</p></td>
+<td><p>Make JS function to move the 2D image along the spectral axis.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#visl3d.writers.WriteVis.func_pick" title="visl3d.writers.WriteVis.func_pick"><code class="xref py py-obj docutils literal notranslate"><span class="pre">func_pick</span></code></a>()</p></td>
+<td><p>Allows picking the coordinates by clicking in the figure.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#visl3d.writers.WriteVis.func_pymarkers" title="visl3d.writers.WriteVis.func_pymarkers"><code class="xref py py-obj docutils literal notranslate"><span class="pre">func_pymarkers</span></code></a>([tube, sphere, box, cone])</p></td>
+<td><p>JS function to hide/show markers created with make_markers() directly to the X3D model.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#visl3d.writers.WriteVis.func_scalev" title="visl3d.writers.WriteVis.func_scalev"><code class="xref py py-obj docutils literal notranslate"><span class="pre">func_scalev</span></code></a>([sphere, box, cone, tube, trans])</p></td>
+<td><p>Make JS funtion to change the scale of the spectral axis.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#visl3d.writers.WriteVis.func_setCenterOfRotation" title="visl3d.writers.WriteVis.func_setCenterOfRotation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">func_setCenterOfRotation</span></code></a>(centers)</p></td>
+<td><p>Make JS function to change the center of rotation from given options.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#visl3d.writers.WriteVis.make_animation" title="visl3d.writers.WriteVis.make_animation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">make_animation</span></code></a>([cycleinterval, axis])</p></td>
+<td><p>Create an animation to rotate the X3D model along one axis.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#visl3d.writers.WriteVis.make_galaxies" title="visl3d.writers.WriteVis.make_galaxies"><code class="xref py py-obj docutils literal notranslate"><span class="pre">make_galaxies</span></code></a>()</p></td>
+<td><p>Creates spheres and labels in the model at the location of galaxies given as input.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#visl3d.writers.WriteVis.make_image2d" title="visl3d.writers.WriteVis.make_image2d"><code class="xref py py-obj docutils literal notranslate"><span class="pre">make_image2d</span></code></a>()</p></td>
+<td><p>Create a 2D image object in the X3D model.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#visl3d.writers.WriteVis.make_labels" title="visl3d.writers.WriteVis.make_labels"><code class="xref py py-obj docutils literal notranslate"><span class="pre">make_labels</span></code></a>()</p></td>
+<td><p>Create the labels of different elements in the figure.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#visl3d.writers.WriteVis.make_layers" title="visl3d.writers.WriteVis.make_layers"><code class="xref py py-obj docutils literal notranslate"><span class="pre">make_layers</span></code></a>([shifts, add_normals])</p></td>
+<td><p>Calculate iso-surfaces from the data and write the objects in the X3D file.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#visl3d.writers.WriteVis.make_markers" title="visl3d.writers.WriteVis.make_markers"><code class="xref py py-obj docutils literal notranslate"><span class="pre">make_markers</span></code></a>(geom, points, shape, trans, color)</p></td>
+<td><p>Create markers in the X3D model.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#visl3d.writers.WriteVis.make_outline" title="visl3d.writers.WriteVis.make_outline"><code class="xref py py-obj docutils literal notranslate"><span class="pre">make_outline</span></code></a>()</p></td>
+<td><p>Creates an object for an outline in the X3D file.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#visl3d.writers.WriteVis.make_ticklines" title="visl3d.writers.WriteVis.make_ticklines"><code class="xref py py-obj docutils literal notranslate"><span class="pre">make_ticklines</span></code></a>()</p></td>
+<td><p>Create tickline objects in the X3D model.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#visl3d.writers.WriteVis.start_x3d" title="visl3d.writers.WriteVis.start_x3d"><code class="xref py py-obj docutils literal notranslate"><span class="pre">start_x3d</span></code></a>([point])</p></td>
+<td><p>Start the X3D section of the HTML.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="visl3d.writers.WriteVis.buttons">
+<span class="sig-name descname"><span class="pre">buttons</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">viewpoint</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tube</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sphere</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">box</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cone</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">centrot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/visl3d/writers.html#WriteVis.buttons"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#visl3d.writers.WriteVis.buttons" title="Link to this definition"></a></dt>
+<dd><p>Makes the buttons to apply different functions in the web page.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>viewpoint</strong> (<em>list</em>) – List of names for the viewpoints. Viewpoints must be created in “viewpoints()”.</p></li>
+<li><p><strong>tube</strong> (<em>list</em>) – List with the points parameter included in make_markers() for tubes.</p></li>
+<li><p><strong>sphere</strong> (<em>list</em>) – List with the points parameter included in make_markers() for spheres.</p></li>
+<li><p><strong>box</strong> (<em>list</em>) – List with the points parameter included in make_markers() for boxes.</p></li>
+<li><p><strong>cone</strong> (<em>list</em>) – List with the points parameter included in make_markers() for cones.</p></li>
+<li><p><strong>centrot</strong> (<em>bool</em>) – Create button to change the center of rotation.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="visl3d.writers.WriteVis.close">
+<span class="sig-name descname"><span class="pre">close</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/visl3d/writers.html#WriteVis.close"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#visl3d.writers.WriteVis.close" title="Link to this definition"></a></dt>
+<dd><p>Closes the X3D file. Not using this function at the end results in
+an error.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="visl3d.writers.WriteVis.close_html">
+<span class="sig-name descname"><span class="pre">close_html</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/visl3d/writers.html#WriteVis.close_html"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#visl3d.writers.WriteVis.close_html" title="Link to this definition"></a></dt>
+<dd><p>Must be used to finish and close the HTML file. Not using this function results
+in an error.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="visl3d.writers.WriteVis.close_x3d">
+<span class="sig-name descname"><span class="pre">close_x3d</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/visl3d/writers.html#WriteVis.close_x3d"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#visl3d.writers.WriteVis.close_x3d" title="Link to this definition"></a></dt>
+<dd><p>Close the X3D section of the HTML.
+Must go after start_x3d().</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="visl3d.writers.WriteVis.func_animation">
+<span class="sig-name descname"><span class="pre">func_animation</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/visl3d/writers.html#WriteVis.func_animation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#visl3d.writers.WriteVis.func_animation" title="Link to this definition"></a></dt>
+<dd><p>Make JS function to start/stop the animation of the X3D models.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="visl3d.writers.WriteVis.func_axes">
+<span class="sig-name descname"><span class="pre">func_axes</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/visl3d/writers.html#WriteVis.func_axes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#visl3d.writers.WriteVis.func_axes" title="Link to this definition"></a></dt>
+<dd><p>Make JS function to hide/show axes labels.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="visl3d.writers.WriteVis.func_background">
+<span class="sig-name descname"><span class="pre">func_background</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/visl3d/writers.html#WriteVis.func_background"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#visl3d.writers.WriteVis.func_background" title="Link to this definition"></a></dt>
+<dd><p>Make JS function to change the background color of the X3D figure.
+Must be after buttons()</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="visl3d.writers.WriteVis.func_colormaps">
+<span class="sig-name descname"><span class="pre">func_colormaps</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/visl3d/writers.html#WriteVis.func_colormaps"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#visl3d.writers.WriteVis.func_colormaps" title="Link to this definition"></a></dt>
+<dd><p>Make JS function to change the colormap of the layers.
+Must be after buttons()</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="visl3d.writers.WriteVis.func_galaxies">
+<span class="sig-name descname"><span class="pre">func_galaxies</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/visl3d/writers.html#WriteVis.func_galaxies"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#visl3d.writers.WriteVis.func_galaxies" title="Link to this definition"></a></dt>
+<dd><p>Make JS function to hide/show galaxies and their labels.
+The X3D file must have galaxies for this to work.
+Must be after buttons()</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="visl3d.writers.WriteVis.func_galsize">
+<span class="sig-name descname"><span class="pre">func_galsize</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/visl3d/writers.html#WriteVis.func_galsize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#visl3d.writers.WriteVis.func_galsize" title="Link to this definition"></a></dt>
+<dd><p>Make JS function to change the size of the galaxy markers and their labels.
+The X3D file must have galaxies for this to work.
+Must be after buttons()</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="visl3d.writers.WriteVis.func_grids">
+<span class="sig-name descname"><span class="pre">func_grids</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/visl3d/writers.html#WriteVis.func_grids"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#visl3d.writers.WriteVis.func_grids" title="Link to this definition"></a></dt>
+<dd><p>Make JS function to hide/show grids.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="visl3d.writers.WriteVis.func_image2d">
+<span class="sig-name descname"><span class="pre">func_image2d</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/visl3d/writers.html#WriteVis.func_image2d"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#visl3d.writers.WriteVis.func_image2d" title="Link to this definition"></a></dt>
+<dd><p>Make JS function to show/hide the 2D image.
+The X3D file must have a 2D image for this to work.
+Must be after buttons().</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="visl3d.writers.WriteVis.func_layers">
+<span class="sig-name descname"><span class="pre">func_layers</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/visl3d/writers.html#WriteVis.func_layers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#visl3d.writers.WriteVis.func_layers" title="Link to this definition"></a></dt>
+<dd><p>Make JS funcion to hide/show layers.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="visl3d.writers.WriteVis.func_markers">
+<span class="sig-name descname"><span class="pre">func_markers</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/visl3d/writers.html#WriteVis.func_markers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#visl3d.writers.WriteVis.func_markers" title="Link to this definition"></a></dt>
+<dd><p>Create buttons to create markers for the X3D model interactively in the web page.
+Must be after buttons(). It is assumed that scalev is used. It will fail otherwise.
+The JS functions are included by default in ‘markers.js’.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="visl3d.writers.WriteVis.func_move2dimage">
+<span class="sig-name descname"><span class="pre">func_move2dimage</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/visl3d/writers.html#WriteVis.func_move2dimage"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#visl3d.writers.WriteVis.func_move2dimage" title="Link to this definition"></a></dt>
+<dd><p>Make JS function to move the 2D image along the spectral axis.
+The X3D file must have a 2D image for this to work.
+Must be after buttons()</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="visl3d.writers.WriteVis.func_pick">
+<span class="sig-name descname"><span class="pre">func_pick</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/visl3d/writers.html#WriteVis.func_pick"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#visl3d.writers.WriteVis.func_pick" title="Link to this definition"></a></dt>
+<dd><p>Allows picking the coordinates by clicking in the figure.
+WORKS WITH VIEWPOINT NOT WITH ORTHOVIEWPOINT.
+NOT FINISHED, DON’T USE.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="visl3d.writers.WriteVis.func_pymarkers">
+<span class="sig-name descname"><span class="pre">func_pymarkers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tube</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sphere</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">box</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cone</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/visl3d/writers.html#WriteVis.func_pymarkers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#visl3d.writers.WriteVis.func_pymarkers" title="Link to this definition"></a></dt>
+<dd><p>JS function to hide/show markers created with make_markers() directly to the X3D model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tube</strong> (<em>list</em>) – List with the points parameter included in make_markers() for tubes.</p></li>
+<li><p><strong>sphere</strong> (<em>list</em>) – List with the points parameter included in make_markers() for spheres.</p></li>
+<li><p><strong>box</strong> (<em>list</em>) – List with the points parameter included in make_markers() for boxes.</p></li>
+<li><p><strong>cone</strong> (<em>list</em>) – List with the points parameter included in make_markers() for cones.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="visl3d.writers.WriteVis.func_scalev">
+<span class="sig-name descname"><span class="pre">func_scalev</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sphere</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">box</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cone</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tube</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trans</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/visl3d/writers.html#WriteVis.func_scalev"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#visl3d.writers.WriteVis.func_scalev" title="Link to this definition"></a></dt>
+<dd><p>Make JS funtion to change the scale of the spectral axis.
+Must be after buttons().</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tube</strong> (<em>list</em>) – List with the points parameter included in make_markers() for tubes.</p></li>
+<li><p><strong>sphere</strong> (<em>list</em>) – List with the points parameter included in make_markers() for spheres.</p></li>
+<li><p><strong>box</strong> (<em>list</em>) – List with the points parameter included in make_markers() for boxes.</p></li>
+<li><p><strong>cone</strong> (<em>list</em>) – List with the points parameter included in make_markers() for cones.</p></li>
+<li><p><strong>delta</strong> (<em>list</em>) – List with the delta of the cube (header[CDELT]).</p></li>
+<li><p><strong>trans</strong> (<em>list</em>) – Transformation factor to the cube. It is calculated with (2000/nx, 2000/ny, 2000/nz).</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="visl3d.writers.WriteVis.func_setCenterOfRotation">
+<span class="sig-name descname"><span class="pre">func_setCenterOfRotation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">centers</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/visl3d/writers.html#WriteVis.func_setCenterOfRotation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#visl3d.writers.WriteVis.func_setCenterOfRotation" title="Link to this definition"></a></dt>
+<dd><p>Make JS function to change the center of rotation from given options.
+Must be after buttons()</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>centers</strong> (<em>list</em>) – List of strings with the coordinates (as different from the centre) of the centers of rotation to be added. E.g. [“0 10 0”, “10 0 10”]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="visl3d.writers.WriteVis.make_animation">
+<span class="sig-name descname"><span class="pre">make_animation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cycleinterval</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/visl3d/writers.html#WriteVis.make_animation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#visl3d.writers.WriteVis.make_animation" title="Link to this definition"></a></dt>
+<dd><p>Create an animation to rotate the X3D model along one axis.
+Must be outside the Transform “ROOT” element. Should be called after make_ticklines().</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="visl3d.writers.WriteVis.make_galaxies">
+<span class="sig-name descname"><span class="pre">make_galaxies</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/visl3d/writers.html#WriteVis.make_galaxies"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#visl3d.writers.WriteVis.make_galaxies" title="Link to this definition"></a></dt>
+<dd><p>Creates spheres and labels in the model at the location of galaxies given as input.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="visl3d.writers.WriteVis.make_image2d">
+<span class="sig-name descname"><span class="pre">make_image2d</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/visl3d/writers.html#WriteVis.make_image2d"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#visl3d.writers.WriteVis.make_image2d" title="Link to this definition"></a></dt>
+<dd><p>Create a 2D image object in the X3D model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>imcol</strong> (<em>array</em><em>, </em><em>optional</em>) – Array with hexadecimal colors of each pixel for a 2D image. If None, a white image is created.
+Default is None</p></li>
+<li><p><strong>img_shape</strong> (<em>tuple</em><em>, </em><em>optional</em>) – Shape of the 2D image. Use None for white image. Default is None.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="visl3d.writers.WriteVis.make_labels">
+<span class="sig-name descname"><span class="pre">make_labels</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/visl3d/writers.html#WriteVis.make_labels"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#visl3d.writers.WriteVis.make_labels" title="Link to this definition"></a></dt>
+<dd><p>Create the labels of different elements in the figure.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="visl3d.writers.WriteVis.make_layers">
+<span class="sig-name descname"><span class="pre">make_layers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">shifts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">add_normals</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/visl3d/writers.html#WriteVis.make_layers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#visl3d.writers.WriteVis.make_layers" title="Link to this definition"></a></dt>
+<dd><p>Calculate iso-surfaces from the data and write the objects in the X3D file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>shift</strong> (<em>list</em><em>, </em><em>optional</em>) – A list with a arrays of 3D vectors giving the shift in RA, DEC and spectral axis in
+the same units given to the cube. Similar to l_cube or l_isolevels.</p></li>
+<li><p><strong>add_normals</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to add normal vectors in the X3D model. Default is False.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="visl3d.writers.WriteVis.make_markers">
+<span class="sig-name descname"><span class="pre">make_markers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">geom</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">points</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shape</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trans</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/visl3d/writers.html#WriteVis.make_markers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#visl3d.writers.WriteVis.make_markers" title="Link to this definition"></a></dt>
+<dd><p>Create markers in the X3D model.
+Must be called before make_ticklines().</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>geom</strong> (<em>str</em>) – Type of geometry to create. Options are ‘tube’, ‘sphere’, ‘box’, ‘cone’.</p></li>
+<li><p><strong>points</strong> (<em>list</em>) – List of points to create the markers. Each element of the list is a len 3 array with the coordinates of the marker (RA,DEC,Z).
+If geom is ‘tube’, each element of the list is a list of len 3 arrays that define the tubes. Two points define one tube.</p></li>
+<li><p><strong>shape</strong> (<em>list</em>) – List of the shape of the markers.
+If geom is ‘box’, each element of the list is a len 3 array with the size of the box (x,y,z).
+If geom is ‘cone’, each element of the list is a len 2 array with the radius and height of the cone.
+Else each element of the list is a float with the radius of the marker.</p></li>
+<li><p><strong>delta</strong> (<em>list</em>) – List with the delta of the cube (header[CDELT]).</p></li>
+<li><p><strong>trans</strong> (<em>list</em>) – Transformation factor to the cube. It is calculated with (2000/nx, 2000/ny, 2000/nz).</p></li>
+<li><p><strong>color</strong> (<em>list</em>) – List with the color of the markers. Each element is a string with RGB values.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="visl3d.writers.WriteVis.make_outline">
+<span class="sig-name descname"><span class="pre">make_outline</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/visl3d/writers.html#WriteVis.make_outline"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#visl3d.writers.WriteVis.make_outline" title="Link to this definition"></a></dt>
+<dd><p>Creates an object for an outline in the X3D file.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="visl3d.writers.WriteVis.make_ticklines">
+<span class="sig-name descname"><span class="pre">make_ticklines</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/visl3d/writers.html#WriteVis.make_ticklines"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#visl3d.writers.WriteVis.make_ticklines" title="Link to this definition"></a></dt>
+<dd><p>Create tickline objects in the X3D model.</p>
+<p>Closes the Transform “ROOT” element. Must be called somewhere after make_layers() and before make_labels().</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="visl3d.writers.WriteVis.start_x3d">
+<span class="sig-name descname"><span class="pre">start_x3d</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">point</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/visl3d/writers.html#WriteVis.start_x3d"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#visl3d.writers.WriteVis.start_x3d" title="Link to this definition"></a></dt>
+<dd><p>Start the X3D section of the HTML.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>point</strong> (<em>list</em><em>, </em><em>optional</em>) – List of points to define viewpoints. The point will be used to create a vector from the origin.
+For example, [1,0,0] will create a viewpoint looking at the positive x-axis. The y axis is inverted.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="visl3d.writers.WriteX3D">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">visl3d.writers.</span></span><span class="sig-name descname"><span class="pre">WriteX3D</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cube</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/visl3d/writers.html#WriteX3D"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#visl3d.writers.WriteX3D" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Class to create a X3D model of iso-surfaces with 3D spectral line data.
+Creates an X3D file with the model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>filename</strong> (<em>str</em>) – Name of the X3D file including the extension (.x3d).</p></li>
+<li><p><strong>cube</strong> (<em>Cube</em>) – Object of the Cube class.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#visl3d.writers.WriteX3D.close" title="visl3d.writers.WriteX3D.close"><code class="xref py py-obj docutils literal notranslate"><span class="pre">close</span></code></a>()</p></td>
+<td><p>Closes the X3D file.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#visl3d.writers.WriteX3D.make_animation" title="visl3d.writers.WriteX3D.make_animation"><code class="xref py py-obj docutils literal notranslate"><span class="pre">make_animation</span></code></a>([cycleinterval, axis])</p></td>
+<td><p>Create an animation to rotate the X3D model along one axis.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#visl3d.writers.WriteX3D.make_galaxies" title="visl3d.writers.WriteX3D.make_galaxies"><code class="xref py py-obj docutils literal notranslate"><span class="pre">make_galaxies</span></code></a>()</p></td>
+<td><p>Creates spheres and labels in the model at the location of galaxies given as input.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#visl3d.writers.WriteX3D.make_image2d" title="visl3d.writers.WriteX3D.make_image2d"><code class="xref py py-obj docutils literal notranslate"><span class="pre">make_image2d</span></code></a>()</p></td>
+<td><p>Create a 2D image object in the X3D model.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#visl3d.writers.WriteX3D.make_labels" title="visl3d.writers.WriteX3D.make_labels"><code class="xref py py-obj docutils literal notranslate"><span class="pre">make_labels</span></code></a>()</p></td>
+<td><p>Create the labels of different elements in the figure.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#visl3d.writers.WriteX3D.make_layers" title="visl3d.writers.WriteX3D.make_layers"><code class="xref py py-obj docutils literal notranslate"><span class="pre">make_layers</span></code></a>([shifts, add_normals])</p></td>
+<td><p>Calculate iso-surfaces from the data and write the objects in the X3D file.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#visl3d.writers.WriteX3D.make_markers" title="visl3d.writers.WriteX3D.make_markers"><code class="xref py py-obj docutils literal notranslate"><span class="pre">make_markers</span></code></a>(geom, points, shape, trans, color)</p></td>
+<td><p>Create markers in the X3D model.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#visl3d.writers.WriteX3D.make_outline" title="visl3d.writers.WriteX3D.make_outline"><code class="xref py py-obj docutils literal notranslate"><span class="pre">make_outline</span></code></a>()</p></td>
+<td><p>Creates an object for an outline in the X3D file.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#visl3d.writers.WriteX3D.make_ticklines" title="visl3d.writers.WriteX3D.make_ticklines"><code class="xref py py-obj docutils literal notranslate"><span class="pre">make_ticklines</span></code></a>()</p></td>
+<td><p>Create tickline objects in the X3D model.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="visl3d.writers.WriteX3D.close">
+<span class="sig-name descname"><span class="pre">close</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/visl3d/writers.html#WriteX3D.close"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#visl3d.writers.WriteX3D.close" title="Link to this definition"></a></dt>
+<dd><p>Closes the X3D file. Not using this function at the end results in
+an error.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="visl3d.writers.WriteX3D.make_animation">
+<span class="sig-name descname"><span class="pre">make_animation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cycleinterval</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/visl3d/writers.html#WriteX3D.make_animation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#visl3d.writers.WriteX3D.make_animation" title="Link to this definition"></a></dt>
+<dd><p>Create an animation to rotate the X3D model along one axis.
+Must be outside the Transform “ROOT” element. Should be called after make_ticklines().</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="visl3d.writers.WriteX3D.make_galaxies">
+<span class="sig-name descname"><span class="pre">make_galaxies</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/visl3d/writers.html#WriteX3D.make_galaxies"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#visl3d.writers.WriteX3D.make_galaxies" title="Link to this definition"></a></dt>
+<dd><p>Creates spheres and labels in the model at the location of galaxies given as input.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="visl3d.writers.WriteX3D.make_image2d">
+<span class="sig-name descname"><span class="pre">make_image2d</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/visl3d/writers.html#WriteX3D.make_image2d"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#visl3d.writers.WriteX3D.make_image2d" title="Link to this definition"></a></dt>
+<dd><p>Create a 2D image object in the X3D model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>imcol</strong> (<em>array</em><em>, </em><em>optional</em>) – Array with hexadecimal colors of each pixel for a 2D image. If None, a white image is created.
+Default is None</p></li>
+<li><p><strong>img_shape</strong> (<em>tuple</em><em>, </em><em>optional</em>) – Shape of the 2D image. Use None for white image. Default is None.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="visl3d.writers.WriteX3D.make_labels">
+<span class="sig-name descname"><span class="pre">make_labels</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/visl3d/writers.html#WriteX3D.make_labels"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#visl3d.writers.WriteX3D.make_labels" title="Link to this definition"></a></dt>
+<dd><p>Create the labels of different elements in the figure.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="visl3d.writers.WriteX3D.make_layers">
+<span class="sig-name descname"><span class="pre">make_layers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">shifts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">add_normals</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/visl3d/writers.html#WriteX3D.make_layers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#visl3d.writers.WriteX3D.make_layers" title="Link to this definition"></a></dt>
+<dd><p>Calculate iso-surfaces from the data and write the objects in the X3D file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>shift</strong> (<em>list</em><em>, </em><em>optional</em>) – A list with a arrays of 3D vectors giving the shift in RA, DEC and spectral axis in
+the same units given to the cube. Similar to l_cube or l_isolevels.</p></li>
+<li><p><strong>add_normals</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to add normal vectors in the X3D model. Default is False.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="visl3d.writers.WriteX3D.make_markers">
+<span class="sig-name descname"><span class="pre">make_markers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">geom</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">points</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shape</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trans</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">labels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/visl3d/writers.html#WriteX3D.make_markers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#visl3d.writers.WriteX3D.make_markers" title="Link to this definition"></a></dt>
+<dd><p>Create markers in the X3D model.
+Must be called before make_ticklines().</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>geom</strong> (<em>str</em>) – Type of geometry to create. Options are ‘tube’, ‘sphere’, ‘box’, ‘cone’.</p></li>
+<li><p><strong>points</strong> (<em>list</em>) – List of points to create the markers. Each element of the list is a len 3 array with the coordinates of the marker (RA,DEC,Z).
+If geom is ‘tube’, each element of the list is a list of len 3 arrays that define the tubes. Two points define one tube.</p></li>
+<li><p><strong>shape</strong> (<em>list</em>) – List of the shape of the markers.
+If geom is ‘box’, each element of the list is a len 3 array with the size of the box (x,y,z).
+If geom is ‘cone’, each element of the list is a len 2 array with the radius and height of the cone.
+Else each element of the list is a float with the radius of the marker.</p></li>
+<li><p><strong>delta</strong> (<em>list</em>) – List with the delta of the cube (header[CDELT]).</p></li>
+<li><p><strong>trans</strong> (<em>list</em>) – Transformation factor to the cube. It is calculated with (2000/nx, 2000/ny, 2000/nz).</p></li>
+<li><p><strong>color</strong> (<em>list</em>) – List with the color of the markers. Each element is a string with RGB values.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="visl3d.writers.WriteX3D.make_outline">
+<span class="sig-name descname"><span class="pre">make_outline</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/visl3d/writers.html#WriteX3D.make_outline"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#visl3d.writers.WriteX3D.make_outline" title="Link to this definition"></a></dt>
+<dd><p>Creates an object for an outline in the X3D file.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="visl3d.writers.WriteX3D.make_ticklines">
+<span class="sig-name descname"><span class="pre">make_ticklines</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/visl3d/writers.html#WriteX3D.make_ticklines"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#visl3d.writers.WriteX3D.make_ticklines" title="Link to this definition"></a></dt>
+<dd><p>Create tickline objects in the X3D model.</p>
+<p>Closes the Transform “ROOT” element. Must be called somewhere after make_layers() and before make_labels().</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="visl3d.visual.html" class="btn btn-neutral float-left" title="ViSL3D Visual" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="visl3d.misc.html" class="btn btn-neutral float-right" title="Miscellaneous functions" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Ixaka Labadie-Garcia.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
