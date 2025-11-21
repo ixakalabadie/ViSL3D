@@ -13,7 +13,7 @@ dependencies = [
     "scipy",
     "astroquery >= 0.4.7",
     "astropy",
-    "anywidgets",
+    "anywidget",
     "traitlets",
 
 ]
