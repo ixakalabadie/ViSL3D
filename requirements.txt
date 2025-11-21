@@ -1,3 +1,4 @@
+anywidget
 astropy
 astroquery>=0.4.10
 ipywidgets

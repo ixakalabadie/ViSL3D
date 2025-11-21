@@ -100,6 +100,9 @@ some issues that you may encounter:
   decrease the number of iso-surfaces or increase the S/N of the lowest
   surface.
 
+-When visualising in Jupyter Notebooks, having two visualisations in the
+ same notebook produces errors.
+
 - The animation stops after completing at least one loop. Do not click
   the button many times if you don’t see it stopping.
 
