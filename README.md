@@ -2,7 +2,7 @@
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.17553514.svg)](https://doi.org/10.5281/zenodo.12734235)
 ![PyPI](https://img.shields.io/pypi/v/visl3d.svg)
 [![Documentation Status](https://readthedocs.org/projects/visl3d/badge/?version=latest)](https://visl3d.readthedocs.io/en/latest/)
-![License](https://img.shields.io/github/license/yourname/visl3d)
+![License](https://img.shields.io/github/license/ixakalabadie/visl3d)
 
 Ixaka Labadie García<br/>
 07/11/2025 - v0.5
