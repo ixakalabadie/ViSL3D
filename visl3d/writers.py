@@ -84,7 +84,7 @@ class WriteX3D:
                                 verts, faces, normals = misc.marching_cubes(cube, level=lev,
                                                                 step_size=self.cube.resol)
                         except Exception as ex:
-                            print(ex)
+                            print(ex, f' - cube {nc}, level {lev}')
                             continue
                     self.file_x3d.write(f'\n\t\t\t<Transform DEF="{nc}lt{i}_sp{sp}" ' \
                                         +' translation="0 0 0" rotation="0 0 1 -0" scale="1 1 1">')
@@ -1256,7 +1256,7 @@ class WriteHTML:
 
         # SCALEV
         #self.file_html.write(misc.tabs(2)+'<br><br>\n')
-        self.file_html.write(misc.tabs(2)+'&nbsp <label for="scalev"><b>Z scale:</b> </label>\n')
+        self.file_html.write(misc.tabs(2)+f'&nbsp <label for="scalev"><b>{self.cube.mags[3]} scale:</b> </label>\n')
         self.file_html.write(misc.tabs(2)+'<input oninput="changescalev()" id="scalev" type="range" list="marker" min="0" max="10" step="0.001" value="1"></input>\n')
         self.file_html.write(misc.tabs(2)+'<datalist id="marker">\n')
         self.file_html.write(misc.tabs(3)+'<option value="1"></option>\n')
@@ -2654,7 +2654,7 @@ class WriteVis:
                                 verts, faces, normals = misc.marching_cubes(cube, level=lev,
                                                                 step_size=self.cube.resol)
                         except Exception as ex:
-                            print(ex)
+                            print(ex, f' - cube {nc}, level {lev}')
                             continue
                     self.visfile.write('\n'+misc.tabs(3)+f'<Transform id="{nc}lt{i}_sp{sp}" ' \
                                         +' translation="0 0 0" rotation="0 0 1 -0" scale="1 1 1">')
