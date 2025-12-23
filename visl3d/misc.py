@@ -41,7 +41,7 @@ def marching_cubes(cube, level, shift=(0,0,0), step_size=1):
     and (2) the indices for those faces and (3) normal vectors for each face.
     """
     nx, ny, nz = cube.shape
-    trans = (2000/nx, 2000/ny, 2000/nz)
+    trans = (2000/(nx-1), 2000/(ny-1), 2000/(nz-1))
     verts, faces, normals, _ = measure.marching_cubes(cube, level = level,
                             allow_degenerate=False,
                             step_size=step_size)
